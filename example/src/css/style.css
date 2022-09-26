@@ -3,3 +3,7 @@ body {
   padding: 0;
   margin: 0;
 }
+
+body {
+  padding-top: env(safe-area-inset-top, 0);
+}

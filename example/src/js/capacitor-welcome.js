@@ -1,5 +1,16 @@
-import { SplashScreen } from '@capacitor/splash-screen';
 import { Camera } from '@capacitor/camera';
+import { SplashScreen } from '@capacitor/splash-screen';
+import { NativeNavigation } from 'native-navigation'
+
+console.log('WELCOME 1a')
+console.log('WELCOME 2')
+NativeNavigation.create({
+  type: 'stack',
+  name: 'stack1',
+}).then(function() {
+  console.log('CREATED')
+})
+console.log('WELCOME 3')
 
 window.customElements.define(
   'capacitor-welcome',
@@ -94,18 +105,42 @@ window.customElements.define(
 
       self.shadowRoot.querySelector('#take-photo').addEventListener('click', async function (e) {
         try {
-          const photo = await Camera.getPhoto({
-            resultType: 'uri',
-          });
+          // const photo = await Camera.getPhoto({
+          //   resultType: 'uri',
+          // });
 
-          const image = self.shadowRoot.querySelector('#image');
-          if (!image) {
-            return;
-          }
+          // const image = self.shadowRoot.querySelector('#image');
+          // if (!image) {
+          //   return;
+          // }
 
-          image.src = photo.webPath;
+          // image.src = photo.webPath;
+
+
+          // console.log('opening')
+          // const w = window.open('about:blank')
+
+          // console.log('got new window', w)
+          // w.document.body.textContent = 'Nice one'
+          // console.log('set text')
+
+          // var counter = 0
+          // setInterval(function() {
+          //   try {
+          //     console.log('interval')
+          //     w.document.body.textContent = 'hello ' + (counter++)
+          //     console.log('updated')
+          //   } catch (e) {
+          //     console.warn('Failed', e.message)
+          //   }
+          // }, 1000)
+
+
+          NativeNavigation.present({
+            root: 'stack1',
+          })
         } catch (e) {
-          console.warn('User cancelled', e);
+          console.warn('User cancelled', e.message);
         }
       });
     }

@@ -13,15 +13,19 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@capacitor/core": "latest",
+    "@capacitor/android": "^4.0.0",
     "@capacitor/camera": "latest",
-    "@capacitor/splash-screen": "latest",
-    "native-navigation": "file:..",
+    "@capacitor/core": "latest",
     "@capacitor/ios": "^4.0.0",
-    "@capacitor/android": "^4.0.0"
+    "@capacitor/splash-screen": "latest",
+    "native-navigation": "link:..",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@capacitor/cli": "latest",
+    "@types/react": "^18.0.21",
+    "@types/react-dom": "^18.0.6",
     "vite": "^2.9.13"
   },
   "author": "",

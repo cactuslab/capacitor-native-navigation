@@ -5,42 +5,56 @@ import WebKit
 class NativeNavigationWebViewDelegate : NSObject, WKUIDelegate {
 
     private let wrapped: WKUIDelegate?
-    private let bridge: CAPBridgeProtocol
+    private let implementation: NativeNavigation
 
-    init(wrapped: WKUIDelegate?, bridge: CAPBridgeProtocol) {
+    init(wrapped: WKUIDelegate?, implementation: NativeNavigation) {
         self.wrapped = wrapped
-        self.bridge = bridge
+        self.implementation = implementation
     }
 
     func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
-        print("OPEN \(String(describing: navigationAction.request.url))") // TODO use URL to configure view
+        guard let path = navigationAction.request.url?.path else { // TODO better recognition of our things
+            return self.wrapped?.webView?(webView, createWebViewWith: configuration, for: navigationAction, windowFeatures: windowFeatures)
+        }
+        
+        let viewId = path.dropFirst()
+        
+        
+        print("OPEN \(viewId)") // TODO use URL to configure view
+        
+        do {
+            return try implementation.webView(forViewId: String(viewId), configuration: configuration)
+        } catch {
+            CAPLog.print("🤬 Cannot open new webview: \(error)")
+            return nil
+        }
 
 //        let configuration2 = configuration.copy() as! WKWebViewConfiguration
 
-        let v = UIViewController()
-        v.title = "Hello World"
-//        v.modalPresentationStyle = .fullScreen
-        let nv = UINavigationController(rootViewController: v)
-        nv.navigationBar.scrollEdgeAppearance = nv.navigationBar.standardAppearance
+//        let v = UIViewController()
+//        v.title = "Hello World"
+////        v.modalPresentationStyle = .fullScreen
+//        let nv = UINavigationController(rootViewController: v)
+//        nv.navigationBar.scrollEdgeAppearance = nv.navigationBar.standardAppearance
+//
+//        /* So we don't load the javascript from our start path */
+//        configuration.preferences = configuration.preferences.copy() as! WKPreferences
+//        configuration.preferences.javaScriptEnabled = false
+//
+//        let newWebView = WKWebView(frame: .zero, configuration: configuration)
+//        v.self.view = newWebView
+//
+//        self.bridge.viewController?.present(nv, animated: true)
+//        print("OK")
+//
+//        let url = webView.url!
+//        CAPLog.print("⚡️  Loading new window at \(url.absoluteString)...")
+//        _ = newWebView.load(URLRequest(url: url))
+//
+////        self.bridge.config.appStartPath
 
-        /* So we don't load the javascript from our start path */
-        configuration.preferences = configuration.preferences.copy() as! WKPreferences
-        configuration.preferences.javaScriptEnabled = false
 
-        let newWebView = WKWebView(frame: .zero, configuration: configuration)
-        v.self.view = newWebView
-
-        self.bridge.viewController?.present(nv, animated: true)
-        print("OK")
-
-        let url = webView.url!
-        CAPLog.print("⚡️  Loading new window at \(url.absoluteString)...")
-        _ = newWebView.load(URLRequest(url: url))
-
-//        self.bridge.config.appStartPath
-
-
-        return newWebView
+//        return newWebView
     }
 
     // See WebViewDelegationHandler for the funcs that we must proxy through

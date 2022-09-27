@@ -112,3 +112,7 @@ export interface PopResult {
 	stack: RootName
 	viewId: ViewId
 }
+
+export enum NativeNavigationEvents {
+	View = 'view',
+}

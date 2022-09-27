@@ -152,10 +152,11 @@ pop(options: PopOptions) => any
 
 #### PushOptions
 
-| Prop        | Type                                          | Description                                                      |
-| ----------- | --------------------------------------------- | ---------------------------------------------------------------- |
-| **`stack`** | <code><a href="#rootname">RootName</a></code> | The stack to push to, or undefined to push to the current stack. |
-| **`path`**  | <code>string</code>                           | The path representing the view to push.                          |
+| Prop           | Type                                          | Description                                                      |
+| -------------- | --------------------------------------------- | ---------------------------------------------------------------- |
+| **`stack`**    | <code><a href="#rootname">RootName</a></code> | The stack to push to, or undefined to push to the current stack. |
+| **`animated`** | <code>boolean</code>                          |                                                                  |
+| **`path`**     | <code>string</code>                           | The path representing the view to push.                          |
 
 
 #### PushResult

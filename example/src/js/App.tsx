@@ -5,7 +5,7 @@ export default function App(): JSX.Element {
 
 	async function handle1() {
 		const { stack, viewId } = await NativeNavigation.push({
-
+			path: 'button'
 		})
 		console.log('pushed', stack, viewId)
 	}

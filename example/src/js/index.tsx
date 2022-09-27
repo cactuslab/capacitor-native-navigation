@@ -1,12 +1,12 @@
 import { SplashScreen } from '@capacitor/splash-screen';
-import { NativeNavigation } from 'native-navigation'
+import { NativeNavigation, NativeNavigationEvents } from 'native-navigation'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 
 import App from './App'
 
 async function init() {
-	NativeNavigation.addListener('view', function(data) {
+	NativeNavigation.addListener(NativeNavigationEvents.View, function(data) {
 		console.log('view event', data)
 	})
 
@@ -21,6 +21,7 @@ async function init() {
 		root: 'rootStack',
 		animated: true,
 		presentationStyle: 'modal',
+		modalPresentationStyle: 'formSheet',
 	})
 
 	console.log('INIT: presented', presentResult)
@@ -29,11 +30,23 @@ async function init() {
 		path: 'textftw'
 	})
 	console.log('INIT: pushed', pushResult)
-	const pushResult2 = await NativeNavigation.push({
-		path: 'textftw2'
-	})
-	console.log('INIT: pushed', pushResult2)
+	// const pushResult2 = await NativeNavigation.push({
+	// 	path: 'textftw2'
+	// })
+	// console.log('INIT: pushed', pushResult2)
 
+	const viewId = pushResult.viewId
+	const view = window.open(viewId)
+	if (view) {
+		setTimeout(function() {
+			const root = view.document.getElementById('root')
+			// console.log('root', root)
+			// view.document.body.innerHTML = "<h1>Hello World</h1><h1>Hello World</h1><h1>Hello World</h1><h1>Hello World</h1>"
+			// console.log('Wrote')
+
+			ReactDOM.createRoot(root!).render(<App />)
+		}, 1000)
+	}
 }
 
 init().catch(function(reason) {

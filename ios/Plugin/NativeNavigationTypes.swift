@@ -13,6 +13,7 @@ struct PresentOptions {
     var rootOptions: CreateOptions?
     var animated: Bool
     var presentationStyle: PresentationStyle?
+    var modalPresentationStyle: ModalPresentationStyle?
 }
 
 struct PushOptions {

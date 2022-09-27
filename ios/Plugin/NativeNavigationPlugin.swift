@@ -72,6 +72,15 @@ public class NativeNavigationPlugin: CAPPlugin {
                 return
             }
         }
+        
+        if let modalPresentationStyleString = call.getString("modalPresentationStyle") {
+            if let modalPresentationStyleValue = ModalPresentationStyle(rawValue: modalPresentationStyleString) {
+                presentOptions.modalPresentationStyle = modalPresentationStyleValue
+            } else {
+                call.reject("Invalid \"modalPresentationStyle\": \(modalPresentationStyleString)")
+                return
+            }
+        }
 
         let finalPresentOptions = presentOptions
 

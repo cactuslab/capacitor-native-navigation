@@ -8,14 +8,19 @@ class NativeNavigation: NSObject {
     private var webViewDelegate: NativeNavigationWebViewDelegate?
     private var rootsByName: [String: UIViewController] = [:]
     private var stacksByName: [String: UINavigationController] = [:]
+    private var viewControllersById: [String: WeakViewController] = [:]
     private var rootNameCounter = 1
+    private let saveCapacitorRoot: UIViewController?
 
     public init(bridge: CAPBridgeProtocol, plugin: CAPPlugin) {
         self.bridge = bridge
         self.plugin = plugin
+        self.saveCapacitorRoot = bridge.viewController /* Attempt to prevent the view controller disappearing*/
+        
+        super.init()
         
         if let webView = self.bridge.webView {
-            self.webViewDelegate = NativeNavigationWebViewDelegate(wrapped: webView.uiDelegate, bridge: self.bridge)
+            self.webViewDelegate = NativeNavigationWebViewDelegate(wrapped: webView.uiDelegate, implementation: self)
             webView.uiDelegate = self.webViewDelegate
 
             /* Allow window.open to be used without a click event */
@@ -73,17 +78,17 @@ class NativeNavigation: NSObject {
                 throw NativeNavigatorError.illegalState(message: "Cannot find window")
             }
         case .modal:
-            if let modalPresentationStyle = options.rootOptions?.modalPresentationStyle {
+            if let modalPresentationStyle = options.modalPresentationStyle {
                 switch modalPresentationStyle {
                 case .fullScreen:
-                    try self.presentViewController(root, animated: options.animated, presentationStyle: .fullScreen)
+                    try self.presentViewController(root, animated: options.animated, modalPresentationStyle: .fullScreen)
                 case .pageSheet:
-                    try self.presentViewController(root, animated: options.animated, presentationStyle: .pageSheet)
+                    try self.presentViewController(root, animated: options.animated, modalPresentationStyle: .pageSheet)
                 case .formSheet:
-                    try self.presentViewController(root, animated: options.animated, presentationStyle: .formSheet)
+                    try self.presentViewController(root, animated: options.animated, modalPresentationStyle: .formSheet)
                 }
             } else {
-                try self.presentViewController(root, animated: options.animated, presentationStyle: .fullScreen)
+                try self.presentViewController(root, animated: options.animated, modalPresentationStyle: .fullScreen)
             }
         }
 
@@ -126,19 +131,45 @@ class NativeNavigation: NSObject {
         }
 
         let vc = UIViewController()
-        vc.view.backgroundColor = .systemPink
+//        vc.view.backgroundColor = .systemPink
+        
         stack.pushViewController(vc, animated: options.animated)
+        
+        let viewId = generateViewControllerId()
+        
+        self.viewControllersById[viewId] = WeakViewController(viewController: vc)
+        self.plugin.notifyListeners("view", data: ["path": options.path, "viewId": viewId], retainUntilConsumed: true)
 
-        return PushResult(stack: stackName, viewId: "TODO")
+        return PushResult(stack: stackName, viewId: viewId)
+    }
+    
+    func webView(forViewId viewId: String, configuration: WKWebViewConfiguration) throws -> WKWebView? {
+        guard let viewController = self.viewControllersById[viewId]?.viewController else {
+            return nil
+        }
+        
+        /* So we don't load the javascript from our start path */
+        guard let webView = self.bridge.webView else {
+            throw NativeNavigatorError.illegalState(message: "Cannot find webView")
+        }
+        
+        configuration.preferences = configuration.preferences.copy() as! WKPreferences
+        configuration.preferences.javaScriptEnabled = false
+
+        let newWebView = WKWebView(frame: .zero, configuration: configuration)
+        _ = newWebView.load(URLRequest(url: webView.url!))
+        viewController.view = newWebView
+        
+        return newWebView
     }
 
-    private func presentViewController(_ root: UIViewController, animated: Bool, presentationStyle: UIModalPresentationStyle?) throws {
+    private func presentViewController(_ root: UIViewController, animated: Bool, modalPresentationStyle: UIModalPresentationStyle?) throws {
         guard let top = try self.topViewController() else {
             throw NativeNavigatorError.illegalState(message: "Cannot find top")
         }
 
-        if let presentationStyle = presentationStyle {
-            root.modalPresentationStyle = presentationStyle
+        if let modalPresentationStyle = modalPresentationStyle {
+            root.modalPresentationStyle = modalPresentationStyle
         }
         top.present(root, animated: animated)
     }
@@ -163,6 +194,12 @@ class NativeNavigation: NSObject {
 
     private func generateStackName() -> String {
         let result = "_stack\(self.rootNameCounter)"
+        self.rootNameCounter += 1
+        return result
+    }
+    
+    private func generateViewControllerId() -> String {
+        let result = "_view\(self.rootNameCounter)"
         self.rootNameCounter += 1
         return result
     }
@@ -208,6 +245,9 @@ class NativeNavigation: NSObject {
 //        vc.title = "Test"
 //        vc.view.backgroundColor = .brown
         let nc = UINavigationController()
+        
+        /* So our webView doesn't disappear under the title bar */
+        nc.navigationBar.scrollEdgeAppearance = nc.navigationBar.standardAppearance
 
         let name = try storeStack(nc, name: options.name)
         return try self.storeRoot(nc, name: name)
@@ -254,4 +294,8 @@ extension UIViewController {
         }
     }
 
+}
+
+struct WeakViewController {
+    weak var viewController: UIViewController?
 }

@@ -112,10 +112,26 @@ public class NativeNavigationPlugin: CAPPlugin {
         }
     }
 
-    @objc func push(_ call: CAPPluginCall) {
-        let stackName = call.getString("stack")
+    @objc func createView(_ call: CAPPluginCall) {
         guard let path = call.getString("path") else {
             call.reject("Missing \"path\"")
+            return
+        }
+
+        Task {
+            do {
+                let result = try await implementation.createView(ViewOptions(path: path))
+                call.resolve([ "viewId": result ])
+            } catch {
+                call.reject("Failed to push: \(error)")
+            }
+        }
+    }
+
+    @objc func push(_ call: CAPPluginCall) {
+        let stackName = call.getString("stack")
+        guard let viewId = call.getString("viewId") else {
+            call.reject("Missing \"viewId\"")
             return
         }
 
@@ -123,10 +139,9 @@ public class NativeNavigationPlugin: CAPPlugin {
 
         Task {
             do {
-                let result = try await implementation.push(PushOptions(stack: stackName, animated: animated, path: path))
+                let result = try await implementation.push(PushOptions(stack: stackName, animated: animated, viewId: viewId))
                 call.resolve([
                     "stack": result.stack,
-                    "viewId": result.viewId,
                 ])
             } catch {
                 call.reject("Failed to push: \(error)")

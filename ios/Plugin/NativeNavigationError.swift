@@ -8,6 +8,7 @@ enum NativeNavigatorError: Error {
     case rootAlreadyExists(name: String)
     case stackAlreadyExists(name: String)
     case currentIsNotStack
+    case unknownView(name: String)
     case illegalState(message: String)
 
 //    var localizedDescription: String {

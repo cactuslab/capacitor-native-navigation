@@ -19,42 +19,12 @@ class NativeNavigationWebViewDelegate : NSObject, WKUIDelegate {
         
         let viewId = path.dropFirst()
         
-        
-        print("OPEN \(viewId)") // TODO use URL to configure view
-        
         do {
             return try implementation.webView(forViewId: String(viewId), configuration: configuration)
         } catch {
             CAPLog.print("🤬 Cannot open new webview: \(error)")
             return nil
         }
-
-//        let configuration2 = configuration.copy() as! WKWebViewConfiguration
-
-//        let v = UIViewController()
-//        v.title = "Hello World"
-////        v.modalPresentationStyle = .fullScreen
-//        let nv = UINavigationController(rootViewController: v)
-//        nv.navigationBar.scrollEdgeAppearance = nv.navigationBar.standardAppearance
-//
-//        /* So we don't load the javascript from our start path */
-//        configuration.preferences = configuration.preferences.copy() as! WKPreferences
-//        configuration.preferences.javaScriptEnabled = false
-//
-//        let newWebView = WKWebView(frame: .zero, configuration: configuration)
-//        v.self.view = newWebView
-//
-//        self.bridge.viewController?.present(nv, animated: true)
-//        print("OK")
-//
-//        let url = webView.url!
-//        CAPLog.print("⚡️  Loading new window at \(url.absoluteString)...")
-//        _ = newWebView.load(URLRequest(url: url))
-//
-////        self.bridge.config.appStartPath
-
-
-//        return newWebView
     }
 
     // See WebViewDelegationHandler for the funcs that we must proxy through

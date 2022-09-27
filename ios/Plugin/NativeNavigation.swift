@@ -8,15 +8,28 @@ class NativeNavigation: NSObject {
     private var webViewDelegate: NativeNavigationWebViewDelegate?
     private var rootsByName: [String: UIViewController] = [:]
     private var stacksByName: [String: UINavigationController] = [:]
-    private var viewControllersById: [String: WeakViewController] = [:]
+    private var viewsById: [String: NativeNavigationViewController] = [:]
     private var rootNameCounter = 1
     private let saveCapacitorRoot: UIViewController?
+    private var html: String? = nil
+    private var window: UIWindow! {
+            // Get connected scenes
+            return UIApplication.shared.connectedScenes
+                // Keep only active scenes, onscreen and visible to the user
+                .filter { $0.activationState == .foregroundActive }
+                // Keep only the first `UIWindowScene`
+                .first(where: { $0 is UIWindowScene })
+                // Get its associated windows
+                .flatMap({ $0 as? UIWindowScene })?.windows
+                // Finally, keep only the key window
+                .first(where: \.isKeyWindow)
+        }
 
     public init(bridge: CAPBridgeProtocol, plugin: CAPPlugin) {
         self.bridge = bridge
         self.plugin = plugin
-        self.saveCapacitorRoot = bridge.viewController /* Attempt to prevent the view controller disappearing*/
-        
+        self.saveCapacitorRoot = bridge.viewController /* Attempt to prevent the view controller disappearing */
+
         super.init()
         
         if let webView = self.bridge.webView {
@@ -25,6 +38,12 @@ class NativeNavigation: NSObject {
 
             /* Allow window.open to be used without a click event */
             webView.configuration.preferences.javaScriptCanOpenWindowsAutomatically = true
+        } else {
+            fatalError("No webView")
+        }
+
+        Task {
+            try await self.loadPageContent()
         }
     }
 
@@ -72,11 +91,7 @@ class NativeNavigation: NSObject {
         let presentationStyle = options.presentationStyle ?? .none // TODO use view controller's default
         switch presentationStyle {
         case .none, .normal:
-            if let window = self.bridge.webView?.window {
-                window.rootViewController = root
-            } else {
-                throw NativeNavigatorError.illegalState(message: "Cannot find window")
-            }
+            window.rootViewController = root
         case .modal:
             if let modalPresentationStyle = options.modalPresentationStyle {
                 switch modalPresentationStyle {
@@ -110,6 +125,21 @@ class NativeNavigation: NSObject {
     }
 
     @MainActor
+    func createView(_ options: ViewOptions) async throws -> String {
+        let viewId = generateViewControllerId()
+
+        let view = NativeNavigationViewController(path: options.path, state: options.state)
+        viewsById[viewId] = view
+
+        var notificationData: [String : Any] = ["path": options.path, "viewId": viewId]
+        if let state = view.state {
+            notificationData["state"] = state
+        }
+        self.plugin.notifyListeners("view", data: notificationData, retainUntilConsumed: true)
+        return viewId
+    }
+
+    @MainActor
     func push(_ options: PushOptions) async throws -> PushResult {
         var stack: UINavigationController!
         var stackName: String!
@@ -130,35 +160,33 @@ class NativeNavigation: NSObject {
             }
         }
 
-        let vc = UIViewController()
-//        vc.view.backgroundColor = .systemPink
+        guard let vc = viewsById[options.viewId] else {
+            throw NativeNavigatorError.unknownView(name: options.viewId)
+        }
+
+        viewsById[options.viewId] = nil
         
         stack.pushViewController(vc, animated: options.animated)
-        
-        let viewId = generateViewControllerId()
-        
-        self.viewControllersById[viewId] = WeakViewController(viewController: vc)
-        self.plugin.notifyListeners("view", data: ["path": options.path, "viewId": viewId], retainUntilConsumed: true)
 
-        return PushResult(stack: stackName, viewId: viewId)
+        return PushResult(stack: stackName)
     }
     
     func webView(forViewId viewId: String, configuration: WKWebViewConfiguration) throws -> WKWebView? {
-        guard let viewController = self.viewControllersById[viewId]?.viewController else {
+        guard let view = self.viewsById[viewId] else {
+            CAPLog.print("NativeNavigation: unknown view id: \(viewId)")
             return nil
         }
-        
-        /* So we don't load the javascript from our start path */
+
         guard let webView = self.bridge.webView else {
             throw NativeNavigatorError.illegalState(message: "Cannot find webView")
         }
-        
-        configuration.preferences = configuration.preferences.copy() as! WKPreferences
-        configuration.preferences.javaScriptEnabled = false
+        guard let html = self.html else {
+            throw NativeNavigatorError.illegalState(message: "html not loaded")
+        }
 
         let newWebView = WKWebView(frame: .zero, configuration: configuration)
-        _ = newWebView.load(URLRequest(url: webView.url!))
-        viewController.view = newWebView
+        _ = newWebView.loadHTMLString(html, baseURL: webView.url!)
+        view.webView = newWebView
         
         return newWebView
     }
@@ -175,10 +203,6 @@ class NativeNavigation: NSObject {
     }
 
     private func topViewController() throws -> UIViewController? {
-        guard let window = self.bridge.webView?.window else {
-            throw NativeNavigatorError.illegalState(message: "Cannot find window")
-        }
-
         var result = window.rootViewController
         while result?.presentedViewController != nil {
             result = result?.presentedViewController
@@ -244,10 +268,11 @@ class NativeNavigation: NSObject {
 //        let vc = UIViewController()
 //        vc.title = "Test"
 //        vc.view.backgroundColor = .brown
+//        let nc = UINavigationController(rootViewController: vc)
         let nc = UINavigationController()
         
         /* So our webView doesn't disappear under the title bar */
-        nc.navigationBar.scrollEdgeAppearance = nc.navigationBar.standardAppearance
+//        nc.navigationBar.scrollEdgeAppearance = nc.navigationBar.standardAppearance
 
         let name = try storeStack(nc, name: options.name)
         return try self.storeRoot(nc, name: name)
@@ -274,6 +299,24 @@ class NativeNavigation: NSObject {
 
         return try storeRoot(vc, name: options.name)
     }
+
+    /**
+     Load the HTML page content that we'll use for our webviews.
+     */
+    private func loadPageContent() async throws {
+        guard let webView = self.bridge.webView else {
+            throw NativeNavigatorError.illegalState(message: "Cannot find webView")
+        }
+
+        let content = try await String(contentsOf: webView.url!)
+
+        /* Disable any JavaScript on the page, as we don't want to run any JavaScript on these
+           pages... we just want to inject DOM nodes.
+         */
+        let sanitizedContent = content.replacingOccurrences(of: "<script", with: "<!--")
+            .replacingOccurrences(of: "</script>", with: "-->")
+        self.html = sanitizedContent
+    }
 }
 
 struct AssociatedKeys {
@@ -296,6 +339,36 @@ extension UIViewController {
 
 }
 
-struct WeakViewController {
-    weak var viewController: UIViewController?
+struct WeakContainer<T> where T: AnyObject {
+    weak var value: T?
+}
+
+class NativeNavigationViewController: UIViewController {
+
+    var path: String
+    var state: JSObject?
+    var webView: WKWebView? {
+        willSet {
+            if let webView = webView {
+                webView.removeFromSuperview()
+            }
+        }
+        didSet {
+            if let webView = webView {
+                webView.frame = self.view.bounds
+                self.view.addSubview(webView)
+            }
+        }
+    }
+
+    init(path: String, state: JSObject?) {
+        self.path = path
+        self.state = state
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
 }

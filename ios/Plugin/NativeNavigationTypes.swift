@@ -1,3 +1,4 @@
+import Capacitor
 import Foundation
 
 struct CreateOptions {
@@ -16,15 +17,19 @@ struct PresentOptions {
     var modalPresentationStyle: ModalPresentationStyle?
 }
 
+struct ViewOptions {
+    var path: String
+    var state: JSObject?
+}
+
 struct PushOptions {
     var stack: String?
     var animated: Bool
-    var path: String
+    var viewId: String
 }
 
 struct PushResult {
     var stack: String
-    var viewId: String
 }
 
 enum RootType: String {

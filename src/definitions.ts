@@ -14,6 +14,8 @@ export interface NativeNavigationPlugin {
 	 */
 	dismiss(options: DismissOptions): Promise<void>
 
+	createView(options: ViewOptions): Promise<ViewResult>
+
 	push(options: PushOptions): Promise<PushResult>
 
 	pop(options: PopOptions): Promise<PopResult>
@@ -75,6 +77,16 @@ export interface DismissOptions {
 	animated?: boolean
 }
 
+export interface ViewOptions {
+	/**
+	 * The path representing the view.
+	 */
+	 path: string
+}
+
+export interface ViewResult {
+	viewId: string
+}
 
 export interface PushOptions {
 	/**
@@ -84,10 +96,7 @@ export interface PushOptions {
 
 	animated?: boolean
 
-	/**
-	 * The path representing the view to push.
-	 */
-	path: string
+	viewId: string
 }
 
 export interface PushResult {
@@ -95,10 +104,6 @@ export interface PushResult {
 	 * The stack that was pushed to.
 	 */
 	stack: RootName
-	/**
-	 * The id of the view pushed
-	 */
-	viewId: ViewId
 }
 
 export interface PopOptions {

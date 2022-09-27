@@ -5,9 +5,33 @@ import ReactDOM from 'react-dom/client'
 
 import App from './App'
 
+function loadView(view: Window, path: string) {
+	const root = view.document.getElementById("root")
+	if (root) {
+		ReactDOM.createRoot(root).render(<App path={path} />)
+	} else {
+		console.warn(`Attempted to load view "${path}" but could not find root`)
+	}
+}
+
+function attemptLoad(view: Window, path: string) {
+	const root = view.document.getElementById("root")
+	if (root) {
+		loadView(view, path)
+	} else {
+		setTimeout(() => attemptLoad(view, path), 9)
+	}
+}
+
 async function init() {
 	NativeNavigation.addListener(NativeNavigationEvents.View, function(data) {
+		const { viewId, path } = data
 		console.log('view event', data)
+
+		const view = window.open(viewId)
+		if (view) {
+			attemptLoad(view, path)
+		}
 	})
 
 	const root = await NativeNavigation.create({
@@ -17,6 +41,20 @@ async function init() {
 
 	console.log('INIT: created', root)
 
+	const { viewId } = await NativeNavigation.createView({
+		path: '/whatever'
+	})
+
+	const pushResult = await NativeNavigation.push({
+		viewId,
+		stack: 'rootStack',
+	})
+	console.log('INIT: pushed', pushResult)
+	// const pushResult2 = await NativeNavigation.push({
+	// 	path: 'textftw2'
+	// })
+	// console.log('INIT: pushed', pushResult2)
+
 	const presentResult = await NativeNavigation.present({
 		root: 'rootStack',
 		animated: true,
@@ -25,28 +63,6 @@ async function init() {
 	})
 
 	console.log('INIT: presented', presentResult)
-
-	const pushResult = await NativeNavigation.push({
-		path: 'textftw'
-	})
-	console.log('INIT: pushed', pushResult)
-	// const pushResult2 = await NativeNavigation.push({
-	// 	path: 'textftw2'
-	// })
-	// console.log('INIT: pushed', pushResult2)
-
-	const viewId = pushResult.viewId
-	const view = window.open(viewId)
-	if (view) {
-		setTimeout(function() {
-			const root = view.document.getElementById('root')
-			// console.log('root', root)
-			// view.document.body.innerHTML = "<h1>Hello World</h1><h1>Hello World</h1><h1>Hello World</h1><h1>Hello World</h1>"
-			// console.log('Wrote')
-
-			ReactDOM.createRoot(root!).render(<App />)
-		}, 1000)
-	}
 }
 
 init().catch(function(reason) {
@@ -59,5 +75,5 @@ SplashScreen.hide({
 
 const root = document.getElementById('root')
 if (root) {
-	ReactDOM.createRoot(root).render(<App />)
+	ReactDOM.createRoot(root).render(<App path="/" />)
 }

@@ -4,7 +4,7 @@
     "declaration": true,
     "esModuleInterop": true,
     "inlineSources": true,
-    "lib": ["dom", "es2017"],
+    "lib": ["dom", "ESNext"],
     "module": "esnext",
     "moduleResolution": "node",
     "noFallthroughCasesInSwitch": true,
@@ -14,7 +14,7 @@
     "pretty": true,
     "sourceMap": true,
     "strict": true,
-    "target": "es2017",
+    "target": "esnext",
     "jsx": "preserve"
   },
   "include": [

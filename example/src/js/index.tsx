@@ -28,7 +28,7 @@ function attemptLoad(view: Window, data: ViewEventData) {
 }
 
 async function init() {
-	NativeNavigation.addListener(NativeNavigationEvents.View, function(data: ViewEventData) {
+	await NativeNavigation.addListener(NativeNavigationEvents.View, function(data: ViewEventData) {
 		const { id } = data
 		console.log('view event', data)
 

@@ -7,7 +7,6 @@ export default function Page2(): JSX.Element {
 	return (
 		<div>
 			<h1>Page 2</h1>
-			<p>Reload? Again?</p>
 			<p>Go to <Link to="/section/page1">Page1</Link></p>
 			<p><button onClick={() => navigate(-1)}>Go Back</button></p>
 		</div>

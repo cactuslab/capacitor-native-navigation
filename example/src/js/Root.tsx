@@ -2,7 +2,7 @@ import type { PluginListenerHandle } from '@capacitor/core'
 import { NativeNavigation } from 'native-navigation'
 import type { ClickEventData } from 'native-navigation'
 import { useEffect } from 'react'
-import type { NavigateOptions, Navigator, To } from 'react-router-dom'
+import { NavigateOptions, Navigator, To, useNavigate } from 'react-router-dom'
 import { Route, Router, Routes } from 'react-router-dom'
 
 import Page1 from './Page1'
@@ -59,7 +59,25 @@ const navigator: Navigator = {
 }
 
 export default function Root(props: Props): JSX.Element {
+	const { path } = props
+
+	return (
+		<Router location={path} navigator={navigator}>
+			<HandleThings {...props} />
+			<Routes>
+				<Route path="section">
+					<Route path="page1" element={<Page1 />} />
+					<Route path="page2" element={<Page2 />} />
+				</Route>
+				<Route path="root" element={<><h1>Root!!!</h1><p>Nice one!</p></>} />
+			</Routes>
+		</Router>
+	)
+}
+
+function HandleThings(props: Props): JSX.Element {
 	const { path, viewId } = props
+	const navigate = useNavigate()
 
 	useEffect(function() {
 		NativeNavigation.setOptions({
@@ -85,6 +103,7 @@ export default function Root(props: Props): JSX.Element {
 			}
 			
 			console.log('GOT CLICK ' + data)
+			navigate('/section/page1')
 		}).then(function(value) {
 			listener = value
 		})
@@ -108,15 +127,5 @@ export default function Root(props: Props): JSX.Element {
 		// }
 	}, [path])
 
-	return (
-		<Router location={path} navigator={navigator}>
-			<Routes>
-				<Route path="section">
-					<Route path="page1" element={<Page1 />} />
-					<Route path="page2" element={<Page2 />} />
-				</Route>
-				<Route path="root" element={<><h1>Root!!!</h1><p>Nice one!</p></>} />
-			</Routes>
-		</Router>
-	)
+	return null
 }

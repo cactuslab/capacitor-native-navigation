@@ -1,123 +1,174 @@
 export interface NativeNavigationPlugin {
 	
-	create(options: RootOptions): Promise<CreateResult>
+	/**
+	 * Create a new native UI.
+	 * @param options 
+	 */
+	create(options: CreateOptionsValues): Promise<CreateResult>
+
+	setRoot(options: SetRootOptions): Promise<void>
 
 	/**
-	 * Present a new root.
+	 * Present a new native UI as a modal.
 	 * @param options 
 	 */
 	present(options: PresentOptions): Promise<PresentResult>
 
 	/**
-	 * Dismiss a root.
+	 * Dismiss a native UI.
 	 * @param options 
 	 */
-	dismiss(options: DismissOptions): Promise<void>
+	dismiss(options: DismissOptions): Promise<DismissResult>
 
-	createView(options: ViewOptions): Promise<ViewResult>
-
+	/**
+	 * Push a new component onto a stack
+	 * @param options 
+	 */
 	push(options: PushOptions): Promise<PushResult>
 
+	/**
+	 * Pop the top component off a stack
+	 * @param options 
+	 */
 	pop(options: PopOptions): Promise<PopResult>
+
+	setOptions(options: ComponentOptions): Promise<void>
 }
 
 // use window.open to access a view... we need to specify where we want it
 // ?target=<name>
 // ?mode=push|replace (replaces all in stack)
 
-export type RootName = string
-export type ViewId = string
+export type ComponentId = string
 
-export interface RootOptions {
-	type: RootType
-	name?: RootName
-	presentationStyle?: PresentationStyle
+export interface CreateOptions {
+	type: ComponentType
+
+	/**
+	 * The id to use for the component, or undefined to automatically generate an id.
+	 */
+	id?: ComponentId
+
 	modalPresentationStyle?: ModalPresentationStyle
+
+	/**
+	 * Whether to retain this component even if it is dismissed or popped.
+	 */
+	retain?: boolean
 }
 
-export interface StackOptions extends RootOptions {
+type CreateOptionsValues = StackOptions | TabsOptions | ViewOptions
+
+export interface StackOptions extends CreateOptions {
 	type: 'stack'
+	stack?: CreateOptionsValues[]
 }
 
-export interface TabsOptions extends RootOptions {
+export interface TabsOptions extends CreateOptions {
 	type: 'tabs'
-	stacks: RootName[]
+	tabs: CreateOptionsValues[]
 }
 
-export interface PlainRootOptions extends RootOptions {
-	type: 'plain'
+export interface ViewOptions extends CreateOptions {
+	type: 'view'
+
+	/**
+	 * The path representing the view.
+	 */
+	path: string
+
+	state?: Record<string, unknown>
 }
 
 export interface CreateResult {
-	root: RootName
+	id: ComponentId
 }
 
-export type RootType = 'stack' | 'tabs' | 'plain'
+export type ComponentType = 'stack' | 'tabs' | 'view'
+
+export interface SetRootOptions {
+	id: ComponentId
+}
 
 export interface PresentOptions {
 	/**
 	 * The root to present; either an already created one or a new one
 	 */
-	root: RootName | RootOptions
+	id: ComponentId
+
 	animated?: boolean
-	presentationStyle?: PresentationStyle
-	modalPresentationStyle?: ModalPresentationStyle
 }
 
 export interface PresentResult {
-	root: RootName
+	id: ComponentId
 }
-
-export type PresentationStyle = 'normal' | 'modal'
 
 export type ModalPresentationStyle = 'fullScreen' | 'pageSheet' | 'formSheet' // TODO mimic what's available in iOS and Android
 
 export interface DismissOptions {
-	root: RootName
+	id?: ComponentId
 	animated?: boolean
 }
 
-export interface ViewOptions {
-	/**
-	 * The path representing the view.
-	 */
-	 path: string
-}
-
-export interface ViewResult {
-	viewId: string
+export interface DismissResult {
+	id: ComponentId
 }
 
 export interface PushOptions {
 	/**
+	 * The id of the component to push.
+	 */
+	id: ComponentId
+
+	/**
 	 * The stack to push to, or undefined to push to the current stack.
 	 */
-	stack?: RootName
+	stack?: ComponentId
 
 	animated?: boolean
-
-	viewId: string
 }
 
 export interface PushResult {
 	/**
 	 * The stack that was pushed to.
 	 */
-	stack: RootName
+	stack: ComponentId
 }
 
 export interface PopOptions {
 	/**
 	 * The stack to pop from, or undefined to pop from the current stack.
 	 */
-	stack?: RootName
+	stack?: ComponentId
+
+	animated?: boolean
 }
 
 export interface PopResult {
-	stack: RootName
-	viewId: ViewId
+	stack: ComponentId
+
+	/**
+	 * The id of the component that was popped, if any
+	 */
+	id?: ComponentId
 }
+
+export interface ComponentOptions {
+	id: ComponentId
+	
+	title?: string
+	rightButton?: {
+		title?: string
+	}
+}
+
 
 export enum NativeNavigationEvents {
 	View = 'view',
+}
+
+export interface ViewEventData {
+	id: ComponentId
+	path: string
+	state?: unknown
 }

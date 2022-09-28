@@ -15,79 +15,104 @@ public class NativeNavigationPlugin: CAPPlugin {
 
     @objc func create(_ call: CAPPluginCall) {
         guard let typeString = call.getString("type") else {
-            call.reject("Missing \"type\"")
+            call.reject(NativeNavigatorError.missingParameter(name: "type").localizedDescription)
             return
         }
-        guard let type = RootType(rawValue: typeString) else {
-            call.reject("Invalid \"type\": \(typeString)")
+        guard let type = ComponentType(rawValue: typeString) else {
+            call.reject(NativeNavigatorError.invalidParameter(name: "type", value: typeString).localizedDescription)
             return
         }
-
-        guard let name = call.getString("name") else {
-            call.reject("Missing \"name\"")
-            return
-        }
-
-        var presentationStyle: PresentationStyle? = nil
-        if let presentationStyleString = call.getString("presentationStyle") {
-            if let presentationStyleValue = PresentationStyle(rawValue: presentationStyleString) {
-                presentationStyle = presentationStyleValue
+        
+        var options = CreateOptions(type: type)
+        
+        options.id = call.getString("id")
+        
+        if let modalPresentationStyleString = call.getString("modalPresentationStyle") {
+            if let modalPresentationStyleValue = ModalPresentationStyle(rawValue: modalPresentationStyleString) {
+                options.modalPresentationStyle = modalPresentationStyleValue
             } else {
-                call.reject("Invalid \"presentationStyle\": \(presentationStyleString)")
+                call.reject(NativeNavigatorError.invalidParameter(name: "modalPresentationStyle", value: modalPresentationStyleString).localizedDescription)
                 return
             }
         }
-        let finalPresentationStyle = presentationStyle
+        
+        switch type {
+        case .stack:
+            let stackOptions = StackOptions()
+            options.stackOptions = stackOptions
+        case .tabs:
+            guard let tabs = call.getArray("tabs") else {
+                call.reject(NativeNavigatorError.missingParameter(name: "tabs").localizedDescription)
+                return
+            }
+            
+//            var tabsSuboptions = [CreateOptions]()
+//            for tab in tabs {
+//                guard let tab2 = tab as? Dictionary<String, JSValue> else {
+//                    call.reject(NativeNavigatorError.invalidParameter(name: "tabs", value: tab).localizedDescription)
+//                }
+//
+////                tabsSuboptions.append(CreateOptions())
+//            }
+//
+//            let tabsOptions = TabsOptions(tabs: tabsSuboptions)
+//            options.tabsOptions = tabsOptions
+        case .view:
+            guard let path = call.getString("path") else {
+                call.reject(NativeNavigatorError.missingParameter(name: "path").localizedDescription)
+                return
+            }
+            
+            var viewOptions = ViewOptions(path: path)
+            
+            if let state = call.getObject("state") {
+                viewOptions.state = state
+            }
+            options.viewOptions = viewOptions
+        }
 
+        let finalOptions = options
         Task {
             do {
-                let createdName = try await implementation.create(CreateOptions(type: type, name: name, presentationStyle: finalPresentationStyle))
-                call.resolve([ "root": createdName ])
+                let result = try await implementation.create(finalOptions)
+                call.resolve(result.toPluginResult())
             } catch {
                 call.reject("Failed to create: \(error)")
             }
         }
     }
-
-    @objc func present(_ call: CAPPluginCall) {
-        let animated = call.getBool("animated", true)
-
-        var presentOptions = PresentOptions(animated: animated)
-
-        let rootName = call.getString("root")
-        let rootOptions = call.getObject("root")
-
-        if rootName == nil && rootOptions == nil {
-            call.reject("Missing \"root\"")
+    
+    @objc func setRoot(_ call: CAPPluginCall) {
+        guard let id = call.getString("id") else {
+            call.reject(NativeNavigatorError.missingParameter(name: "id").localizedDescription)
             return
         }
 
-        presentOptions.rootName = rootName
-
-        if let presentationStyleString = call.getString("presentationStyle") {
-            if let presentationStyleValue = PresentationStyle(rawValue: presentationStyleString) {
-                presentOptions.presentationStyle = presentationStyleValue
-            } else {
-                call.reject("Invalid \"presentationStyle\": \(presentationStyleString)")
-                return
-            }
-        }
-        
-        if let modalPresentationStyleString = call.getString("modalPresentationStyle") {
-            if let modalPresentationStyleValue = ModalPresentationStyle(rawValue: modalPresentationStyleString) {
-                presentOptions.modalPresentationStyle = modalPresentationStyleValue
-            } else {
-                call.reject("Invalid \"modalPresentationStyle\": \(modalPresentationStyleString)")
-                return
-            }
-        }
-
-        let finalPresentOptions = presentOptions
+        let options = SetRootOptions(id: id)
 
         Task {
             do {
-                let presentedRootName = try await implementation.present(finalPresentOptions)
-                call.resolve([ "root": presentedRootName ])
+                try await implementation.setRoot(options)
+                call.resolve()
+            } catch {
+                call.reject("Failed to set root: \(error)")
+            }
+        }
+    }
+
+    @objc func present(_ call: CAPPluginCall) {
+        guard let id = call.getString("id") else {
+            call.reject(NativeNavigatorError.missingParameter(name: "id").localizedDescription)
+            return
+        }
+        let animated = call.getBool("animated", true)
+
+        let options = PresentOptions(id: id, animated: animated)
+
+        Task {
+            do {
+                let result = try await implementation.present(options)
+                call.resolve(result.toPluginResult())
             } catch {
                 call.reject("Failed to present: \(error)")
             }
@@ -95,54 +120,41 @@ public class NativeNavigationPlugin: CAPPlugin {
     }
 
     @objc func dismiss(_ call: CAPPluginCall) {
-        guard let root = call.getString("root") else {
-            call.reject("Missing \"root\"")
+        guard let id = call.getString("id") else {
+            call.reject(NativeNavigatorError.missingParameter(name: "id").localizedDescription)
             return
         }
 
         let animated = call.getBool("animated", true)
+        let options = DismissOptions(id: id, animated: animated)
 
         Task {
             do {
-                try await implementation.dismiss(root, animated: animated)
-                call.resolve([ "root": root ])
+                let result = try await implementation.dismiss(options)
+                call.resolve(result.toPluginResult())
             } catch {
                 call.reject("Failed to present: \(error)")
             }
         }
     }
 
-    @objc func createView(_ call: CAPPluginCall) {
-        guard let path = call.getString("path") else {
-            call.reject("Missing \"path\"")
-            return
-        }
-
-        Task {
-            do {
-                let result = try await implementation.createView(ViewOptions(path: path))
-                call.resolve([ "viewId": result ])
-            } catch {
-                call.reject("Failed to push: \(error)")
-            }
-        }
-    }
-
     @objc func push(_ call: CAPPluginCall) {
-        let stackName = call.getString("stack")
-        guard let viewId = call.getString("viewId") else {
-            call.reject("Missing \"viewId\"")
+        guard let id = call.getString("id") else {
+            call.reject(NativeNavigatorError.missingParameter(name: "id").localizedDescription)
             return
         }
 
         let animated = call.getBool("animated", true)
+        var options = PushOptions(id: id, animated: animated)
+        
+        options.stack = call.getString("stack")
+        
+        let finalOptions = options
 
         Task {
             do {
-                let result = try await implementation.push(PushOptions(stack: stackName, animated: animated, viewId: viewId))
-                call.resolve([
-                    "stack": result.stack,
-                ])
+                let result = try await implementation.push(finalOptions)
+                call.resolve(result.toPluginResult())
             } catch {
                 call.reject("Failed to push: \(error)")
             }
@@ -150,10 +162,49 @@ public class NativeNavigationPlugin: CAPPlugin {
     }
 
     @objc func pop(_ call: CAPPluginCall) {
-//        if let location = call.getObject("location") {
-//            implementation.push(location)
-//        }
-        call.resolve()
+        let animated = call.getBool("animated", true)
+
+        var options = PopOptions(animated: animated)
+
+        options.stack = call.getString("stack")
+        
+        let finalOptions = options
+        
+        Task {
+            do {
+                let result = try await implementation.pop(finalOptions)
+                call.resolve(result.toPluginResult())
+            } catch {
+                call.reject("Failed to pop: \(error)")
+            }
+        }
+    }
+    
+    @objc func setOptions(_ call: CAPPluginCall) {
+        guard let id = call.getString("id") else {
+            call.reject(NativeNavigatorError.missingParameter(name: "id").localizedDescription)
+            return
+        }
+        
+        var options = ComponentOptions(id: id)
+        
+        options.title = call.getString("title")
+        
+        if let button = call.getObject("rightButton") {
+            var buttonOptions = ButtonOptions()
+            buttonOptions.title = button["title"] as? String
+            options.rightButton = buttonOptions
+        }
+        
+        let finalOptions = options
+        Task {
+            do {
+                try await implementation.setOptions(finalOptions)
+                call.resolve()
+            } catch {
+                call.reject("Failed to set options: \(error)")
+            }
+        }
     }
 
 }

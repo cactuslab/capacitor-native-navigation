@@ -20,7 +20,7 @@ class NativeNavigationWebViewDelegate : NSObject, WKUIDelegate {
         let viewId = path.dropFirst()
         
         do {
-            return try implementation.webView(forViewId: String(viewId), configuration: configuration)
+            return try implementation.webView(forComponent: String(viewId), configuration: configuration)
         } catch {
             CAPLog.print("🤬 Cannot open new webview: \(error)")
             return nil

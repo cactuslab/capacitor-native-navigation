@@ -7,11 +7,12 @@ export default function App(props: {
 	const { path } = props
 
 	async function handle1() {
-		const { viewId } = await NativeNavigation.createView({
+		const { id: viewId } = await NativeNavigation.create({
+			type: 'view',
 			path: '/button',
 		})
 		const { stack } = await NativeNavigation.push({
-			viewId,
+			id: viewId,
 			stack: 'rootStack',
 		})
 		console.log('pushed', stack, viewId)

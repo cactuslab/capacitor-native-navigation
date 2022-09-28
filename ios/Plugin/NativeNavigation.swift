@@ -268,9 +268,7 @@ class NativeNavigation: NSObject {
         /* So our webView doesn't disappear under the title bar */
 //        nc.navigationBar.scrollEdgeAppearance = nc.navigationBar.standardAppearance
         
-        if let modalPresentationStyle = options.modalPresentationStyle {
-            nc.modalPresentationStyle = modalPresentationStyle.toUIModalPresentationStyle()
-        }
+        self.configureViewController(nc, options: options)
         
         if let stackOptions = options.stackOptions {
             if let stack = stackOptions.stack {
@@ -294,6 +292,7 @@ class NativeNavigation: NSObject {
         }
         
         let tc = UITabBarController()
+        self.configureViewController(tc, options: options)
 
         var vcs: [UIViewController] = []
         for tabOption in tabsOptions.tabs {
@@ -312,6 +311,7 @@ class NativeNavigation: NSObject {
         }
         
         let vc = NativeNavigationViewController(path: viewOptions.path, state: viewOptions.state)
+        self.configureViewController(vc, options: options)
 
         let id = try storeRoot(vc, id: options.id)
         
@@ -319,8 +319,16 @@ class NativeNavigation: NSObject {
         if let state = viewOptions.state {
             notificationData["state"] = state
         }
+
+        /* Callback to JavaScript to trigger a call to window.open to create the WKWebView and then init it */
         self.plugin.notifyListeners("view", data: notificationData, retainUntilConsumed: true)
         return vc
+    }
+
+    private func configureViewController(_ viewController: UIViewController, options: CreateOptions) {
+        if let modalPresentationStyle = options.modalPresentationStyle {
+            viewController.modalPresentationStyle = modalPresentationStyle.toUIModalPresentationStyle()
+        }
     }
 
     /**

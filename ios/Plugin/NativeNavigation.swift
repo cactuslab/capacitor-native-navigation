@@ -302,6 +302,7 @@ class NativeNavigation: NSObject {
         return id
     }
 
+    @MainActor
     private func removeComponent(_ id: ComponentId) {
         retainedComponentsById[id] = nil
         componentsById[id] = nil
@@ -384,7 +385,9 @@ class NativeNavigation: NSObject {
 
         vc.onDeinit = {
             self.plugin.notifyListeners("destroyView", data: ["id": id], retainUntilConsumed: true)
-            self.removeComponent(id) // TODO call removeComponent for stacks and tabs too
+            DispatchQueue.main.async {
+                self.removeComponent(id) // TODO call removeComponent for stacks and tabs too
+            }
         }
         return vc
     }

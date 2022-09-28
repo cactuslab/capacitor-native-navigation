@@ -413,8 +413,10 @@ class NativeNavigation: NSObject {
 
         func toBarButtonItem(_ stackItem: ComponentOptions.StackItem) -> UIBarButtonItem {
             let action = UIAction(title: stackItem.title) { [weak viewController] _ in
-                if let viewController = viewController {
-                    self.plugin.notifyListeners("click", data: ["buttonId": stackItem.id, "componentId": viewController.componentId!], retainUntilConsumed: true)
+                if let viewController = viewController, let componentId = viewController.componentId {
+                    let data = ["buttonId": stackItem.id, "componentId": componentId]
+                    self.plugin.notifyListeners("click:\(componentId)", data: data, retainUntilConsumed: true)
+                    self.plugin.notifyListeners("click", data: data, retainUntilConsumed: true)
                 }
             }
             return UIBarButtonItem(primaryAction: action)

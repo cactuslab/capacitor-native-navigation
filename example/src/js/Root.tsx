@@ -78,7 +78,7 @@ export default function Root(props: Props): JSX.Element {
 		})
 
 		let listener: PluginListenerHandle | undefined
-		NativeNavigation.addListener('click', function(data: ClickEventData) {
+		NativeNavigation.addListener(`click:${viewId}`, function(data: ClickEventData) {
 			if (data.componentId !== viewId) {
 				console.log('Ignoring click in ' + viewId)
 				return
@@ -115,7 +115,7 @@ export default function Root(props: Props): JSX.Element {
 					<Route path="page1" element={<Page1 />} />
 					<Route path="page2" element={<Page2 />} />
 				</Route>
-				<Route path="root" element={<h1>Root</h1>} />
+				<Route path="root" element={<><h1>Root!!!</h1><p>Nice one!</p></>} />
 			</Routes>
 		</Router>
 	)

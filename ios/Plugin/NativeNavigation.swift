@@ -11,7 +11,7 @@ class NativeNavigation: NSObject {
     private var idCounter = 1
     private let saveCapacitorRoot: UIViewController?
     private var html: String? = nil
-    private var window: UIWindow! {
+    private var window: UIWindow? {
             // Get connected scenes
             return UIApplication.shared.connectedScenes
                 // Keep only active scenes, onscreen and visible to the user
@@ -22,7 +22,7 @@ class NativeNavigation: NSObject {
                 .flatMap({ $0 as? UIWindowScene })?.windows
                 // Finally, keep only the key window
                 .first(where: \.isKeyWindow)
-        }
+        } // TODO the window is nil if we launch the app with slow animations
 
     public init(bridge: CAPBridgeProtocol, plugin: CAPPlugin) {
         self.bridge = bridge
@@ -77,6 +77,10 @@ class NativeNavigation: NSObject {
 
         guard root.parent == nil else {
             throw NativeNavigatorError.notARoot(name: id)
+        }
+        
+        guard let window = self.window else {
+            throw NativeNavigatorError.illegalState(message: "No window")
         }
         
         window.rootViewController = root
@@ -177,9 +181,13 @@ class NativeNavigation: NSObject {
 
     @MainActor
     func reset() async throws {
-        self.window.rootViewController = self.saveCapacitorRoot
+        guard let window = self.window else {
+            throw NativeNavigatorError.illegalState(message: "No window")
+        }
+        
+        window.rootViewController = self.saveCapacitorRoot
 
-        if let rootViewController = self.window.rootViewController, rootViewController.presentedViewController != nil {
+        if let rootViewController = window.rootViewController, rootViewController.presentedViewController != nil {
             rootViewController.dismiss(animated: false)
         }
 
@@ -234,6 +242,10 @@ class NativeNavigation: NSObject {
     }
 
     private func topViewController() throws -> UIViewController? {
+        guard let window = self.window else {
+            throw NativeNavigatorError.illegalState(message: "No window")
+        }
+        
         var result = window.rootViewController
 
         var foundMore = true

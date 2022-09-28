@@ -2,8 +2,8 @@ import type { PluginListenerHandle } from '@capacitor/core'
 import { NativeNavigation } from 'native-navigation'
 import type { ClickEventData } from 'native-navigation'
 import { useEffect } from 'react'
-import { NavigateOptions, Navigator, To, useNavigate } from 'react-router-dom'
-import { Route, Router, Routes } from 'react-router-dom'
+import type { NavigateOptions, Navigator, To } from 'react-router-dom'
+import { Route, Router, Routes, useNavigate } from 'react-router-dom'
 
 import Page1 from './Page1'
 import Page2 from './Page2'
@@ -75,7 +75,7 @@ export default function Root(props: Props): JSX.Element {
 	)
 }
 
-function HandleThings(props: Props): JSX.Element {
+function HandleThings(props: Props): JSX.Element | null {
 	const { path, viewId } = props
 	const navigate = useNavigate()
 

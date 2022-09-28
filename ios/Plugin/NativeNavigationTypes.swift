@@ -2,12 +2,13 @@ import Capacitor
 import Foundation
 
 typealias ComponentId = String
+typealias ButtonId = String
 
 struct CreateOptions {
     var type: ComponentType
     var id: ComponentId?
-    var modalPresentationStyle: ModalPresentationStyle?
-    var retain: Bool?
+    var options: ComponentOptions?
+    var retain: Bool
     
     var stackOptions: StackOptions?
     var tabsOptions: TabsOptions?
@@ -29,12 +30,16 @@ struct ViewOptions {
 
 struct CreateResult {
     var id: ComponentId
+}
+
+extension CreateResult {
     
     func toPluginResult() -> PluginCallResultData {
         return [
             "id": id
         ]
     }
+    
 }
 
 enum ComponentType: String {
@@ -55,19 +60,26 @@ struct PresentOptions {
 
 struct PresentResult {
     var id: ComponentId
-    
+}
+
+extension PresentResult {
+
     func toPluginResult() -> PluginCallResultData {
         return [
             "id": id
         ]
     }
+
 }
 
 enum ModalPresentationStyle: String {
     case fullScreen
     case pageSheet
     case formSheet
-    
+}
+
+extension ModalPresentationStyle {
+
     func toUIModalPresentationStyle() -> UIModalPresentationStyle {
         switch self {
         case .fullScreen: return .fullScreen
@@ -75,6 +87,7 @@ enum ModalPresentationStyle: String {
         case .formSheet: return .formSheet
         }
     }
+
 }
 
 struct DismissOptions {
@@ -84,12 +97,16 @@ struct DismissOptions {
 
 struct DismissResult {
     var id: ComponentId
-    
+}
+
+extension DismissResult {
+
     func toPluginResult() -> PluginCallResultData {
         return [
             "id": id
         ]
     }
+
 }
 
 struct PushOptions {
@@ -100,12 +117,16 @@ struct PushOptions {
 
 struct PushResult {
     var stack: ComponentId
-    
+}
+
+extension PushResult {
+
     func toPluginResult() -> PluginCallResultData {
         return [
             "stack": stack
         ]
     }
+
 }
 
 struct PopOptions {
@@ -116,7 +137,10 @@ struct PopOptions {
 struct PopResult {
     var stack: ComponentId
     var id: ComponentId?
-    
+}
+
+extension PopResult {
+
     func toPluginResult() -> PluginCallResultData {
         var result = PluginCallResultData()
         result["stack"] = stack
@@ -125,14 +149,37 @@ struct PopResult {
         }
         return result
     }
+
+}
+
+struct SetComponentOptions {
+    var id: ComponentId
+    var animated: Bool
+
+    var options: ComponentOptions
 }
 
 struct ComponentOptions {
-    var id: ComponentId
     var title: String?
-    var rightButton: ButtonOptions?
-}
+    var stack: ComponentOptions.StackOptions?
+    var tab: ComponentOptions.TabOptions?
 
-struct ButtonOptions {
-    var title: String?
+    var modalPresentationStyle: ModalPresentationStyle?
+
+    struct StackOptions {
+        var backItem: StackItem?
+        var leftItems: [StackItem]?
+        var rightItems: [StackItem]?
+    }
+
+    struct StackItem {
+        var id: ButtonId
+        var title: String
+        var image: String?
+    }
+
+    struct TabOptions {
+        var image: String?
+        var badgeValue: String?
+    }
 }

@@ -14,71 +14,19 @@ public class NativeNavigationPlugin: CAPPlugin {
     }
 
     @objc func create(_ call: CAPPluginCall) {
-        guard let typeString = call.getString("type") else {
-            call.reject(NativeNavigatorError.missingParameter(name: "type").localizedDescription)
-            return
-        }
-        guard let type = ComponentType(rawValue: typeString) else {
-            call.reject(NativeNavigatorError.invalidParameter(name: "type", value: typeString).localizedDescription)
-            return
-        }
-        
-        var options = CreateOptions(type: type)
-        
-        options.id = call.getString("id")
-        
-        if let modalPresentationStyleString = call.getString("modalPresentationStyle") {
-            if let modalPresentationStyleValue = ModalPresentationStyle(rawValue: modalPresentationStyleString) {
-                options.modalPresentationStyle = modalPresentationStyleValue
-            } else {
-                call.reject(NativeNavigatorError.invalidParameter(name: "modalPresentationStyle", value: modalPresentationStyleString).localizedDescription)
-                return
-            }
-        }
-        
-        switch type {
-        case .stack:
-            let stackOptions = StackOptions()
-            options.stackOptions = stackOptions
-        case .tabs:
-            guard let tabs = call.getArray("tabs") else {
-                call.reject(NativeNavigatorError.missingParameter(name: "tabs").localizedDescription)
-                return
-            }
-            
-//            var tabsSuboptions = [CreateOptions]()
-//            for tab in tabs {
-//                guard let tab2 = tab as? Dictionary<String, JSValue> else {
-//                    call.reject(NativeNavigatorError.invalidParameter(name: "tabs", value: tab).localizedDescription)
-//                }
-//
-////                tabsSuboptions.append(CreateOptions())
-//            }
-//
-//            let tabsOptions = TabsOptions(tabs: tabsSuboptions)
-//            options.tabsOptions = tabsOptions
-        case .view:
-            guard let path = call.getString("path") else {
-                call.reject(NativeNavigatorError.missingParameter(name: "path").localizedDescription)
-                return
-            }
-            
-            var viewOptions = ViewOptions(path: path)
-            
-            if let state = call.getObject("state") {
-                viewOptions.state = state
-            }
-            options.viewOptions = viewOptions
-        }
+        do {
+            let options = try CreateOptions.fromJSObject(call)
 
-        let finalOptions = options
-        Task {
-            do {
-                let result = try await implementation.create(finalOptions)
-                call.resolve(result.toPluginResult())
-            } catch {
-                call.reject("Failed to create: \(error)")
+            Task {
+                do {
+                    let result = try await implementation.create(options)
+                    call.resolve(result.toPluginResult())
+                } catch {
+                    call.reject("Failed to create: \(error)")
+                }
             }
+        } catch {
+            call.reject(error.localizedDescription)
         }
     }
     
@@ -181,29 +129,18 @@ public class NativeNavigationPlugin: CAPPlugin {
     }
     
     @objc func setOptions(_ call: CAPPluginCall) {
-        guard let id = call.getString("id") else {
-            call.reject(NativeNavigatorError.missingParameter(name: "id").localizedDescription)
-            return
-        }
-        
-        var options = ComponentOptions(id: id)
-        
-        options.title = call.getString("title")
-        
-        if let button = call.getObject("rightButton") {
-            var buttonOptions = ButtonOptions()
-            buttonOptions.title = button["title"] as? String
-            options.rightButton = buttonOptions
-        }
-        
-        let finalOptions = options
-        Task {
-            do {
-                try await implementation.setOptions(finalOptions)
-                call.resolve()
-            } catch {
-                call.reject("Failed to set options: \(error)")
+        do {
+            let options = try SetComponentOptions.fromJSObject(call)
+            Task {
+                do {
+                    try await implementation.setOptions(options)
+                    call.resolve()
+                } catch {
+                    call.reject("Failed to set options: \(error)")
+                }
             }
+        } catch {
+            call.reject(error.localizedDescription)
         }
     }
 

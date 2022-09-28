@@ -1,7 +1,9 @@
+import type { PluginListenerHandle } from '@capacitor/core'
 import { NativeNavigation } from 'native-navigation'
-import React, { useEffect } from 'react'
+import type { ClickEventData } from 'native-navigation'
+import { useEffect } from 'react'
+import type { NavigateOptions, Navigator, To } from 'react-router-dom'
 import { Route, Router, Routes } from 'react-router-dom'
-import type { Navigator, NavigateOptions, To } from 'react-router-dom'
 
 import Page1 from './Page1'
 import Page2 from './Page2'
@@ -63,9 +65,34 @@ export default function Root(props: Props): JSX.Element {
 		NativeNavigation.setOptions({
 			id: viewId,
 			title: 'Hello World!',
+			stack: {
+				rightItems: [
+					{
+						id: 'r1',
+						title: 'R1',
+					}
+				]
+			}
 		}).catch(function (reason) {
 			console.log(`Failed to set options: ${reason}`)
 		})
+
+		let listener: PluginListenerHandle | undefined
+		NativeNavigation.addListener('click', function(data: ClickEventData) {
+			if (data.componentId !== viewId) {
+				console.log('Ignoring click in ' + viewId)
+				return
+			}
+			
+			console.log('GOT CLICK ' + data)
+		}).then(function(value) {
+			listener = value
+		})
+
+		return function() {
+			console.log('removing listener', listener)
+			listener?.remove()
+		}
 
 		// let counter = 1
 		// const t = setInterval(function() {
@@ -88,6 +115,7 @@ export default function Root(props: Props): JSX.Element {
 					<Route path="page1" element={<Page1 />} />
 					<Route path="page2" element={<Page2 />} />
 				</Route>
+				<Route path="root" element={<h1>Root</h1>} />
 			</Routes>
 		</Router>
 	)

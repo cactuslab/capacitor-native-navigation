@@ -32,7 +32,7 @@ export interface NativeNavigationPlugin {
 	 */
 	pop(options: PopOptions): Promise<PopResult>
 
-	setOptions(options: ComponentOptions): Promise<void>
+	setOptions(options: SetComponentOptions): Promise<void>
 
 	/**
 	 * Remove all of the native UI and reset back to the root Capacitor webview.
@@ -45,6 +45,7 @@ export interface NativeNavigationPlugin {
 // ?mode=push|replace (replaces all in stack)
 
 export type ComponentId = string
+export type ButtonId = string
 
 export interface CreateOptions {
 	type: ComponentType
@@ -54,7 +55,7 @@ export interface CreateOptions {
 	 */
 	id?: ComponentId
 
-	modalPresentationStyle?: ModalPresentationStyle
+	options?: ComponentOptions
 
 	/**
 	 * Whether to retain this component even if it is dismissed or popped.
@@ -97,10 +98,14 @@ export interface SetRootOptions {
 
 export interface PresentOptions {
 	/**
-	 * The root to present; either an already created one or a new one
+	 * The component to present as a modal; either an already created one or a new one
 	 */
 	id: ComponentId
 
+	/**
+	 * Whether to animate the presenting.
+	 * Defaults to `true`
+	 */
 	animated?: boolean
 }
 
@@ -130,7 +135,11 @@ export interface PushOptions {
 	 */
 	stack?: ComponentId
 
-	animated?: boolean
+	/**
+	 * Whether to animate the push.
+	 * Defaults to `true`
+	 */
+	 animated?: boolean
 }
 
 export interface PushResult {
@@ -146,6 +155,10 @@ export interface PopOptions {
 	 */
 	stack?: ComponentId
 
+	/**
+	 * Whether to animate the pop.
+	 * Defaults to `true`
+	 */
 	animated?: boolean
 }
 
@@ -158,22 +171,70 @@ export interface PopResult {
 	id?: ComponentId
 }
 
-export interface ComponentOptions {
+export interface SetComponentOptions extends ComponentOptions {
 	id: ComponentId
-	
-	title?: string
-	rightButton?: {
-		title?: string
-	}
+
+	/**
+	 * Whether to animate the changes.
+	 * Defaults to `false`
+	 */
+	animated?: boolean
 }
 
+export interface ComponentOptions {
+	title?: string
+
+	/**
+	 * Options for when the component is used in a stack
+	 */
+	stack?: {
+		backItem?: StackItem
+		leftItems?: StackItem[]
+		rightItems?: StackItem[]
+	}
+
+	/**
+	 * Options for when the component is used in a tab
+	 */
+	tab?: {
+		image?: string
+		badgeValue?: string
+	}
+
+	modalPresentationStyle?: ModalPresentationStyle
+}
+
+interface StackItem {
+	id: ButtonId
+	title: string
+	image?: string
+}
 
 export enum NativeNavigationEvents {
-	View = 'view',
+	/**
+	 * A new view is required to be initialised by calling window.open
+	 */
+	CreateView = 'createView',
+
+	DestroyView = 'destroyView',
+
+	/**
+	 * A click occurred on a button.
+	 */
+	Click = 'click',
 }
 
-export interface ViewEventData {
+export interface CreateViewEventData {
 	id: ComponentId
 	path: string
 	state?: unknown
+}
+
+export interface DestroyViewEventData {
+	id: ComponentId
+}
+
+export interface ClickEventData {
+	buttonId: ButtonId
+	componentId: ComponentId
 }

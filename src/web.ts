@@ -32,7 +32,11 @@ export class NativeNavigationWeb
 	}
 
 	async setOptions(_options: ComponentOptions): Promise<void> {
-		throw new Error('Method not implemented.')
+		throw new Error('Not available on web')
+	}
+
+	async reset(): Promise<void> {
+		throw new Error('Not available on web')
 	}
 
 }

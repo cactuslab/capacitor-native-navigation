@@ -33,6 +33,11 @@ export interface NativeNavigationPlugin {
 	pop(options: PopOptions): Promise<PopResult>
 
 	setOptions(options: ComponentOptions): Promise<void>
+
+	/**
+	 * Remove all of the native UI and reset back to the root Capacitor webview.
+	 */
+	reset(): Promise<void>
 }
 
 // use window.open to access a view... we need to specify where we want it

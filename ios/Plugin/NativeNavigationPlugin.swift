@@ -207,4 +207,15 @@ public class NativeNavigationPlugin: CAPPlugin {
         }
     }
 
+    @objc public func reset(_ call: CAPPluginCall) {
+        Task {
+            do {
+                try await implementation.reset()
+                call.resolve()
+            } catch {
+                call.reject("Failed to reset: \(error)")
+            }
+        }
+    }
+
 }

@@ -170,6 +170,17 @@ class NativeNavigation: NSObject {
             vc.title = title
         }
     }
+
+    @MainActor
+    func reset() async throws {
+        self.window.rootViewController = self.saveCapacitorRoot
+
+        if let rootViewController = self.window.rootViewController, rootViewController.presentedViewController != nil {
+            rootViewController.dismiss(animated: false)
+        }
+
+        self.rootsByName.removeAll()
+    }
     
     private func findStack(name: String?) throws -> UINavigationController {
         if let stackNameValue = name {

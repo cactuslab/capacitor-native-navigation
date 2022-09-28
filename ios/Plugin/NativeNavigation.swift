@@ -263,10 +263,6 @@ class NativeNavigation: NSObject {
 
     @MainActor
     private func createStack(_ options: CreateOptions) async throws -> UINavigationController {
-//        let vc = UIViewController()
-//        vc.title = "Test"
-//        vc.view.backgroundColor = .brown
-//        let nc = UINavigationController(rootViewController: vc)
         let nc = UINavigationController()
         
         /* So our webView doesn't disappear under the title bar */
@@ -316,7 +312,6 @@ class NativeNavigation: NSObject {
         }
         
         let vc = NativeNavigationViewController(path: viewOptions.path, state: viewOptions.state)
-//        vc.modalPresentationStyle = .fullScreen
 
         let id = try storeRoot(vc, id: options.id)
         
@@ -327,21 +322,6 @@ class NativeNavigation: NSObject {
         self.plugin.notifyListeners("view", data: notificationData, retainUntilConsumed: true)
         return vc
     }
-    
-    //    @MainActor
-    //    func createView(_ options: ViewOptions) async throws -> CreateResult {
-    //        let viewId = generateViewControllerId()
-    //
-    //        let view = NativeNavigationViewController(path: options.path, state: options.state)
-    //        viewsById[viewId] = view
-    //
-    //        var notificationData: [String : Any] = ["path": options.path, "viewId": viewId]
-    //        if let state = view.state {
-    //            notificationData["state"] = state
-    //        }
-    //        self.plugin.notifyListeners("view", data: notificationData, retainUntilConsumed: true)
-    //        return viewId
-    //    }
 
     /**
      Load the HTML page content that we'll use for our webviews.

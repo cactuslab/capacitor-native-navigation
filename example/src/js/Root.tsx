@@ -37,7 +37,6 @@ const navigator: Navigator = {
 		}
 	},
 	push: async function (to: To, state?: any, opts?: NavigateOptions | undefined): Promise<void> {
-		console.log('navigator push')
 		const path = navigator.createHref(to)
 		try {
 			const { id } = await NativeNavigation.create({
@@ -45,11 +44,9 @@ const navigator: Navigator = {
 				path,
 				state,
 			})
-			console.log('navigator created view ' + id)
 			await NativeNavigation.push({
 				id,
 			})
-			console.log('navigator push complete')
 		} catch (error) {
 			console.log(`Failed to push ${error}`)
 		}
@@ -61,15 +58,13 @@ const navigator: Navigator = {
 
 export default function Root(props: Props): JSX.Element {
 	const { path, viewId } = props
-	console.log('rendering path', path)
 
 	useEffect(function() {
-		console.log('setting options')
 		NativeNavigation.setOptions({
 			id: viewId,
 			title: 'Hello World!',
 		}).catch(function (reason) {
-			console.log('failed to set options ' + reason)
+			console.log(`Failed to set options: ${reason}`)
 		})
 
 		// let counter = 1

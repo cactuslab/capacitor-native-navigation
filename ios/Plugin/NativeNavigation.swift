@@ -263,13 +263,6 @@ class NativeNavigation: NSObject {
 
     @MainActor
     private func createStack(_ options: CreateOptions) async throws -> UINavigationController {
-        if let id = options.id, let existing = rootsByName[id] {
-            guard let existingNavigationController = existing as? UINavigationController else {
-                throw NativeNavigatorError.notAStack(name: id)
-            }
-            return existingNavigationController
-        }
-        
 //        let vc = UIViewController()
 //        vc.title = "Test"
 //        vc.view.backgroundColor = .brown
@@ -304,13 +297,6 @@ class NativeNavigation: NSObject {
             throw NativeNavigatorError.illegalState(message: "Missing tabsOptions")
         }
         
-        if let id = options.id, let existing = rootsByName[id] {
-            guard let existingTabBarController = existing as? UITabBarController else {
-                throw NativeNavigatorError.notTabs(name: id)
-            }
-            return existingTabBarController
-        }
-        
         let tc = UITabBarController()
 
         var vcs: [UIViewController] = []
@@ -327,13 +313,6 @@ class NativeNavigation: NSObject {
     private func createView(_ options: CreateOptions) throws -> UIViewController {
         guard let viewOptions = options.viewOptions else {
             throw NativeNavigatorError.illegalState(message: "Missing viewOptions")
-        }
-        
-        if let id = options.id, let existing = rootsByName[id] {
-            guard let existingViewController = existing as? NativeNavigationViewController else {
-                throw NativeNavigatorError.illegalState(message: "Existing component with the same ID already exists but is not a view")
-            }
-            return existingViewController
         }
         
         let vc = NativeNavigationViewController(path: viewOptions.path, state: viewOptions.state)

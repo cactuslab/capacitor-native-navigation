@@ -14,10 +14,13 @@ npx cap sync
 <docgen-index>
 
 * [`create(...)`](#create)
+* [`setRoot(...)`](#setroot)
 * [`present(...)`](#present)
 * [`dismiss(...)`](#dismiss)
 * [`push(...)`](#push)
 * [`pop(...)`](#pop)
+* [`setOptions(...)`](#setoptions)
+* [`reset()`](#reset)
 * [Interfaces](#interfaces)
 * [Type Aliases](#type-aliases)
 
@@ -29,12 +32,29 @@ npx cap sync
 ### create(...)
 
 ```typescript
-create(options: RootOptions) => any
+create(options: CreateOptionsValues) => any
 ```
 
-| Param         | Type                                                |
-| ------------- | --------------------------------------------------- |
-| **`options`** | <code><a href="#rootoptions">RootOptions</a></code> |
+Create a new native UI.
+
+| Param         | Type                                                                |
+| ------------- | ------------------------------------------------------------------- |
+| **`options`** | <code><a href="#createoptionsvalues">CreateOptionsValues</a></code> |
+
+**Returns:** <code>any</code>
+
+--------------------
+
+
+### setRoot(...)
+
+```typescript
+setRoot(options: SetRootOptions) => any
+```
+
+| Param         | Type                                                      |
+| ------------- | --------------------------------------------------------- |
+| **`options`** | <code><a href="#setrootoptions">SetRootOptions</a></code> |
 
 **Returns:** <code>any</code>
 
@@ -47,7 +67,7 @@ create(options: RootOptions) => any
 present(options: PresentOptions) => any
 ```
 
-Present a new root.
+Present a new native UI as a modal.
 
 | Param         | Type                                                      |
 | ------------- | --------------------------------------------------------- |
@@ -64,7 +84,7 @@ Present a new root.
 dismiss(options: DismissOptions) => any
 ```
 
-Dismiss a root.
+Dismiss a native UI.
 
 | Param         | Type                                                      |
 | ------------- | --------------------------------------------------------- |
@@ -81,6 +101,8 @@ Dismiss a root.
 push(options: PushOptions) => any
 ```
 
+Push a new component onto a stack
+
 | Param         | Type                                                |
 | ------------- | --------------------------------------------------- |
 | **`options`** | <code><a href="#pushoptions">PushOptions</a></code> |
@@ -96,6 +118,8 @@ push(options: PushOptions) => any
 pop(options: PopOptions) => any
 ```
 
+Pop the top component off a stack
+
 | Param         | Type                                              |
 | ------------- | ------------------------------------------------- |
 | **`options`** | <code><a href="#popoptions">PopOptions</a></code> |
@@ -105,107 +129,155 @@ pop(options: PopOptions) => any
 --------------------
 
 
+### setOptions(...)
+
+```typescript
+setOptions(options: SetComponentOptions) => any
+```
+
+| Param         | Type                                                                |
+| ------------- | ------------------------------------------------------------------- |
+| **`options`** | <code><a href="#setcomponentoptions">SetComponentOptions</a></code> |
+
+**Returns:** <code>any</code>
+
+--------------------
+
+
+### reset()
+
+```typescript
+reset() => any
+```
+
+Remove all of the native UI and reset back to the root Capacitor webview.
+
+**Returns:** <code>any</code>
+
+--------------------
+
+
 ### Interfaces
 
 
-#### RootOptions
+#### StackOptions
 
-| Prop                         | Type                                                                      |
-| ---------------------------- | ------------------------------------------------------------------------- |
-| **`type`**                   | <code><a href="#roottype">RootType</a></code>                             |
-| **`name`**                   | <code><a href="#rootname">RootName</a></code>                             |
-| **`presentationStyle`**      | <code><a href="#presentationstyle">PresentationStyle</a></code>           |
-| **`modalPresentationStyle`** | <code><a href="#modalpresentationstyle">ModalPresentationStyle</a></code> |
+| Prop        | Type                 |
+| ----------- | -------------------- |
+| **`type`**  | <code>'stack'</code> |
+| **`stack`** | <code>{}</code>      |
+
+
+#### TabsOptions
+
+| Prop       | Type                |
+| ---------- | ------------------- |
+| **`type`** | <code>'tabs'</code> |
+| **`tabs`** | <code>{}</code>     |
+
+
+#### ViewOptions
+
+| Prop        | Type                                       | Description                     |
+| ----------- | ------------------------------------------ | ------------------------------- |
+| **`type`**  | <code>'view'</code>                        |                                 |
+| **`path`**  | <code>string</code>                        | The path representing the view. |
+| **`state`** | <code>Record&lt;string, unknown&gt;</code> |                                 |
 
 
 #### CreateResult
 
-| Prop       | Type                                          |
-| ---------- | --------------------------------------------- |
-| **`root`** | <code><a href="#rootname">RootName</a></code> |
+| Prop     | Type                                                |
+| -------- | --------------------------------------------------- |
+| **`id`** | <code><a href="#componentid">ComponentId</a></code> |
+
+
+#### SetRootOptions
+
+| Prop     | Type                                                |
+| -------- | --------------------------------------------------- |
+| **`id`** | <code><a href="#componentid">ComponentId</a></code> |
 
 
 #### PresentOptions
 
-| Prop                         | Type                                                                      | Description                                                     |
-| ---------------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| **`root`**                   | <code>string \| <a href="#rootoptions">RootOptions</a></code>             | The root to present; either an already created one or a new one |
-| **`animated`**               | <code>boolean</code>                                                      |                                                                 |
-| **`presentationStyle`**      | <code><a href="#presentationstyle">PresentationStyle</a></code>           |                                                                 |
-| **`modalPresentationStyle`** | <code><a href="#modalpresentationstyle">ModalPresentationStyle</a></code> |                                                                 |
+| Prop           | Type                                                | Description                                                                     |
+| -------------- | --------------------------------------------------- | ------------------------------------------------------------------------------- |
+| **`id`**       | <code><a href="#componentid">ComponentId</a></code> | The component to present as a modal; either an already created one or a new one |
+| **`animated`** | <code>boolean</code>                                | Whether to animate the presenting. Defaults to `true`                           |
 
 
 #### PresentResult
 
-| Prop       | Type                                          |
-| ---------- | --------------------------------------------- |
-| **`root`** | <code><a href="#rootname">RootName</a></code> |
+| Prop     | Type                                                |
+| -------- | --------------------------------------------------- |
+| **`id`** | <code><a href="#componentid">ComponentId</a></code> |
 
 
 #### DismissOptions
 
-| Prop           | Type                                          |
-| -------------- | --------------------------------------------- |
-| **`root`**     | <code><a href="#rootname">RootName</a></code> |
-| **`animated`** | <code>boolean</code>                          |
+| Prop           | Type                                                |
+| -------------- | --------------------------------------------------- |
+| **`id`**       | <code><a href="#componentid">ComponentId</a></code> |
+| **`animated`** | <code>boolean</code>                                |
+
+
+#### DismissResult
+
+| Prop     | Type                                                |
+| -------- | --------------------------------------------------- |
+| **`id`** | <code><a href="#componentid">ComponentId</a></code> |
 
 
 #### PushOptions
 
-| Prop           | Type                                          | Description                                                      |
-| -------------- | --------------------------------------------- | ---------------------------------------------------------------- |
-| **`stack`**    | <code><a href="#rootname">RootName</a></code> | The stack to push to, or undefined to push to the current stack. |
-| **`animated`** | <code>boolean</code>                          |                                                                  |
-| **`path`**     | <code>string</code>                           | The path representing the view to push.                          |
+| Prop           | Type                                                | Description                                                      |
+| -------------- | --------------------------------------------------- | ---------------------------------------------------------------- |
+| **`id`**       | <code><a href="#componentid">ComponentId</a></code> | The id of the component to push.                                 |
+| **`stack`**    | <code><a href="#componentid">ComponentId</a></code> | The stack to push to, or undefined to push to the current stack. |
+| **`animated`** | <code>boolean</code>                                | Whether to animate the push. Defaults to `true`                  |
 
 
 #### PushResult
 
-| Prop         | Type                                          | Description                   |
-| ------------ | --------------------------------------------- | ----------------------------- |
-| **`stack`**  | <code><a href="#rootname">RootName</a></code> | The stack that was pushed to. |
-| **`viewId`** | <code><a href="#viewid">ViewId</a></code>     | The id of the view pushed     |
+| Prop        | Type                                                | Description                   |
+| ----------- | --------------------------------------------------- | ----------------------------- |
+| **`stack`** | <code><a href="#componentid">ComponentId</a></code> | The stack that was pushed to. |
 
 
 #### PopOptions
 
-| Prop        | Type                                          | Description                                                        |
-| ----------- | --------------------------------------------- | ------------------------------------------------------------------ |
-| **`stack`** | <code><a href="#rootname">RootName</a></code> | The stack to pop from, or undefined to pop from the current stack. |
+| Prop           | Type                                                | Description                                                        |
+| -------------- | --------------------------------------------------- | ------------------------------------------------------------------ |
+| **`stack`**    | <code><a href="#componentid">ComponentId</a></code> | The stack to pop from, or undefined to pop from the current stack. |
+| **`animated`** | <code>boolean</code>                                | Whether to animate the pop. Defaults to `true`                     |
 
 
 #### PopResult
 
-| Prop         | Type                                          |
-| ------------ | --------------------------------------------- |
-| **`stack`**  | <code><a href="#rootname">RootName</a></code> |
-| **`viewId`** | <code><a href="#viewid">ViewId</a></code>     |
+| Prop        | Type                                                | Description                                     |
+| ----------- | --------------------------------------------------- | ----------------------------------------------- |
+| **`stack`** | <code><a href="#componentid">ComponentId</a></code> |                                                 |
+| **`id`**    | <code><a href="#componentid">ComponentId</a></code> | The id of the component that was popped, if any |
+
+
+#### SetComponentOptions
+
+| Prop           | Type                                                | Description                                         |
+| -------------- | --------------------------------------------------- | --------------------------------------------------- |
+| **`id`**       | <code><a href="#componentid">ComponentId</a></code> |                                                     |
+| **`animated`** | <code>boolean</code>                                | Whether to animate the changes. Defaults to `false` |
 
 
 ### Type Aliases
 
 
-#### RootType
+#### CreateOptionsValues
 
-<code>'stack' | 'tabs' | 'plain'</code>
-
-
-#### RootName
-
-<code>string</code>
+<code><a href="#stackoptions">StackOptions</a> | <a href="#tabsoptions">TabsOptions</a> | <a href="#viewoptions">ViewOptions</a></code>
 
 
-#### PresentationStyle
-
-<code>'normal' | 'modal'</code>
-
-
-#### ModalPresentationStyle
-
-<code>'fullScreen' | 'pageSheet' | 'formSheet'</code>
-
-
-#### ViewId
+#### ComponentId
 
 <code>string</code>
 

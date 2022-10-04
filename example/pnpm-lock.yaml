@@ -1,9 +1,9 @@
 lockfileVersion: 5.4
 
 specifiers:
-  '@capacitor/android': ^4.0.0
+  '@capacitor/android': ^4.3.0
   '@capacitor/camera': latest
-  '@capacitor/cli': latest
+  '@capacitor/cli': ^4.3.0
   '@capacitor/core': latest
   '@capacitor/ios': ^4.0.0
   '@capacitor/splash-screen': latest
@@ -18,10 +18,10 @@ specifiers:
 
 dependencies:
   '@capacitor/android': 4.3.0_@capacitor+core@4.3.0
-  '@capacitor/camera': 4.1.1_@capacitor+core@4.3.0
+  '@capacitor/camera': 4.1.2_@capacitor+core@4.3.0
   '@capacitor/core': 4.3.0
   '@capacitor/ios': 4.3.0_@capacitor+core@4.3.0
-  '@capacitor/splash-screen': 4.0.1_@capacitor+core@4.3.0
+  '@capacitor/splash-screen': 4.1.0_@capacitor+core@4.3.0
   native-navigation: link:..
   react: 18.2.0
   react-dom: 18.2.0_react@18.2.0
@@ -311,8 +311,8 @@ packages:
       '@capacitor/core': 4.3.0
     dev: false
 
-  /@capacitor/camera/4.1.1_@capacitor+core@4.3.0:
-    resolution: {integrity: sha512-L/1KLg4IRCAUmwhmu5jIic4U2OLAHFSW5GoExFU9yR8iCJo1SBGSiay2TpU3PpgmJHRtazO6pxKUCyAmDExkhw==}
+  /@capacitor/camera/4.1.2_@capacitor+core@4.3.0:
+    resolution: {integrity: sha512-YJMw8sflNj3aa9jSqOgSKOhjKNjc6fb1wxdVMW7Ek6SWsykbcAMWRkecOsSqPNPyDbNRBiwB8P5ZuUC8ZwRm0A==}
     peerDependencies:
       '@capacitor/core': ^4.0.0
     dependencies:
@@ -359,8 +359,8 @@ packages:
       '@capacitor/core': 4.3.0
     dev: false
 
-  /@capacitor/splash-screen/4.0.1_@capacitor+core@4.3.0:
-    resolution: {integrity: sha512-7hklUx69aZDonuLP1R5X4ZTGgZLwX8RTj9/3U1905Kz/XflcT7Rhighbad+uZBaOU+L/8Vm6Y3RlR3rFj4ELVA==}
+  /@capacitor/splash-screen/4.1.0_@capacitor+core@4.3.0:
+    resolution: {integrity: sha512-b+IpnM+dhwHZ7zkXr8M9dgJauwSf8wyOweEkM38EDaw4XhZtZoBjJOby1fAeaxgK4iO2qoej95LgtOjcv6eGkg==}
     peerDependencies:
       '@capacitor/core': ^4.0.0
     dependencies:

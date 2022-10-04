@@ -6,7 +6,6 @@ import androidx.annotation.Nullable;
 import com.cactuslab.capacitor.nativenavigation.exceptions.InvalidParameterException;
 import com.cactuslab.capacitor.nativenavigation.exceptions.MissingParameterException;
 import com.getcapacitor.JSObject;
-import com.google.gson.annotations.SerializedName;
 
 import java.util.Objects;
 

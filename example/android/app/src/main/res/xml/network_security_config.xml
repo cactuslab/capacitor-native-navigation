@@ -12,13 +12,6 @@
         </trust-anchors>
     </debug-overrides>
     <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">10.1.13.10</domain>
-        <domain includeSubdomains="true">10.1.10.106</domain>
-        <domain includeSubdomains="true">192.168.1.200</domain>
-        <domain includeSubdomains="true">192.168.1.84</domain>
-        <domain includeSubdomains="true">office.cactuslab.com</domain>
-        <domain includeSubdomains="true">dev.cactuslab.com</domain>
         <domain includeSubdomains="true">local</domain>
-        <domain includeSubdomains="true">10.0.2.2</domain>
     </domain-config>
 </network-security-config>

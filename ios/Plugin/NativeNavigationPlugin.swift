@@ -30,6 +30,10 @@ public class NativeNavigationPlugin: CAPPlugin {
         }
     }
     
+    @objc func prepare(_ call: CAPPluginCall) {
+        call.resolve()
+    }
+    
     @objc func setRoot(_ call: CAPPluginCall) {
         guard let id = call.getString("id") else {
             call.reject(NativeNavigatorError.missingParameter(name: "id").localizedDescription)

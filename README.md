@@ -15,6 +15,7 @@ npx cap sync
 
 * [`create(...)`](#create)
 * [`setRoot(...)`](#setroot)
+* [`prepare(...)`](#prepare)
 * [`present(...)`](#present)
 * [`dismiss(...)`](#dismiss)
 * [`push(...)`](#push)
@@ -55,6 +56,23 @@ setRoot(options: SetRootOptions) => any
 | Param         | Type                                                      |
 | ------------- | --------------------------------------------------------- |
 | **`options`** | <code><a href="#setrootoptions">SetRootOptions</a></code> |
+
+**Returns:** <code>any</code>
+
+--------------------
+
+
+### prepare(...)
+
+```typescript
+prepare(options: PrepareOptions) => any
+```
+
+Prepare a component to handle a subsequent window.open. Allowing us to ensure that window opens come from our application.
+
+| Param         | Type                                                      |
+| ------------- | --------------------------------------------------------- |
+| **`options`** | <code><a href="#prepareoptions">PrepareOptions</a></code> |
 
 **Returns:** <code>any</code>
 
@@ -193,6 +211,13 @@ Remove all of the native UI and reset back to the root Capacitor webview.
 
 
 #### SetRootOptions
+
+| Prop     | Type                                                |
+| -------- | --------------------------------------------------- |
+| **`id`** | <code><a href="#componentid">ComponentId</a></code> |
+
+
+#### PrepareOptions
 
 | Prop     | Type                                                |
 | -------- | --------------------------------------------------- |

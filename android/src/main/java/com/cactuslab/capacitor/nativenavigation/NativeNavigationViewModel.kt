@@ -1,0 +1,46 @@
+package com.cactuslab.capacitor.nativenavigation
+
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.jsoup.Jsoup
+
+class NativeNavigationViewModel: ViewModel() {
+
+    sealed class Signal(var consumed: Boolean) {
+
+    }
+
+    private val signals : MutableMap<String, MutableLiveData<Signal>> = mutableMapOf()
+
+    fun signalForId(id: String) : LiveData<Signal> = signals[id] ?: run {
+        val liveData = MutableLiveData<Signal>()
+        signals[id] = liveData
+        return@run liveData
+    }
+
+    fun setHtml(url: String) {
+        baseUrl = url
+        viewModelScope.launch {
+            withContext(Dispatchers.Default) {
+                val string = Jsoup.connect(url).header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8").get().toString()
+
+                val sanitised = string.replace("<script", "<!--").replace("</script>", "-->")
+
+                mHtmlLiveData.postValue(sanitised)
+            }
+        }
+    }
+
+    lateinit var baseUrl: String
+
+    private val mHtmlLiveData = MutableLiveData<String>()
+    val htmlLiveData: LiveData<String> = mHtmlLiveData
+
+}

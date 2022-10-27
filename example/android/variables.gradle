@@ -14,4 +14,6 @@ ext {
     androidxEspressoCoreVersion = '3.4.0'
     cordovaAndroidVersion = '10.1.1'
     kotlinVersion = '1.7.10'
+    navigationVersion = '2.5.2'
+    coroutines = '1.6.4'
 }

@@ -12,13 +12,13 @@ import com.cactuslab.capacitor.nativenavigation.types.CreateOptions
 import com.getcapacitor.JSObject
 import java.util.*
 
-class CreateOptions(var type: ComponentType) {
-    var id: String? = null
-    var options: ComponentOptions? = null
-    var retain = false
-    var stackOptions: StackOptions? = null
-    var tabsOptions: TabsOptions? = null
-    var viewOptions: ViewOptions? = null
+data class CreateOptions(var type: ComponentType,
+                         var id: String? = null,
+                         var options: ComponentOptions? = null,
+                         var retain: Boolean = false,
+                         var stackOptions: StackOptions? = null,
+                         var tabsOptions: TabsOptions? = null,
+                         var viewOptions: ViewOptions? = null) {
 
     companion object {
 

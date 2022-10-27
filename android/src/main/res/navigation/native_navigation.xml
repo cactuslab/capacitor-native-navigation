@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/native_navigation"
+
+    app:startDestination="@id/navigation_screen">
+
+    <fragment
+        android:id="@+id/navigation_screen"
+        android:label="Home"
+        android:name="com.cactuslab.capacitor.nativenavigation.ui.ScreenFragment"
+        tools:layout="@layout/fragment_screen"
+        >
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_secondary"
+        android:label="Home"
+        android:name="com.cactuslab.capacitor.nativenavigation.ui.SecondaryFragment"
+        tools:layout="@layout/fragment_screen"
+        >
+
+        <argument
+            app:nullable="true"
+            android:name="main_label"
+            app:argType="string" />
+        <argument
+            android:name="callbackId"
+            app:nullable="true"
+            app:argType="string" />
+        <argument
+            android:name="resultMessage"
+            app:argType="android.os.Message"
+            app:nullable="true" />
+
+    </fragment>
+
+    <action
+        android:id="@+id/action_global_nav_screen"
+        app:destination="@id/navigation_secondary"
+        app:enterAnim="@anim/nav_default_enter_anim"
+        app:exitAnim="@anim/nav_default_exit_anim"
+        app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+        app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+
+</navigation>

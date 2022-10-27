@@ -9,6 +9,12 @@ export interface NativeNavigationPlugin {
 	setRoot(options: SetRootOptions): Promise<void>
 
 	/**
+	 * Prepare a component to handle a subsequent window.open. Allowing us to ensure that window opens come from our application.
+	 * @param options 
+	 */
+	prepare(options: PrepareOptions): Promise<void>
+
+	/**
 	 * Present a new native UI as a modal.
 	 * @param options 
 	 */
@@ -93,6 +99,10 @@ export interface CreateResult {
 export type ComponentType = 'stack' | 'tabs' | 'view'
 
 export interface SetRootOptions {
+	id: ComponentId
+}
+
+export interface PrepareOptions {
 	id: ComponentId
 }
 

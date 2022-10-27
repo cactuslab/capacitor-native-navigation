@@ -9,6 +9,6 @@ import com.cactuslab.capacitor.nativenavigation.types.ViewOptions
 import com.cactuslab.capacitor.nativenavigation.exceptions.MissingParameterException
 import com.cactuslab.capacitor.nativenavigation.types.CreateOptions
 
-class TabsOptions {
-    var tabs: List<CreateOptions>? = null
+data class TabsOptions(var tabs: List<CreateOptions>? = null) {
+
 }

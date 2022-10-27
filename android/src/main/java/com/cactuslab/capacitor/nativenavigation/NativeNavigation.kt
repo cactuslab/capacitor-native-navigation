@@ -21,6 +21,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.UUID
 import android.os.Message
+import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 
@@ -102,6 +103,12 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
         val component = nextWindowAction ?: return false
         nextWindowAction = null
+
+        when (component.viewOptions) {
+            is PushOptions -> {
+
+            }
+        }
 
         viewModel.setHtml(view!!.url!!)
 

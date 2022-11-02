@@ -10,7 +10,7 @@ data class PushOptions(val id: String, val stackId: String?, val animated: Boole
         fun fromJSObject(jsObject: JSObject): PushOptions {
             val id = jsObject.getString("id") ?: throw MissingParameterException("id")
             val animated = jsObject.getBool("animated") ?: true
-            val stackId =jsObject.getString("stack")
+            val stackId = jsObject.getString("stack")
             return PushOptions(id, stackId, animated)
         }
     }

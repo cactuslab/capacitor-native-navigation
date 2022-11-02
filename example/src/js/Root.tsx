@@ -2,8 +2,8 @@ import type { PluginListenerHandle } from '@capacitor/core'
 import { NativeNavigation } from 'native-navigation'
 import type { ClickEventData } from 'native-navigation'
 import { useEffect } from 'react'
-import type { NavigateOptions, Navigator, To } from 'react-router-dom'
-import { Route, Router, Routes, useNavigate } from 'react-router-dom'
+import type { NavigateOptions, Navigator, To } from 'react-router-dom';
+import { Link , Route, Router, Routes, useNavigate } from 'react-router-dom'
 
 import Page1 from './Page1'
 import Page2 from './Page2'
@@ -69,7 +69,7 @@ export default function Root(props: Props): JSX.Element {
 					<Route path="page1" element={<Page1 />} />
 					<Route path="page2" element={<Page2 />} />
 				</Route>
-				<Route path="root" element={<><h1>Root!!!</h1><p>Nice one!</p></>} />
+				<Route path="root" element={<><h1>Root!!!</h1><p>Nice one!</p><p>eh</p><p>Go to <Link to="/section/page2">Page2</Link></p></>} />
 			</Routes>
 		</Router>
 	)

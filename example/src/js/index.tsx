@@ -17,7 +17,7 @@ function loadView(view: Window, data: CreateViewEventData) {
 	const rootElement = view.document.getElementById("root")
 	if (rootElement) {
 		const root = ReactDOM.createRoot(rootElement)
-		root.render(<Root path={"/root"} viewId={id} />)
+		root.render(<Root path={path} viewId={id} />)
 		// root.render(<p>This more string - {path} id: {id}</p>)
 		reactRoots[id] = root
 	} else {

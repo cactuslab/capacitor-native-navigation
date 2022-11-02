@@ -1,5 +1,6 @@
 package com.cactuslab.capacitor.nativenavigation
 
+import android.os.Message
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -14,8 +15,11 @@ import org.jsoup.Jsoup
 class NativeNavigationViewModel: ViewModel() {
 
     sealed class Signal(var consumed: Boolean) {
-
+        data class WindowOpen(val message: Message) : Signal(false)
     }
+
+
+    var nativeNavigation: NativeNavigation? = null
 
     private val signals : MutableMap<String, MutableLiveData<Signal>> = mutableMapOf()
 
@@ -23,6 +27,11 @@ class NativeNavigationViewModel: ViewModel() {
         val liveData = MutableLiveData<Signal>()
         signals[id] = liveData
         return@run liveData
+    }
+
+    fun postWindowOpen(message: Message, id: String) {
+        val signal = signals[id]
+        signal?.postValue(Signal.WindowOpen(message))
     }
 
     fun setHtml(url: String) {

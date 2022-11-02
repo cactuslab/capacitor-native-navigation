@@ -10,4 +10,4 @@ import com.cactuslab.capacitor.nativenavigation.exceptions.MissingParameterExcep
 import com.cactuslab.capacitor.nativenavigation.types.CreateOptions
 import com.getcapacitor.JSObject
 
-class ViewOptions(var path: String, var state: JSObject?)
+data class ViewOptions(var path: String, var state: JSObject?)

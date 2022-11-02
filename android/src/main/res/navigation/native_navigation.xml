@@ -22,17 +22,9 @@
         >
 
         <argument
-            app:nullable="true"
-            android:name="main_label"
+            app:nullable="false"
+            android:name="optionsId"
             app:argType="string" />
-        <argument
-            android:name="callbackId"
-            app:nullable="true"
-            app:argType="string" />
-        <argument
-            android:name="resultMessage"
-            app:argType="android.os.Message"
-            app:nullable="true" />
 
     </fragment>
 
@@ -42,6 +34,14 @@
         app:enterAnim="@anim/nav_default_enter_anim"
         app:exitAnim="@anim/nav_default_exit_anim"
         app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-        app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+        app:popExitAnim="@anim/nav_default_pop_exit_anim"/>
+
+    <action
+        android:id="@+id/action_global_nav_screen2"
+        app:destination="@id/navigation_secondary"
+        app:enterAnim="@anim/nav_default_enter_anim"
+        app:exitAnim="@anim/nav_default_exit_anim"
+        app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+        app:popExitAnim="@anim/nav_default_pop_exit_anim"/>
 
 </navigation>

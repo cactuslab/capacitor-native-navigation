@@ -1,18 +1,10 @@
 export interface NativeNavigationPlugin {
 	
 	/**
-	 * Create a new native UI.
+	 * Set the root UI of the application.
 	 * @param options 
 	 */
-	create(options: CreateOptionsValues): Promise<CreateResult>
-
-	setRoot(options: SetRootOptions): Promise<void>
-
-	/**
-	 * Prepare a component to handle a subsequent window.open. Allowing us to ensure that window opens come from our application.
-	 * @param options 
-	 */
-	prepare(options: PrepareOptions): Promise<void>
+	setRoot(options: SetRootOptions): Promise<SetRootResult>
 
 	/**
 	 * Present a new native UI as a modal.
@@ -73,14 +65,15 @@ type CreateOptionsValues = StackOptions | TabsOptions | ViewOptions
 
 export interface StackOptions extends CreateOptions {
 	type: 'stack'
-	stack?: CreateOptionsValues[]
+	stack?: ViewOptions[]
 }
 
 export interface TabsOptions extends CreateOptions {
 	type: 'tabs'
-	tabs: CreateOptionsValues[]
+	tabs: (StackOptions | ViewOptions)[]
 }
 
+export type ViewState = Record<string, string | number | boolean | null>
 export interface ViewOptions extends CreateOptions {
 	type: 'view'
 
@@ -89,28 +82,28 @@ export interface ViewOptions extends CreateOptions {
 	 */
 	path: string
 
-	state?: Record<string, unknown>
+	state?: ViewState
 }
 
-export interface CreateResult {
+export interface SetRootResult {
 	id: ComponentId
 }
 
 export type ComponentType = 'stack' | 'tabs' | 'view'
 
 export interface SetRootOptions {
-	id: ComponentId
-}
 
-export interface PrepareOptions {
-	id: ComponentId
+	/**
+	 * The component to set as the root of the application.
+	 */
+	component: CreateOptionsValues
 }
 
 export interface PresentOptions {
 	/**
-	 * The component to present as a modal; either an already created one or a new one
+	 * The component to present as a modal.
 	 */
-	id: ComponentId
+	component: CreateOptionsValues
 
 	/**
 	 * Whether to animate the presenting.
@@ -136,9 +129,9 @@ export interface DismissResult {
 
 export interface PushOptions {
 	/**
-	 * The id of the component to push.
+	 * The options for the view to push onto the stack.
 	 */
-	id: ComponentId
+	component: ViewOptions
 
 	/**
 	 * The stack to push to, or undefined to push to the current stack.
@@ -149,10 +142,15 @@ export interface PushOptions {
 	 * Whether to animate the push.
 	 * Defaults to `true`
 	 */
-	 animated?: boolean
+	animated?: boolean
 }
 
 export interface PushResult {
+	/**
+	 * The id of the component that was pushed.
+	 */
+	id: ComponentId
+
 	/**
 	 * The stack that was pushed to.
 	 */

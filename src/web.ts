@@ -1,21 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { WebPlugin } from '@capacitor/core'
 
-import type { SetRootResult, DismissOptions, NativeNavigationPlugin, PopOptions, PopResult, PresentOptions, PresentResult, PushOptions, PushResult, CreateOptions, ComponentOptions, DismissResult, SetRootOptions, PrepareOptions } from './definitions'
+import type { SetRootResult, DismissOptions, NativeNavigationPlugin, PopOptions, PopResult, PresentOptions, PresentResult, PushOptions, PushResult, ComponentOptions, DismissResult, SetRootOptions } from './definitions'
 
 export class NativeNavigationWeb
 	extends WebPlugin
 	implements NativeNavigationPlugin {
-
-	async create(_options: CreateOptions): Promise<SetRootResult> {
-		throw new Error('Not available on web')
-	}
 	
-	async setRoot(_options: SetRootOptions): Promise<void> {
-		throw new Error('Not available on web')
-	}
-
-	async prepare(_options: PrepareOptions): Promise<void> {
+	async setRoot(_options: SetRootOptions): Promise<SetRootResult> {
 		throw new Error('Not available on web')
 	}
 

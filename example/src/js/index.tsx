@@ -4,9 +4,6 @@ import type { ComponentId, CreateViewEventData, DestroyViewEventData } from 'nat
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 
-import icon from '../assets/imgs/flag.2.crossed@2x.png'
-
-import App from './App'
 import Root from './Root';
 
 const reactRoots: Record<ComponentId, ReactDOM.Root> = {}
@@ -40,7 +37,6 @@ async function init() {
 		const { id } = data
 		console.log('view event', id)
 
-		await NativeNavigation.prepare({id: id})
 		const view = window.open(id)
 		if (view) {
 			attemptLoad(view, data)
@@ -58,74 +54,74 @@ async function init() {
 		}
 	})
 
-	const root = await NativeNavigation.create({
-		id: 'rootStack',
-		type: 'stack',
-		options: {
-			modalPresentationStyle: 'formSheet',
+	const stackRoot = await NativeNavigation.setRoot({
+		component: {
+			id: 'rootStack',
+			type: 'stack',
+			options: {
+				modalPresentationStyle: 'formSheet',
+			},
+			stack: [
+				{
+					type: 'view',
+					path: '/root',
+					options: {
+						title: 'My Root View',
+					}
+				}
+			],
 		},
-		stack: [
-			{
-				type: 'view',
-				path: '/root',
-			}
-		],
 	})
-
-	// const root = await NativeNavigation.create({
-	// 	id: 'rootTabs',
-	// 	type: 'tabs',
-	// 	tabs: [
-	// 		{
-	// 			id: 'rootStack',
-	// 			type: 'stack',
-	// 			options: {
-	// 				modalPresentationStyle: 'formSheet',
-	// 				title: 'One',
-	// 				tab: {
-	// 					badgeValue: 'Yes',
-	// 					image: icon,
-	// 				}
-	// 			},
-	// 			stack: [
-	// 				{
-	// 					type: 'view',
-	// 					path: '/root',
-	// 				}
-	// 			],
-	// 		},
-	// 		{
-	// 			type: 'view',
-	// 			path: '/root',
-	// 			options: {
-	// 				title: 'Two',
-	// 			}
-	// 		}
-	// 	]
-	// })
-
-	console.log('INIT: created', root.id)
-
-	// const { id: viewId } = await NativeNavigation.create({
-	// 	type: 'view',
-	// 	path: '/section/page1'
-	// })
-
+	console.log('INIT: created', stackRoot.id)
+	
 	// const pushResult = await NativeNavigation.push({
-	// 	id: viewId,
+	// 	component: {
+	// 		type: 'view',
+	// 		path: '/section/page1'
+	// 	},
 	// 	stack: 'rootStack',
 	// })
-	// console.log('INIT: pushed', pushResult)
 
-	// const presentResult = await NativeNavigation.present({
-	// 	id: 'rootStack',
-	// 	animated: true,
+	// const tabsRoot = await NativeNavigation.setRoot({
+	// 	component: {
+	// 		id: 'rootTabs',
+	// 		type: 'tabs',
+	// 		tabs: [
+	// 			{
+	// 				id: 'rootStack',
+	// 				type: 'stack',
+	// 				options: {
+	// 					modalPresentationStyle: 'formSheet',
+	// 					title: 'One',
+	// 					tab: {
+	// 						badgeValue: 'Yes',
+	// 						image: icon,
+	// 					}
+	// 				},
+	// 				stack: [
+	// 					{
+	// 						type: 'view',
+	// 						path: '/root',
+	// 					}
+	// 				],
+	// 			},
+	// 			{
+	// 				type: 'view',
+	// 				path: '/root',
+	// 				options: {
+	// 					title: 'Two',
+	// 				}
+	// 			}
+	// 		],
+	// 	},
 	// })
-	const presentResult = await NativeNavigation.setRoot({
-		id: 'rootStack',
-	})
 
-	console.log('INIT: presented', presentResult)
+	// const standaloneViewRoot = await NativeNavigation.setRoot({
+	// 	component: {
+	// 		type: 'view',
+	// 		path: '/section/page1'
+	// 	},
+	// })
 }
 
 init().catch(function(reason) {

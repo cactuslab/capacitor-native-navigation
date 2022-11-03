@@ -13,9 +13,7 @@ npx cap sync
 
 <docgen-index>
 
-* [`create(...)`](#create)
 * [`setRoot(...)`](#setroot)
-* [`prepare(...)`](#prepare)
 * [`present(...)`](#present)
 * [`dismiss(...)`](#dismiss)
 * [`push(...)`](#push)
@@ -30,49 +28,17 @@ npx cap sync
 <docgen-api>
 <!--Update the source file JSDoc comments and rerun docgen to update the docs below-->
 
-### create(...)
-
-```typescript
-create(options: CreateOptionsValues) => any
-```
-
-Create a new native UI.
-
-| Param         | Type                                                                |
-| ------------- | ------------------------------------------------------------------- |
-| **`options`** | <code><a href="#createoptionsvalues">CreateOptionsValues</a></code> |
-
-**Returns:** <code>any</code>
-
---------------------
-
-
 ### setRoot(...)
 
 ```typescript
 setRoot(options: SetRootOptions) => any
 ```
 
+Set the root UI of the application.
+
 | Param         | Type                                                      |
 | ------------- | --------------------------------------------------------- |
 | **`options`** | <code><a href="#setrootoptions">SetRootOptions</a></code> |
-
-**Returns:** <code>any</code>
-
---------------------
-
-
-### prepare(...)
-
-```typescript
-prepare(options: PrepareOptions) => any
-```
-
-Prepare a component to handle a subsequent window.open. Allowing us to ensure that window opens come from our application.
-
-| Param         | Type                                                      |
-| ------------- | --------------------------------------------------------- |
-| **`options`** | <code><a href="#prepareoptions">PrepareOptions</a></code> |
 
 **Returns:** <code>any</code>
 
@@ -178,7 +144,14 @@ Remove all of the native UI and reset back to the root Capacitor webview.
 ### Interfaces
 
 
-#### StackOptions
+#### SetRootOptions
+
+| Prop            | Type                                                      | Description                                          |
+| --------------- | --------------------------------------------------------- | ---------------------------------------------------- |
+| **`component`** | <code><a href="#componentspecs">ComponentSpecs</a></code> | The component to set as the root of the application. |
+
+
+#### StackSpec
 
 | Prop        | Type                 |
 | ----------- | -------------------- |
@@ -186,7 +159,16 @@ Remove all of the native UI and reset back to the root Capacitor webview.
 | **`stack`** | <code>{}</code>      |
 
 
-#### TabsOptions
+#### ViewSpec
+
+| Prop        | Type                                            | Description                     |
+| ----------- | ----------------------------------------------- | ------------------------------- |
+| **`type`**  | <code>'view'</code>                             |                                 |
+| **`path`**  | <code>string</code>                             | The path representing the view. |
+| **`state`** | <code><a href="#viewstate">ViewState</a></code> |                                 |
+
+
+#### TabsSpec
 
 | Prop       | Type                |
 | ---------- | ------------------- |
@@ -194,30 +176,7 @@ Remove all of the native UI and reset back to the root Capacitor webview.
 | **`tabs`** | <code>{}</code>     |
 
 
-#### ViewOptions
-
-| Prop        | Type                                       | Description                     |
-| ----------- | ------------------------------------------ | ------------------------------- |
-| **`type`**  | <code>'view'</code>                        |                                 |
-| **`path`**  | <code>string</code>                        | The path representing the view. |
-| **`state`** | <code>Record&lt;string, unknown&gt;</code> |                                 |
-
-
-#### CreateResult
-
-| Prop     | Type                                                |
-| -------- | --------------------------------------------------- |
-| **`id`** | <code><a href="#componentid">ComponentId</a></code> |
-
-
-#### SetRootOptions
-
-| Prop     | Type                                                |
-| -------- | --------------------------------------------------- |
-| **`id`** | <code><a href="#componentid">ComponentId</a></code> |
-
-
-#### PrepareOptions
+#### SetRootResult
 
 | Prop     | Type                                                |
 | -------- | --------------------------------------------------- |
@@ -226,10 +185,10 @@ Remove all of the native UI and reset back to the root Capacitor webview.
 
 #### PresentOptions
 
-| Prop           | Type                                                | Description                                                                     |
-| -------------- | --------------------------------------------------- | ------------------------------------------------------------------------------- |
-| **`id`**       | <code><a href="#componentid">ComponentId</a></code> | The component to present as a modal; either an already created one or a new one |
-| **`animated`** | <code>boolean</code>                                | Whether to animate the presenting. Defaults to `true`                           |
+| Prop            | Type                                                      | Description                                           |
+| --------------- | --------------------------------------------------------- | ----------------------------------------------------- |
+| **`component`** | <code><a href="#componentspecs">ComponentSpecs</a></code> | The component to present as a modal.                  |
+| **`animated`**  | <code>boolean</code>                                      | Whether to animate the presenting. Defaults to `true` |
 
 
 #### PresentResult
@@ -256,18 +215,19 @@ Remove all of the native UI and reset back to the root Capacitor webview.
 
 #### PushOptions
 
-| Prop           | Type                                                | Description                                                      |
-| -------------- | --------------------------------------------------- | ---------------------------------------------------------------- |
-| **`id`**       | <code><a href="#componentid">ComponentId</a></code> | The id of the component to push.                                 |
-| **`stack`**    | <code><a href="#componentid">ComponentId</a></code> | The stack to push to, or undefined to push to the current stack. |
-| **`animated`** | <code>boolean</code>                                | Whether to animate the push. Defaults to `true`                  |
+| Prop            | Type                                                | Description                                                      |
+| --------------- | --------------------------------------------------- | ---------------------------------------------------------------- |
+| **`component`** | <code><a href="#viewspec">ViewSpec</a></code>       | The options for the view to push onto the stack.                 |
+| **`stack`**     | <code><a href="#componentid">ComponentId</a></code> | The stack to push to, or undefined to push to the current stack. |
+| **`animated`**  | <code>boolean</code>                                | Whether to animate the push. Defaults to `true`                  |
 
 
 #### PushResult
 
-| Prop        | Type                                                | Description                   |
-| ----------- | --------------------------------------------------- | ----------------------------- |
-| **`stack`** | <code><a href="#componentid">ComponentId</a></code> | The stack that was pushed to. |
+| Prop        | Type                                                | Description                              |
+| ----------- | --------------------------------------------------- | ---------------------------------------- |
+| **`id`**    | <code><a href="#componentid">ComponentId</a></code> | The id of the component that was pushed. |
+| **`stack`** | <code><a href="#componentid">ComponentId</a></code> | The stack that was pushed to.            |
 
 
 #### PopOptions
@@ -297,9 +257,14 @@ Remove all of the native UI and reset back to the root Capacitor webview.
 ### Type Aliases
 
 
-#### CreateOptionsValues
+#### ComponentSpecs
 
-<code><a href="#stackoptions">StackOptions</a> | <a href="#tabsoptions">TabsOptions</a> | <a href="#viewoptions">ViewOptions</a></code>
+<code><a href="#stackspec">StackSpec</a> | <a href="#tabsspec">TabsSpec</a> | <a href="#viewspec">ViewSpec</a></code>
+
+
+#### ViewState
+
+<code>Record&lt;string, string | number | boolean | null&gt;</code>
 
 
 #### ComponentId

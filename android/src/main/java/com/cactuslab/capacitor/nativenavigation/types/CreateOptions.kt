@@ -5,27 +5,10 @@ import com.cactuslab.capacitor.nativenavigation.exceptions.MissingParameterExcep
 import com.cactuslab.capacitor.nativenavigation.helpers.jsObjectSequence
 import com.getcapacitor.JSObject
 
-data class CreateOptions(var type: ComponentType,
-                         var id: String? = null,
-                         var options: ComponentOptions? = null,
-                         var retain: Boolean = false,
-                         var stackOptions: StackOptions? = null,
-                         var tabsOptions: TabsOptions? = null,
-                         var viewOptions: ViewOptions? = null) {
-
-    fun path(): String {
-        when (type) {
-            ComponentType.STACK -> {
-                TODO("Handle the path for a stack")
-            }
-            ComponentType.TABS -> {
-                TODO("Handle the path for a tabs")
-            }
-            ComponentType.VIEW -> {
-                return viewOptions!!.path
-            }
-        }
-    }
+sealed class CreateOptions(val type: ComponentType,
+                         var id: String,
+                         val options: ComponentOptions? = null,
+                         val retain: Boolean = false) {
 
     companion object {
 
@@ -37,30 +20,18 @@ data class CreateOptions(var type: ComponentType,
                     "type",
                     typeString
                 )
-            val options = CreateOptions(type)
 
-            options.retain = jsObject.getBoolean("retain", false)!!
-            options.id = jsObject.getString("id")
-
-            when (type) {
+            return when (type) {
                 ComponentType.STACK -> {
-                    if (jsObject.has("stack")) {
-                        val stack = jsObject.getJSONArray("stack")
-                        options.stackOptions = StackOptions(stack.jsObjectSequence().map { fromJSObject(it) }.toList())
-                    }
+                    StackOptions.fromJSObject(jsObject)
                 }
                 ComponentType.TABS -> {
-                    if (!jsObject.has("tabs")) throw MissingParameterException("tabs")
-                    val tabs = jsObject.getJSONArray("tabs")
-                    options.tabsOptions = TabsOptions(tabs.jsObjectSequence().map { fromJSObject(it) }.toList())
+                    TabsOptions.fromJSObject(jsObject)
                 }
                 ComponentType.VIEW -> {
-                    val path = jsObject.getString("path") ?: throw MissingParameterException("path")
-                    options.viewOptions = ViewOptions(path, jsObject.getJSObject("state"))
+                    ViewOptions.fromJSObject(jsObject)
                 }
             }
-
-            return options
         }
     }
 }

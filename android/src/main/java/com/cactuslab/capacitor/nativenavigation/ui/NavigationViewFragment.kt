@@ -2,12 +2,10 @@ package com.cactuslab.capacitor.nativenavigation.ui
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.os.Message
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -18,19 +16,18 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import com.cactuslab.capacitor.nativenavigation.NativeNavigationViewModel
 import com.cactuslab.capacitor.nativenavigation.databinding.FragmentScreenBinding
+import com.cactuslab.capacitor.nativenavigation.types.ViewOptions
 import com.getcapacitor.BridgeActivity
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import java.nio.charset.StandardCharsets
 
-class SecondaryFragment: Fragment() {
+class NavigationViewFragment: Fragment() {
     private var binding: FragmentScreenBinding? = null
 
     private val viewModel : NativeNavigationViewModel by activityViewModels()
     private val webviewViewModel: WebviewViewModel by viewModels()
 
-    private var hasRunOpen: Boolean = false
+//    private var hasRunOpen: Boolean = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -53,13 +50,19 @@ class SecondaryFragment: Fragment() {
         settings.databaseEnabled = true
         settings.javaScriptCanOpenWindowsAutomatically = true
 
-        val args: SecondaryFragmentArgs by navArgs()
+//        val args: NavigationViewFragmentArgs by navArgs()
+
+        val optionsId = this.arguments?.getString("optionsId") ?: return
+        // if optionsId is null then the view is present as an unconfigured first launch. This view will likely be replaced immediately
+//        val optionsId = args.optionsId ?: return
 //        args.mainLabel?.let {
 //            binding.mainTextView.text = it
 //        }
 
-        val bridgeActivity : BridgeActivity = getActivity() as BridgeActivity
-        val bridge = bridgeActivity.bridge
+        Log.d(TAG, "Setting up Fragment with component id: $optionsId.")
+
+//        val bridgeActivity : BridgeActivity = getActivity() as BridgeActivity
+//        val bridge = bridgeActivity.bridge
 
         binding.webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(
@@ -73,10 +76,10 @@ class SecondaryFragment: Fragment() {
             }
         }
 
-        webviewViewModel.bundledState?.let {bundle ->
-            Log.d(TAG, "Restoring Webview state")
-            binding.webView.restoreState(bundle)
-        }
+//        webviewViewModel.bundledState?.let {bundle ->
+//            Log.d(TAG, "Restoring Webview state")
+//            binding.webView.restoreState(bundle)
+//        }
 //        savedInstanceState?.let { bundle ->
 //            bundle.getBundle("webviewState")?.let { webviewBundle ->
 //
@@ -91,25 +94,24 @@ class SecondaryFragment: Fragment() {
 //            bridge.releaseCall(call)
 //        }
 
+        val nativeNavigation = viewModel.nativeNavigation!!
+        nativeNavigation.notifyCreateView(optionsId)
 
+        Log.d(TAG, "Starting observation with id: ${optionsId} on $this")
 
-        Log.d(TAG, "Starting observation with id: ${args.optionsId} on $this")
-
-        viewModel.signalForId(args.optionsId).observe(viewLifecycleOwner) { signal ->
+        viewModel.signalForId(optionsId).observe(viewLifecycleOwner) { signal ->
             when (signal) {
                 is NativeNavigationViewModel.Signal.WindowOpen -> {
-                    if (signal.consumed || this.hasRunOpen) {
+                    if (signal.consumed ) {
                         Log.d(TAG, "Signal consumed, no attempt to bind $this")
                         return@observe
                     }
-                    hasRunOpen = true
-                    Log.d(TAG, "Receiving window.open with id:${args.optionsId} on $this")
+                    Log.d(TAG, "Receiving window.open with id:${optionsId} on $this")
                     val webViewTransport = signal.message.obj!! as WebView.WebViewTransport
                     webViewTransport.webView = binding.webView
                     Log.d(TAG, "Frag got signal to window open")
                     signal.message.sendToTarget()
                     signal.consumed = true
-
                 }
             }
         }
@@ -128,8 +130,8 @@ class SecondaryFragment: Fragment() {
         val bundle = Bundle()
         binding?.webView?.saveState(bundle)
         webviewViewModel.bundledState = bundle
+        webviewViewModel.hasInitialisedWebview = false
         super.onDestroyView()
-
 
         Log.d(TAG, "Fragment View Destroyed $this")
     }
@@ -137,6 +139,7 @@ class SecondaryFragment: Fragment() {
     override fun onDestroy() {
         super.onDestroy()
         Log.d(TAG, "Fragment Destroyed $this")
+
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

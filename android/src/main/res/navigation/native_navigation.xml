@@ -3,42 +3,25 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/native_navigation"
-
-    app:startDestination="@id/navigation_screen">
-
-    <fragment
-        android:id="@+id/navigation_screen"
-        android:label="Home"
-        android:name="com.cactuslab.capacitor.nativenavigation.ui.ScreenFragment"
-        tools:layout="@layout/fragment_screen"
-        >
-    </fragment>
+    app:startDestination="@id/navigation_view_fragment">
 
     <fragment
-        android:id="@+id/navigation_secondary"
+        android:id="@+id/navigation_view_fragment"
         android:label="Home"
-        android:name="com.cactuslab.capacitor.nativenavigation.ui.SecondaryFragment"
+        android:name="com.cactuslab.capacitor.nativenavigation.ui.NavigationViewFragment"
         tools:layout="@layout/fragment_screen"
         >
 
         <argument
-            app:nullable="false"
             android:name="optionsId"
-            app:argType="string" />
+            app:argType="string"
+            app:nullable="true" />
 
     </fragment>
 
     <action
         android:id="@+id/action_global_nav_screen"
-        app:destination="@id/navigation_secondary"
-        app:enterAnim="@anim/nav_default_enter_anim"
-        app:exitAnim="@anim/nav_default_exit_anim"
-        app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-        app:popExitAnim="@anim/nav_default_pop_exit_anim"/>
-
-    <action
-        android:id="@+id/action_global_nav_screen2"
-        app:destination="@id/navigation_secondary"
+        app:destination="@id/navigation_view_fragment"
         app:enterAnim="@anim/nav_default_enter_anim"
         app:exitAnim="@anim/nav_default_exit_anim"
         app:popEnterAnim="@anim/nav_default_pop_enter_anim"

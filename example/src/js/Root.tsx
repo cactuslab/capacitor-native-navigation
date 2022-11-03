@@ -10,7 +10,8 @@ import Page2 from './Page2'
 
 interface Props {
 	path: string
-	viewId: string
+	state?: unknown
+	id: string
 }
 
 const navigator: Navigator = {
@@ -75,18 +76,22 @@ export default function Root(props: Props): JSX.Element {
 }
 
 function HandleThings(props: Props): JSX.Element | null {
-	const { path, viewId } = props
+	const { path, id } = props
 	const navigate = useNavigate()
 
 	useEffect(function() {
 		NativeNavigation.setOptions({
-			id: viewId,
+			id,
 			title: 'Hello World!',
 			stack: {
 				rightItems: [
 					{
 						id: 'r1',
 						title: 'R1',
+					},
+					{
+						id: 'reset',
+						title: 'Reset',
 					}
 				]
 			}
@@ -95,16 +100,22 @@ function HandleThings(props: Props): JSX.Element | null {
 		})
 
 		let listener: PluginListenerHandle | undefined
-		NativeNavigation.addListener(`click:${viewId}`, function(data: ClickEventData) {
-			if (data.componentId !== viewId) {
-				console.log('Ignoring click in ' + viewId)
+		NativeNavigation.addListener(`click:${id}`, function(data: ClickEventData) {
+			if (data.componentId !== id) {
+				console.log('Ignoring click in ' + id)
 				return
 			}
 			
-			console.log('GOT CLICK ' + data)
-			navigate('/section/page1')
+			if (data.buttonId === 'r2') {
+				console.log('GOT CLICK ' + data)
+				navigate('/section/page1')
+			} else if (data.buttonId === 'reset') {
+				NativeNavigation.reset()
+			}
 		}).then(function(value) {
 			listener = value
+		}).catch(function(reason) {
+			console.log('Failed to add listener!', reason)
 		})
 
 		return function() {

@@ -7,6 +7,8 @@ export default {
       name: 'capacitorNativeNavigation',
       globals: {
         '@capacitor/core': 'capacitorExports',
+        'react': 'React',
+        'react-dom/client': 'ReactDOM',
       },
       sourcemap: true,
       inlineDynamicImports: true,
@@ -18,5 +20,9 @@ export default {
       inlineDynamicImports: true,
     },
   ],
-  external: ['@capacitor/core'],
+  external: [
+    '@capacitor/core',
+    'react',
+    'react-dom/client',
+  ],
 };

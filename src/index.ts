@@ -23,4 +23,5 @@ NativeNavigation.removeAllListeners().catch(function(reason) {
 })
 
 export * from './definitions'
+export * from './react/index'
 export { NativeNavigation }

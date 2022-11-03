@@ -6,7 +6,6 @@ class NativeNavigation: NSObject {
     private let bridge: CAPBridgeProtocol
     private let plugin: CAPPlugin
     private var webViewDelegate: NativeNavigationWebViewDelegate?
-    private var retainedComponentsById: [String: UIViewController] = [:]
     private var componentsById: [String: WeakContainer<UIViewController>] = [:]
     private var idCounter = 1
     private let saveCapacitorRoot: UIViewController?
@@ -45,63 +44,36 @@ class NativeNavigation: NSObject {
             try await self.loadPageContent()
         }
     }
-
-    @MainActor
-    func create(_ options: CreateOptions) async throws -> CreateResult {
-        let viewController = try await self.createViewController(options)
-        return CreateResult(id: viewController.componentId!)
-    }
     
     @MainActor
-    private func createViewController(_ options: CreateOptions) async throws -> UIViewController {
-        switch options.type {
-        case .stack:
-            return try await createStack(options)
-        case .tabs:
-            return try await createTabs(options)
-        case .view:
-            return try createView(options)
+    private func createViewController(_ spec: ComponentSpec) async throws -> UIViewController {
+        if let stackSpec = spec as? StackSpec {
+            return try await createStack(stackSpec)
+        } else if let tabsSpec = spec as? TabsSpec {
+            return try await createTabs(tabsSpec)
+        } else if let viewSpec = spec as? ViewSpec {
+            return try createView(viewSpec)
+        } else {
+            throw NativeNavigatorError.illegalState(message: "Unsupported component spec \(spec.type)")
         }
     }
     
     @MainActor
-    func setRoot(_ options: SetRootOptions) async throws {
-        let id = options.id
-        guard let root = self.component(id) else {
-            throw NativeNavigatorError.componentNotFound(name: id)
-        }
-
-        guard !root.isBeingPresented else {
-            throw NativeNavigatorError.alreadyPresented(name: id)
-        }
-
-        guard root.parent == nil else {
-            throw NativeNavigatorError.notARoot(name: id)
-        }
+    func setRoot(_ options: SetRootOptions) async throws -> SetRootResult {
+        let root = try await self.createViewController(options.component)
         
         guard let window = self.window else {
             throw NativeNavigatorError.illegalState(message: "No window")
         }
         
         window.rootViewController = root
-
-        unretainComponentIfNecessary(root)
+        
+        return SetRootResult(id: root.componentId!)
     }
 
     @MainActor
     func present(_ options: PresentOptions) async throws -> PresentResult {
-        let id = options.id
-        guard let root = self.component(id) else {
-            throw NativeNavigatorError.componentNotFound(name: id)
-        }
-
-        guard !root.isBeingPresented else {
-            throw NativeNavigatorError.alreadyPresented(name: id)
-        }
-
-        guard root.parent == nil else {
-            throw NativeNavigatorError.notARoot(name: id)
-        }
+        let root = try await self.createViewController(options.component)
         
         guard let top = try self.topViewController() else {
             throw NativeNavigatorError.illegalState(message: "Cannot find top")
@@ -109,9 +81,7 @@ class NativeNavigation: NSObject {
 
         top.present(root, animated: options.animated)
 
-        unretainComponentIfNecessary(root)
-
-        return PresentResult(id: id)
+        return PresentResult(id: root.componentId!)
     }
 
     @MainActor
@@ -144,9 +114,7 @@ class NativeNavigation: NSObject {
     func push(_ options: PushOptions) async throws -> PushResult {
         let stack = try self.findStack(name: options.stack)
         
-        guard let vc = component(options.id) else {
-            throw NativeNavigatorError.componentNotFound(name: options.id)
-        }
+        let vc = try await self.createViewController(options.component)
         
         if stack.viewControllers.isEmpty {
             stack.setViewControllers([vc], animated: false)
@@ -154,9 +122,7 @@ class NativeNavigation: NSObject {
             stack.pushViewController(vc, animated: options.animated)
         }
 
-        unretainComponentIfNecessary(vc)
-
-        return PushResult(stack: stack.componentId!)
+        return PushResult(id: vc.componentId!, stack: stack.componentId!)
     }
     
     @MainActor
@@ -191,7 +157,6 @@ class NativeNavigation: NSObject {
             rootViewController.dismiss(animated: false)
         }
 
-        self.retainedComponentsById.removeAll()
         self.componentsById.removeAll()
     }
     
@@ -274,9 +239,7 @@ class NativeNavigation: NSObject {
     }
 
     private func component(_ id: ComponentId) -> UIViewController? {
-        if let root = retainedComponentsById[id] {
-            return root
-        } else if let component = componentsById[id] {
+        if let component = componentsById[id] {
             if let viewController = component.value {
                 return viewController
             } else {
@@ -287,14 +250,13 @@ class NativeNavigation: NSObject {
         }
     }
 
-    private func storeComponent(_ component: UIViewController, options: CreateOptions) throws -> String {
+    private func storeComponent(_ component: UIViewController, options: ComponentSpec) throws -> String {
         let id = options.id ?? generateId()
 
         if self.component(id) != nil {
             throw NativeNavigatorError.componentAlreadyExists(name: id)
         }
 
-        retainedComponentsById[id] = component
         componentsById[id] = WeakContainer<UIViewController>(value: component)
 
         component.componentId = id
@@ -304,18 +266,11 @@ class NativeNavigation: NSObject {
 
     @MainActor
     private func removeComponent(_ id: ComponentId) {
-        retainedComponentsById[id] = nil
         componentsById[id] = nil
     }
 
-    private func unretainComponentIfNecessary(_ component: UIViewController) {
-        if let componentCreateOptions = component.options, let componentId = component.componentId, !componentCreateOptions.retain {
-            retainedComponentsById[componentId] = nil
-        }
-    }
-
     @MainActor
-    private func createStack(_ options: CreateOptions) async throws -> UINavigationController {
+    private func createStack(_ options: StackSpec) async throws -> UINavigationController {
         let nc = UINavigationController()
         
         /* So our webView doesn't disappear under the title bar */
@@ -325,34 +280,26 @@ class NativeNavigation: NSObject {
             try self.configureViewController(nc, options: componentOptions, animated: false)
         }
         
-        if let stackOptions = options.stackOptions {
-            if let stack = stackOptions.stack {
-                var viewControllers = [UIViewController]()
-                for stackItemCreateOptions in stack {
-                    let stackItem = try await self.createViewController(stackItemCreateOptions)
-                    viewControllers.append(stackItem)
-                }
-                nc.viewControllers = viewControllers
-            }
+        var viewControllers = [UIViewController]()
+        for stackItemCreateOptions in options.stack {
+            let stackItem = try await self.createViewController(stackItemCreateOptions)
+            viewControllers.append(stackItem)
         }
+        nc.viewControllers = viewControllers
 
         _ = try self.storeComponent(nc, options: options)
         return nc
     }
 
     @MainActor
-    private func createTabs(_ options: CreateOptions) async throws -> UITabBarController {
-        guard let tabsOptions = options.tabsOptions else {
-            throw NativeNavigatorError.illegalState(message: "Missing tabsOptions")
-        }
-        
+    private func createTabs(_ options: TabsSpec) async throws -> UITabBarController {
         let tc = UITabBarController()
         if let componentOptions = options.options {
             try self.configureViewController(tc, options: componentOptions, animated: false)
         }
 
         var vcs: [UIViewController] = []
-        for tabOption in tabsOptions.tabs {
+        for tabOption in options.tabs {
             let tab = try await self.createViewController(tabOption)
             vcs.append(tab)
         }
@@ -363,20 +310,16 @@ class NativeNavigation: NSObject {
         return tc
     }
 
-    private func createView(_ options: CreateOptions) throws -> UIViewController {
-        guard let viewOptions = options.viewOptions else {
-            throw NativeNavigatorError.illegalState(message: "Missing viewOptions")
-        }
-        
-        let vc = NativeNavigationViewController(path: viewOptions.path, state: viewOptions.state)
+    private func createView(_ options: ViewSpec) throws -> UIViewController {
+        let vc = NativeNavigationViewController(path: options.path, state: options.state)
         if let componentOptions = options.options {
             try self.configureViewController(vc, options: componentOptions, animated: false)
         }
 
         let id = try storeComponent(vc, options: options)
         
-        var notificationData: [String : Any] = ["path": viewOptions.path, "id": id]
-        if let state = viewOptions.state {
+        var notificationData: [String : Any] = ["path": options.path, "id": id]
+        if let state = options.state {
             notificationData["state"] = state
         }
 
@@ -496,9 +439,9 @@ extension UIViewController {
         }
     }
 
-    var options: CreateOptions? {
+    var options: ComponentSpec? {
         get {
-            guard let value = objc_getAssociatedObject(self, &AssociatedKeys.createOptions) as? CreateOptions else {
+            guard let value = objc_getAssociatedObject(self, &AssociatedKeys.createOptions) as? ComponentSpec else {
                 return nil
             }
             return value

@@ -45,7 +45,7 @@ export interface NativeNavigationPlugin {
 export type ComponentId = string
 export type ButtonId = string
 
-export interface CreateOptions {
+export interface ComponentSpec {
 	type: ComponentType
 
 	/**
@@ -54,27 +54,22 @@ export interface CreateOptions {
 	id?: ComponentId
 
 	options?: ComponentOptions
-
-	/**
-	 * Whether to retain this component even if it is dismissed or popped.
-	 */
-	retain?: boolean
 }
 
-type CreateOptionsValues = StackOptions | TabsOptions | ViewOptions
+type ComponentSpecs = StackSpec | TabsSpec | ViewSpec
 
-export interface StackOptions extends CreateOptions {
+export interface StackSpec extends ComponentSpec {
 	type: 'stack'
-	stack?: ViewOptions[]
+	stack?: ViewSpec[]
 }
 
-export interface TabsOptions extends CreateOptions {
+export interface TabsSpec extends ComponentSpec {
 	type: 'tabs'
-	tabs: (StackOptions | ViewOptions)[]
+	tabs: (StackSpec | ViewSpec)[]
 }
 
 export type ViewState = Record<string, string | number | boolean | null>
-export interface ViewOptions extends CreateOptions {
+export interface ViewSpec extends ComponentSpec {
 	type: 'view'
 
 	/**
@@ -85,10 +80,6 @@ export interface ViewOptions extends CreateOptions {
 	state?: ViewState
 }
 
-export interface SetRootResult {
-	id: ComponentId
-}
-
 export type ComponentType = 'stack' | 'tabs' | 'view'
 
 export interface SetRootOptions {
@@ -96,14 +87,18 @@ export interface SetRootOptions {
 	/**
 	 * The component to set as the root of the application.
 	 */
-	component: CreateOptionsValues
+	component: ComponentSpecs
+}
+
+export interface SetRootResult {
+	id: ComponentId
 }
 
 export interface PresentOptions {
 	/**
 	 * The component to present as a modal.
 	 */
-	component: CreateOptionsValues
+	component: ComponentSpecs
 
 	/**
 	 * Whether to animate the presenting.
@@ -131,7 +126,7 @@ export interface PushOptions {
 	/**
 	 * The options for the view to push onto the stack.
 	 */
-	component: ViewOptions
+	component: ViewSpec
 
 	/**
 	 * The stack to push to, or undefined to push to the current stack.

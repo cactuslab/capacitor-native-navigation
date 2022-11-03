@@ -41,14 +41,13 @@ const navigator: Navigator = {
 	push: async function (to: To, state?: any, opts?: NavigateOptions | undefined): Promise<void> {
 		const path = navigator.createHref(to)
 		try {
-			const { id } = await NativeNavigation.create({
+			await NativeNavigation.push({component: {
 				type: 'view',
 				path,
 				state,
-			})
-			await NativeNavigation.push({
-				id,
-			})
+			},
+			animated: true
+		})
 		} catch (error) {
 			console.log(`Failed to push ${error}`)
 		}

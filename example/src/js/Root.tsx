@@ -106,7 +106,7 @@ function HandleThings(props: Props): JSX.Element | null {
 				return
 			}
 			
-			if (data.buttonId === 'r2') {
+			if (data.buttonId === 'r1') {
 				console.log('GOT CLICK ' + data)
 				navigate('/section/page1')
 			} else if (data.buttonId === 'reset') {

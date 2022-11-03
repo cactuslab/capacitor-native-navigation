@@ -1,65 +1,62 @@
 import Capacitor
 import Foundation
 
-extension CreateOptions {
-
-    static func fromJSObject(_ object: JSObjectLike) throws -> CreateOptions {
-        guard let typeString = object.getString("type") else {
-            throw NativeNavigatorError.missingParameter(name: "type")
-        }
-        guard let type = ComponentType(rawValue: typeString) else {
-            throw NativeNavigatorError.invalidParameter(name: "type", value: typeString)
-        }
-
-        let retain = object.getBool("retain", false)
-
-        var options = CreateOptions(type: type, retain: retain)
-
-        options.id = object.getString("id")
-
-        if let componentOptions = object.getObject("options") {
-            options.options = try ComponentOptions.fromJSObject(componentOptions)
-        }
-
-        switch type {
-        case .stack:
-            var stackOptions = StackOptions()
-
-            if let initialStack = object.getArray("stack") as? [JSObject] {
-                stackOptions.stack = []
-                for initialStackItem in initialStack {
-                    stackOptions.stack!.append(try CreateOptions.fromJSObject(initialStackItem))
-                }
-            }
-
-            options.stackOptions = stackOptions
-        case .tabs:
-            guard let tabs = object.getArray("tabs") as? [JSObject] else {
-                throw NativeNavigatorError.missingParameter(name: "tabs")
-            }
-
-            var tabsOptions = TabsOptions(tabs: [])
-            for tabOptions in tabs {
-                tabsOptions.tabs.append(try CreateOptions.fromJSObject(tabOptions))
-            }
-
-            options.tabsOptions = tabsOptions
-        case .view:
-            guard let path = object.getString("path") else {
-                throw NativeNavigatorError.missingParameter(name: "path")
-            }
-
-            var viewOptions = ViewOptions(path: path)
-
-            if let state = object.getObject("state") {
-                viewOptions.state = state
-            }
-            options.viewOptions = viewOptions
-        }
-
-        return options
+func componentSpecFromJSObject(_ object: JSObjectLike) throws -> ComponentSpec {
+    guard let typeString = object.getString("type") else {
+        throw NativeNavigatorError.missingParameter(name: "type")
+    }
+    guard let type = ComponentType(rawValue: typeString) else {
+        throw NativeNavigatorError.invalidParameter(name: "type", value: typeString)
     }
 
+    let id = object.getString("id")
+
+    var componentOptions: ComponentOptions?
+    if let componentOptionsValue = object.getObject("options") {
+        componentOptions = try ComponentOptions.fromJSObject(componentOptionsValue)
+    }
+
+    switch type {
+    case .stack:
+        var spec = StackSpec(stack: [])
+        spec.id = id
+        spec.options = componentOptions
+
+        if let initialStack = object.getArray("stack") as? [JSObject] {
+            for initialStackItem in initialStack {
+                spec.stack.append(try componentSpecFromJSObject(initialStackItem))
+            }
+        }
+
+        return spec
+    case .tabs:
+        var spec = TabsSpec(tabs: [])
+        spec.id = id
+        spec.options = componentOptions
+        
+        guard let tabs = object.getArray("tabs") as? [JSObject] else {
+            throw NativeNavigatorError.missingParameter(name: "tabs")
+        }
+
+        for tabOptions in tabs {
+            spec.tabs.append(try componentSpecFromJSObject(tabOptions))
+        }
+
+        return spec
+    case .view:
+        guard let path = object.getString("path") else {
+            throw NativeNavigatorError.missingParameter(name: "path")
+        }
+        
+        var spec = ViewSpec(path: path)
+        spec.id = id
+        spec.options = componentOptions
+
+        if let state = object.getObject("state") {
+            spec.state = state
+        }
+        return spec
+    }
 }
 
 extension SetComponentOptions {

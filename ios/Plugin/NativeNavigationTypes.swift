@@ -4,42 +4,35 @@ import Foundation
 typealias ComponentId = String
 typealias ButtonId = String
 
-struct CreateOptions {
-    var type: ComponentType
+protocol ComponentSpec {
+    var type: ComponentType { get }
+    var id: ComponentId? { get set }
+    var options: ComponentOptions? { get set }
+}
+
+struct StackSpec: ComponentSpec {
+    var type: ComponentType { return ComponentType.stack }
     var id: ComponentId?
     var options: ComponentOptions?
-    var retain: Bool
     
-    var stackOptions: StackOptions?
-    var tabsOptions: TabsOptions?
-    var viewOptions: ViewOptions?
+    var stack: [ComponentSpec]
 }
 
-struct StackOptions {
-    var stack: [CreateOptions]?
+struct TabsSpec: ComponentSpec {
+    var type: ComponentType { return ComponentType.tabs }
+    var id: ComponentId?
+    var options: ComponentOptions?
+    
+    var tabs: [ComponentSpec]
 }
 
-struct TabsOptions {
-    var tabs: [CreateOptions]
-}
-
-struct ViewOptions {
+struct ViewSpec: ComponentSpec {
+    var type: ComponentType { return ComponentType.view }
+    var id: ComponentId?
+    var options: ComponentOptions?
+    
     var path: String
     var state: JSObject?
-}
-
-struct CreateResult {
-    var id: ComponentId
-}
-
-extension CreateResult {
-    
-    func toPluginResult() -> PluginCallResultData {
-        return [
-            "id": id
-        ]
-    }
-    
 }
 
 enum ComponentType: String {
@@ -49,11 +42,25 @@ enum ComponentType: String {
 }
 
 struct SetRootOptions {
+    var component: ComponentSpec
+}
+
+struct SetRootResult {
     var id: ComponentId
 }
 
+extension SetRootResult {
+    
+    func toPluginResult() -> PluginCallResultData {
+        return [
+            "id": id
+        ]
+    }
+    
+}
+
 struct PresentOptions {
-    var id: ComponentId
+    var component: ComponentSpec
     
     var animated: Bool
 }
@@ -110,12 +117,13 @@ extension DismissResult {
 }
 
 struct PushOptions {
-    var id: ComponentId
+    var component: ComponentSpec
     var stack: ComponentId?
     var animated: Bool
 }
 
 struct PushResult {
+    var id: ComponentId
     var stack: ComponentId
 }
 

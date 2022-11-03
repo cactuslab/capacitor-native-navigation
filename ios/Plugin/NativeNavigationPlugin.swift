@@ -12,62 +12,50 @@ public class NativeNavigationPlugin: CAPPlugin {
     @objc override public func load() {
         self.implementation = NativeNavigation(bridge: self.bridge!, plugin: self)
     }
-
-    @objc func create(_ call: CAPPluginCall) {
+    
+    @objc func setRoot(_ call: CAPPluginCall) {
         do {
-            let options = try CreateOptions.fromJSObject(call)
-
+            guard let componentValue = call.getObject("component") else {
+                throw NativeNavigatorError.missingParameter(name: "component")
+            }
+            let component = try componentSpecFromJSObject(componentValue)
+            
+            let options = SetRootOptions(component: component)
+            
             Task {
                 do {
-                    let result = try await implementation.create(options)
+                    let result = try await implementation.setRoot(options)
                     call.resolve(result.toPluginResult())
                 } catch {
-                    call.reject("Failed to create: \(error)")
+                    call.reject("Failed to set root: \(error)")
                 }
             }
         } catch {
             call.reject(error.localizedDescription)
         }
     }
-    
-    @objc func prepare(_ call: CAPPluginCall) {
-        call.resolve()
-    }
-    
-    @objc func setRoot(_ call: CAPPluginCall) {
-        guard let id = call.getString("id") else {
-            call.reject(NativeNavigatorError.missingParameter(name: "id").localizedDescription)
-            return
-        }
-
-        let options = SetRootOptions(id: id)
-
-        Task {
-            do {
-                try await implementation.setRoot(options)
-                call.resolve()
-            } catch {
-                call.reject("Failed to set root: \(error)")
-            }
-        }
-    }
 
     @objc func present(_ call: CAPPluginCall) {
-        guard let id = call.getString("id") else {
-            call.reject(NativeNavigatorError.missingParameter(name: "id").localizedDescription)
-            return
-        }
-        let animated = call.getBool("animated", true)
-
-        let options = PresentOptions(id: id, animated: animated)
-
-        Task {
-            do {
-                let result = try await implementation.present(options)
-                call.resolve(result.toPluginResult())
-            } catch {
-                call.reject("Failed to present: \(error)")
+        do {
+            guard let componentValue = call.getObject("component") else {
+                throw NativeNavigatorError.missingParameter(name: "component")
             }
+            let component = try componentSpecFromJSObject(componentValue)
+            
+            let animated = call.getBool("animated", true)
+
+            let options = PresentOptions(component: component, animated: animated)
+
+            Task {
+                do {
+                    let result = try await implementation.present(options)
+                    call.resolve(result.toPluginResult())
+                } catch {
+                    call.reject("Failed to present: \(error)")
+                }
+            }
+        } catch {
+            call.reject(error.localizedDescription)
         }
     }
 
@@ -91,25 +79,29 @@ public class NativeNavigationPlugin: CAPPlugin {
     }
 
     @objc func push(_ call: CAPPluginCall) {
-        guard let id = call.getString("id") else {
-            call.reject(NativeNavigatorError.missingParameter(name: "id").localizedDescription)
-            return
-        }
-
-        let animated = call.getBool("animated", true)
-        var options = PushOptions(id: id, animated: animated)
-        
-        options.stack = call.getString("stack")
-        
-        let finalOptions = options
-
-        Task {
-            do {
-                let result = try await implementation.push(finalOptions)
-                call.resolve(result.toPluginResult())
-            } catch {
-                call.reject("Failed to push: \(error)")
+        do {
+            guard let componentValue = call.getObject("component") else {
+                throw NativeNavigatorError.missingParameter(name: "component")
             }
+            let component = try componentSpecFromJSObject(componentValue)
+
+            let animated = call.getBool("animated", true)
+            var options = PushOptions(component: component, animated: animated)
+            
+            options.stack = call.getString("stack")
+            
+            let finalOptions = options
+
+            Task {
+                do {
+                    let result = try await implementation.push(finalOptions)
+                    call.resolve(result.toPluginResult())
+                } catch {
+                    call.reject("Failed to push: \(error)")
+                }
+            }
+        } catch {
+            call.reject(error.localizedDescription)
         }
     }
 

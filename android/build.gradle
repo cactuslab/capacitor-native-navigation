@@ -7,6 +7,7 @@ ext {
     kotlinCore = project.hasProperty('kotlinCore') ? rootProject.ext.kotlinVersion : '1.9.0'
     coroutines = project.hasProperty('coroutines') ? rootProject.ext.coroutines : '1.6.4'
     navigationVersion = project.hasProperty('navigationVersion') ? rootProject.ext.navigationVersion : '2.5.2'
+    androidxLifecyleVersion = project.hasProperty('androidxLifecycleVersion') ? rootProject.ext.androidxLifecycleVersion : '2.5.1'
 }
 
 buildscript {
@@ -72,7 +73,10 @@ dependencies {
     implementation "androidx.navigation:navigation-runtime-ktx:$navigationVersion"
     implementation "androidx.navigation:navigation-fragment-ktx:$navigationVersion"
     implementation "androidx.navigation:navigation-ui-ktx:$navigationVersion"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$androidxLifecyleVersion"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$androidxLifecyleVersion"
     implementation 'org.jsoup:jsoup:1.15.3'
+    implementation 'androidx.webkit:webkit:1.5.0'
 
 
     testImplementation "junit:junit:$junitVersion"

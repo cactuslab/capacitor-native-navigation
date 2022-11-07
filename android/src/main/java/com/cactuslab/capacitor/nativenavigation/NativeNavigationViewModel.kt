@@ -5,6 +5,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.cactuslab.capacitor.nativenavigation.types.ComponentOptions
+import com.cactuslab.capacitor.nativenavigation.types.SetComponentOptions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,8 +18,8 @@ class NativeNavigationViewModel: ViewModel() {
 
     sealed class Signal(var consumed: Boolean) {
         data class WindowOpen(val message: Message) : Signal(false)
+        data class SetOptions(val options: SetComponentOptions) : Signal(false)
     }
-
 
     var nativeNavigation: NativeNavigation? = null
 
@@ -32,6 +34,11 @@ class NativeNavigationViewModel: ViewModel() {
     fun postWindowOpen(message: Message, id: String) {
         val signal = signals[id]
         signal?.postValue(Signal.WindowOpen(message))
+    }
+
+    fun postSetOptions(options: SetComponentOptions, id: String) {
+        val signal = signals[id]
+        signal?.postValue(Signal.SetOptions(options))
     }
 
     fun setHtml(url: String) {

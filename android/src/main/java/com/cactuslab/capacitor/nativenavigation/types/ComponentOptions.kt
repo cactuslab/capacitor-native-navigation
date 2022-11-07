@@ -1,29 +1,17 @@
 package com.cactuslab.capacitor.nativenavigation.types
 
-import com.cactuslab.capacitor.nativenavigation.types.ComponentOptions.TabOptions
-import com.cactuslab.capacitor.nativenavigation.types.ModalPresentationStyle
-import com.cactuslab.capacitor.nativenavigation.types.ComponentType
-import com.cactuslab.capacitor.nativenavigation.types.ComponentOptions
-import com.cactuslab.capacitor.nativenavigation.types.TabsOptions
-import com.cactuslab.capacitor.nativenavigation.types.ViewOptions
-import com.cactuslab.capacitor.nativenavigation.exceptions.MissingParameterException
-import com.cactuslab.capacitor.nativenavigation.types.CreateOptions
+import com.getcapacitor.JSObject
 
-class ComponentOptions {
-    var title: String? = null
-    var stack: StackOptions? = null
-    var tab: TabOptions? = null
-    var modalPresentationStyle: ModalPresentationStyle? = null
+class ComponentOptions(val title: String?, val stack: StackConfig?, val tab: TabConfig?, val modalPresentationStyle: ModalPresentationStyle?) {
+    companion object {
+        fun fromJSObject(jsObject: JSObject): ComponentOptions {
+            val title = jsObject.getString("title")
 
-    class StackOptions {
-        var backItem: StackItem? = null
-        var leftItems: List<StackItem>? = null
-        var rightItems: List<StackItem>? = null
-    }
+            val stack = jsObject.getJSObject("stack")?.let { StackConfig.fromJSObject(it) }
+            val tab = jsObject.getJSObject("tab")?.let { TabConfig.fromJSObject(it) }
+            val modalPresentationStyle = jsObject.getString("modalPresentationStyle")?.let { ModalPresentationStyle.get(it) }
 
-    class StackItem(var id: String, var title: String, var image: String?)
-    class TabOptions {
-        var image: String? = null
-        var badgeValue: String? = null
+            return ComponentOptions(title, stack, tab, modalPresentationStyle)
+        }
     }
 }

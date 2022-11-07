@@ -1,12 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.cactuslab.capacitor.nativenavigation">
 
-    <application>
-        <activity android:name="com.cactuslab.capacitor.nativenavigation.ui.NavigationActivity"
-            android:exported="true"
-            android:noHistory="true">
-            <nav-graph android:value="@navigation/native_navigation" />
-        </activity>
-    </application>
 
 </manifest>

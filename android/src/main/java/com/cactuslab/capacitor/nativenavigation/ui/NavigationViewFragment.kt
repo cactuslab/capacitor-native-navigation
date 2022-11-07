@@ -3,21 +3,18 @@ package com.cactuslab.capacitor.nativenavigation.ui
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.navArgs
 import com.cactuslab.capacitor.nativenavigation.NativeNavigationViewModel
 import com.cactuslab.capacitor.nativenavigation.databinding.FragmentScreenBinding
-import com.cactuslab.capacitor.nativenavigation.types.ViewOptions
-import com.getcapacitor.BridgeActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -26,15 +23,16 @@ class NavigationViewFragment: Fragment() {
 
     private val viewModel : NativeNavigationViewModel by activityViewModels()
     private val webviewViewModel: WebviewViewModel by viewModels()
-
-//    private var hasRunOpen: Boolean = false
+    private var componentId: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        return FragmentScreenBinding.inflate(inflater, container, false).also { binding = it }.root
+        return FragmentScreenBinding.inflate(inflater, container, false).also {
+            binding = it
+        }.root
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -43,6 +41,10 @@ class NavigationViewFragment: Fragment() {
 
         val binding = binding ?: return
 
+        setupToolbar(binding.toolbar)
+
+        setupMenu()
+
         val settings = binding.webView.settings
         settings.javaScriptEnabled = true
         settings.domStorageEnabled = true
@@ -50,19 +52,10 @@ class NavigationViewFragment: Fragment() {
         settings.databaseEnabled = true
         settings.javaScriptCanOpenWindowsAutomatically = true
 
-//        val args: NavigationViewFragmentArgs by navArgs()
-
-        val optionsId = this.arguments?.getString("optionsId") ?: return
         // if optionsId is null then the view is present as an unconfigured first launch. This view will likely be replaced immediately
-//        val optionsId = args.optionsId ?: return
-//        args.mainLabel?.let {
-//            binding.mainTextView.text = it
-//        }
+        val optionsId = (this.arguments?.getString("optionsId") ?: return).also { this.componentId = it }
 
         Log.d(TAG, "Setting up Fragment with component id: $optionsId.")
-
-//        val bridgeActivity : BridgeActivity = getActivity() as BridgeActivity
-//        val bridge = bridgeActivity.bridge
 
         binding.webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(
@@ -76,57 +69,89 @@ class NavigationViewFragment: Fragment() {
             }
         }
 
-//        webviewViewModel.bundledState?.let {bundle ->
-//            Log.d(TAG, "Restoring Webview state")
-//            binding.webView.restoreState(bundle)
-//        }
-//        savedInstanceState?.let { bundle ->
-//            bundle.getBundle("webviewState")?.let { webviewBundle ->
-//
-//            }
-//        }
-
-
-
-//        args.callbackId?.let {
-//            val call = bridge.getSavedCall(args.callbackId)
-//            call.resolve()
-//            bridge.releaseCall(call)
-//        }
-
         val nativeNavigation = viewModel.nativeNavigation!!
         nativeNavigation.notifyCreateView(optionsId)
+        val componentSpec = viewModel.nativeNavigation!!.componentSpecForId(optionsId)!!
 
-        Log.d(TAG, "Starting observation with id: ${optionsId} on $this")
+        componentSpec.options?.let {
+            webviewViewModel.setComponentOptions(it)
+        }
+
+        webviewViewModel.componentOptionsLiveData.observe(viewLifecycleOwner) { options ->
+            if (options == null) {
+                binding.toolbar.visibility = View.GONE
+            } else {
+                binding.toolbar.visibility = View.VISIBLE
+                binding.toolbar.title = options.title
+            }
+
+            binding.toolbar.invalidateMenu()
+        }
+
+        Log.d(TAG, "Starting observation with id: $optionsId on $this")
 
         viewModel.signalForId(optionsId).observe(viewLifecycleOwner) { signal ->
+            if (signal.consumed ) {
+                Log.d(TAG, "Signal consumed. No Action Taken")
+                return@observe
+            }
+
             when (signal) {
                 is NativeNavigationViewModel.Signal.WindowOpen -> {
-                    if (signal.consumed ) {
-                        Log.d(TAG, "Signal consumed, no attempt to bind $this")
-                        return@observe
-                    }
                     Log.d(TAG, "Receiving window.open with id:${optionsId} on $this")
                     val webViewTransport = signal.message.obj!! as WebView.WebViewTransport
                     webViewTransport.webView = binding.webView
                     Log.d(TAG, "Frag got signal to window open")
                     signal.message.sendToTarget()
-                    signal.consumed = true
+                }
+                is NativeNavigationViewModel.Signal.SetOptions -> {
+                    webviewViewModel.setComponentOptions(signal.options.options)
                 }
             }
+
+            signal.consumed = true
         }
 
-
-//        val message = args.resultMessage
-//        val webViewTransport = message!!.obj!! as WebView.WebViewTransport
-//
-//        webViewTransport.webView = binding.webView
         binding.webView.visibility = View.VISIBLE
-//
-//        message.sendToTarget()
+    }
+
+    private fun setupMenu() {
+        val menuhost = binding?.toolbar ?: return
+
+        menuhost.addMenuProvider(object: MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+
+                val options = webviewViewModel.componentOptionsLiveData.value
+                if (options != null) {
+                    options.stack?.rightItems?.forEach { item ->
+                        val menuItem = menu.add(0, item.id.hashCode(), 0, item.title)
+                        menuItem.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM)
+                    }
+                }
+
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                val options = webviewViewModel.componentOptionsLiveData.value?.stack ?: return false
+                val componentId = componentId ?: return false
+                for (item in options.rightItems ?: listOf()) {
+                    if (menuItem.itemId == item.id.hashCode()) {
+                        viewModel.nativeNavigation?.notifyClick(item.id, componentId)
+                        return true
+                    }
+                }
+
+                return false
+            }
+
+
+        }, viewLifecycleOwner)
     }
 
     override fun onDestroyView() {
+        componentId?.let {
+            viewModel.nativeNavigation?.notifyDestroyView(it)
+        }
         val bundle = Bundle()
         binding?.webView?.saveState(bundle)
         webviewViewModel.bundledState = bundle
@@ -137,8 +162,11 @@ class NavigationViewFragment: Fragment() {
     }
 
     override fun onDestroy() {
+
+
         super.onDestroy()
         Log.d(TAG, "Fragment Destroyed $this")
+
 
     }
 
@@ -165,7 +193,6 @@ class NavigationViewFragment: Fragment() {
             val binding = binding ?: return@launch
 
             viewModel.htmlLiveData.observe(viewLifecycleOwner) { htmlString ->
-                // binding.webView.loadDataWithBaseURL("http://tbook.local:5173",htmlString, null, null, null)
                 Log.d(TAG, "Loading HTML into webview to get it started on $this")
                 binding.webView.loadDataWithBaseURL(viewModel.baseUrl, htmlString, "text/html", "utf-8", null)
                 viewModel.htmlLiveData.removeObservers(viewLifecycleOwner)

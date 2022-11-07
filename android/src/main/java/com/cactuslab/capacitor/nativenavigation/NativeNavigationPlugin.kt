@@ -2,7 +2,10 @@ package com.cactuslab.capacitor.nativenavigation
 
 import android.os.Build
 import android.util.Log
+import android.webkit.WebChromeClient
 import androidx.lifecycle.ViewModelProvider
+import androidx.webkit.WebViewCompat
+import androidx.webkit.WebViewFeature
 import com.cactuslab.capacitor.nativenavigation.exceptions.InvalidParameterException
 import com.cactuslab.capacitor.nativenavigation.exceptions.MissingParameterException
 import com.cactuslab.capacitor.nativenavigation.types.*
@@ -20,33 +23,20 @@ class NativeNavigationPlugin : Plugin() {
     }
 
     @PluginMethod
-    fun create(call: PluginCall) {
-        try {
-            val options = CreateOptions.fromJSObject(call.data)
-            implementation.create(options = options, activity = activity, call = call, bridge = bridge)
-        } catch (e: MissingParameterException) {
-            call.reject(e.localizedMessage)
-        } catch (e: InvalidParameterException) {
-            call.reject(e.localizedMessage)
-        }
-    }
-
-    @PluginMethod
     fun setRoot(call: PluginCall) {
         try {
             val options = SetRootOptions.fromJSObject(call.data)
-            implementation.setRoot(options = options, context = context, activity = activity, call = call)
-        } catch (e: MissingParameterException) {
-            call.reject(e.localizedMessage)
-        }
-    }
-
-    @PluginMethod
-    fun prepare(call: PluginCall) {
-        try {
-            val options = PrepareOptions.fromJSObject(call.data)
-            implementation.prepare(options = options)
-            call.resolve()
+            activity.runOnUiThread {
+                val chromeClient = capacitorChromeClient()
+                bridge.webView.webChromeClient =
+                    NavigationChromeClient(chromeClient, implementation)
+                implementation.setRoot(
+                    options = options,
+                    context = context,
+                    activity = activity,
+                    call = call
+                )
+            }
         } catch (e: MissingParameterException) {
             call.reject(e.localizedMessage)
         }
@@ -64,6 +54,7 @@ class NativeNavigationPlugin : Plugin() {
 
     @PluginMethod
     fun dismiss(call: PluginCall) {
+
         call.reject("Dismiss not ready")
     }
 
@@ -79,45 +70,48 @@ class NativeNavigationPlugin : Plugin() {
 
     @PluginMethod
     fun pop(call: PluginCall) {
+
+        activity.runOnUiThread {
+            implementation.pop(call, activity)
+        }
 //        call.reject("Pop not ready")
-        call.resolve()
+//        call.resolve()
     }
 
     @PluginMethod
     fun setOptions(call: PluginCall) {
-//        call.reject("Set Options not ready")
-        call.resolve()
+        try {
+            val options = SetComponentOptions.fromJSObject(call.data)
+            implementation.setOptions(options)
+            call.resolve()
+        } catch (e: MissingParameterException) {
+            call.reject(e.localizedMessage)
+        }
+    }
+
+    private fun capacitorChromeClient(): WebChromeClient = if (WebViewFeature.isFeatureSupported(WebViewFeature.GET_WEB_CHROME_CLIENT)) {
+        when (val client = WebViewCompat.getWebChromeClient(bridge.webView)) {
+            is BridgeWebChromeClient -> {
+                client
+            }
+            is NavigationChromeClient -> {
+                client.bridgeChromeClient
+            }
+            else -> client ?: throw Exception("Unexpected web client")
+        }
+    } else {
+        BridgeWebChromeClient(bridge)
     }
 
     @PluginMethod
     fun reset(call: PluginCall) {
-
+        // This is a tear down method. Reset the UI to the capacitor state.
         activity.runOnUiThread {
-            val chromeClient = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val client = bridge.webView.webChromeClient
-                if (client is BridgeWebChromeClient) {
-                    client
-                } else if (client is NavigationChromeClient) {
-                    client.bridgeChromeClient
-                } else {
-                    throw Exception("Unexpected web client")
-                }
-            } else {
-                TODO("VERSION.SDK_INT < O")
-                BridgeWebChromeClient(bridge)
-            }
+            val client = capacitorChromeClient()
+            bridge.webView.webChromeClient = client
 
-            bridge.webView.webChromeClient = NavigationChromeClient(chromeClient, implementation)
-
-
-            implementation.reset(context, activity, call)
-//            call.resolve()
+            implementation.reset(call)
         }
-
-
-
-//        call.resolve()
-//        call.reject("Not ready to reset yet")
     }
 
     fun notifyCreateView(path: String, id: String, state: JSObject?) {
@@ -128,14 +122,27 @@ class NativeNavigationPlugin : Plugin() {
             obj.put("state", it)
         }
 
-        Log.d(TAG, "Notify Create View [path: $path, id: $id, state: $state")
+        Log.d(TAG, "Notify Create View [path: $path, id: $id, state: $state]")
 
         notifyListeners("createView", obj, true)
     }
 
-//    fun nativeNotifyListeners(eventName: String?, data: JSObject?, retainUntilConsumed: Boolean) {
-//        notifyListeners(eventName, data, retainUntilConsumed)
-//    }
+    fun notifyDestroyView(id: String) {
+        val obj = JSObject()
+        obj.put("id", id)
+        Log.d(TAG, "Notify Destroy View [id: $id]")
+
+        notifyListeners("destroyView", obj, true)
+    }
+
+    fun notifyClick(buttonId: String, componentId: String) {
+        val obj = JSObject()
+        obj.put("buttonId", buttonId)
+        obj.put("componentId", componentId)
+
+        notifyListeners("click:$componentId",  obj, true)
+//        notifyListeners("click", obj, true)
+    }
 
     companion object {
         const val TAG = "NNPlugin"

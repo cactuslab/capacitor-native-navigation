@@ -6,13 +6,13 @@ import com.cactuslab.capacitor.nativenavigation.helpers.jsObjectSequence
 import com.getcapacitor.JSObject
 import java.util.UUID
 
-class StackOptions(id: String? = null,
-                        options: ComponentOptions? = null,
-                        retain: Boolean = false,
-                        var stack: List<ViewOptions>? = null) : CreateOptions(type = ComponentType.STACK, id = id ?: UUID.randomUUID().toString(), options = options, retain = retain), TabsOptionsTabs
+class StackSpec(id: String? = null,
+                options: ComponentOptions? = null,
+                retain: Boolean = false,
+                var stack: List<ViewSpec>? = null) : ComponentSpec(type = ComponentType.STACK, id = id ?: UUID.randomUUID().toString(), options = options, retain = retain), TabsOptionsTabs
 {
     companion object {
-        fun fromJSObject(jsObject: JSObject): StackOptions {
+        fun fromJSObject(jsObject: JSObject): StackSpec {
 
             val typeString = jsObject.getString("type") ?: throw MissingParameterException("type")
             val type: ComponentType = ComponentType.Companion[typeString]
@@ -27,10 +27,12 @@ class StackOptions(id: String? = null,
             val retain = jsObject.getBoolean("retain", false)!!
             val stack = jsObject.getJSONArray("stack")
 
-            return StackOptions(id = jsObject.getString("id"),
-                options = null,
+            val options = jsObject.getJSObject("options")?.let { ComponentOptions.fromJSObject(it) }
+
+            return StackSpec(id = jsObject.getString("id"),
+                options = options,
                 retain = retain,
-                stack = stack.jsObjectSequence().map { ViewOptions.fromJSObject(it) }.toList()
+                stack = stack.jsObjectSequence().map { ViewSpec.fromJSObject(it) }.toList()
             )
         }
     }

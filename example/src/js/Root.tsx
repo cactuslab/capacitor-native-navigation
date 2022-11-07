@@ -82,7 +82,7 @@ function HandleThings(props: Props): JSX.Element | null {
 	useEffect(function() {
 		NativeNavigation.setOptions({
 			id,
-			title: 'Hello World!',
+			title: 'Hello Test!',
 			stack: {
 				rightItems: [
 					{

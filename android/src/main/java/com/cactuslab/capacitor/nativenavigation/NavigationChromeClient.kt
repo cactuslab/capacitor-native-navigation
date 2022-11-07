@@ -10,7 +10,7 @@ import android.webkit.*
 import androidx.core.app.DialogCompat
 import com.getcapacitor.BridgeWebChromeClient
 
-class NavigationChromeClient(val bridgeChromeClient: BridgeWebChromeClient, val nativeNavigation: NativeNavigation) : WebChromeClient() {
+class NavigationChromeClient(val bridgeChromeClient: WebChromeClient, val nativeNavigation: NativeNavigation) : WebChromeClient() {
 
     override fun onShowCustomView(view: View?, callback: CustomViewCallback?) {
         bridgeChromeClient.onShowCustomView(view, callback)
@@ -80,41 +80,16 @@ class NavigationChromeClient(val bridgeChromeClient: BridgeWebChromeClient, val 
     ): Boolean {
         Log.d(TAG, "Asked to create window with view:${view}, isDialog:${isDialog}, isUserGesture: ${isUserGesture}, result:${resultMsg}")
 
-        return nativeNavigation.windowOpen(view, isDialog, isUserGesture, resultMsg)
-
-//        val context = view?.context ?: return false
-//
-//        val newWebView = WebView(context)
-//        val settings = newWebView.settings
-//        settings.javaScriptEnabled = true
-//        settings.javaScriptCanOpenWindowsAutomatically = true
-//
-//        val dialog = Dialog(context)
-//        dialog.setContentView(newWebView)
-//        dialog.show()
-//
-//        newWebView.webChromeClient = object : WebChromeClient() {
-//            override fun onCloseWindow(window: WebView?) {
-//                dialog.dismiss()
-//            }
-//        }
-//
-//
-//        val obj = resultMsg?.obj
-//        if (obj is WebView.WebViewTransport) {
-//            obj.webView = newWebView
-//        }
-//        resultMsg?.sendToTarget()
-
+        if (!nativeNavigation.windowOpen(view, isDialog, isUserGesture, resultMsg)) {
+            return bridgeChromeClient.onCreateWindow(view, isDialog, isUserGesture, resultMsg)
+        }
+        return true
     }
 
     override fun onCloseWindow(window: WebView?) {
-
         Log.d(TAG, "Told to close window: $window")
-
+        bridgeChromeClient.onCloseWindow(window)
     }
-
-
 
     companion object {
         private const val TAG = "NavChromeClient"

@@ -235,15 +235,17 @@ Remove all of the native UI and reset back to the root Capacitor webview.
 | Prop           | Type                                                | Description                                                        |
 | -------------- | --------------------------------------------------- | ------------------------------------------------------------------ |
 | **`stack`**    | <code><a href="#componentid">ComponentId</a></code> | The stack to pop from, or undefined to pop from the current stack. |
+| **`count`**    | <code>number</code>                                 | How many items to pop                                              |
 | **`animated`** | <code>boolean</code>                                | Whether to animate the pop. Defaults to `true`                     |
 
 
 #### PopResult
 
-| Prop        | Type                                                | Description                                     |
-| ----------- | --------------------------------------------------- | ----------------------------------------------- |
-| **`stack`** | <code><a href="#componentid">ComponentId</a></code> |                                                 |
-| **`id`**    | <code><a href="#componentid">ComponentId</a></code> | The id of the component that was popped, if any |
+| Prop        | Type                                                | Description                                                                                                                      |
+| ----------- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **`stack`** | <code><a href="#componentid">ComponentId</a></code> |                                                                                                                                  |
+| **`count`** | <code>number</code>                                 | The number of components that were popped                                                                                        |
+| **`id`**    | <code><a href="#componentid">ComponentId</a></code> | The id of the component that was popped, if any. If multiple components are popped, the id will be of the last component popped. |
 
 
 #### SetComponentOptions

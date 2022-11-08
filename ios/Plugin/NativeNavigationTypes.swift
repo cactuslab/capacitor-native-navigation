@@ -43,6 +43,7 @@ enum ComponentType: String {
 
 struct SetRootOptions {
     var component: ComponentSpec
+    var animated: Bool
 }
 
 struct SetRootResult {
@@ -61,7 +62,6 @@ extension SetRootResult {
 
 struct PresentOptions {
     var component: ComponentSpec
-    
     var animated: Bool
 }
 
@@ -120,6 +120,7 @@ struct PushOptions {
     var component: ComponentSpec
     var stack: ComponentId?
     var animated: Bool
+    var replace: Bool?
 }
 
 struct PushResult {
@@ -139,11 +140,13 @@ extension PushResult {
 
 struct PopOptions {
     var stack: ComponentId?
+    var count: Int?
     var animated: Bool
 }
 
 struct PopResult {
     var stack: ComponentId
+    var count: Int
     var id: ComponentId?
 }
 
@@ -152,6 +155,7 @@ extension PopResult {
     func toPluginResult() -> PluginCallResultData {
         var result = PluginCallResultData()
         result["stack"] = stack
+        result["count"] = count
         if let id = id {
             result["id"] = id
         }
@@ -191,3 +195,8 @@ struct ComponentOptions {
         var badgeValue: String?
     }
 }
+
+struct ResetOptions {
+    var animated: Bool
+}
+

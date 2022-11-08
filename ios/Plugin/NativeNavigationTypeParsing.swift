@@ -59,6 +59,20 @@ func componentSpecFromJSObject(_ object: JSObjectLike) throws -> ComponentSpec {
     }
 }
 
+extension SetRootOptions {
+    
+    static func fromJSObject(_ object: JSObjectLike) throws -> SetRootOptions {
+        guard let componentValue = object.getObject("component") else {
+            throw NativeNavigatorError.missingParameter(name: "component")
+        }
+        let component = try componentSpecFromJSObject(componentValue)
+        let animated = object.getBool("animated", false)
+        
+        return SetRootOptions(component: component, animated: animated)
+    }
+    
+}
+
 extension SetComponentOptions {
 
     static func fromJSObject(_ object: JSObjectLike) throws -> SetComponentOptions {
@@ -165,4 +179,44 @@ extension ComponentOptions.TabOptions {
         return result
     }
 
+}
+
+extension PushOptions {
+    
+    static func fromJSObject(_ object: JSObjectLike) throws -> PushOptions {
+        guard let componentValue = object.getObject("component") else {
+            throw NativeNavigatorError.missingParameter(name: "component")
+        }
+        let component = try componentSpecFromJSObject(componentValue)
+
+        let animated = object.getBool("animated", true)
+        
+        var result = PushOptions(component: component, animated: animated)
+        result.stack = object.getString("stack")
+        result.replace = object.getBool("replace")
+        
+        return result
+    }
+}
+
+extension PopOptions {
+
+    static func fromJSObject(_ object: JSObjectLike) throws -> PopOptions {
+        let animated = object.getBool("animated", true)
+        
+        var result = PopOptions(animated: animated)
+        result.stack = object.getString("stack")
+        result.count = object.getInt("count")
+        return result
+    }
+}
+
+extension ResetOptions {
+    
+    static func fromJSObject(_ object: JSObjectLike) throws -> ResetOptions {
+        let animated = object.getBool("animated", false)
+        
+        return ResetOptions(animated: animated)
+    }
+    
 }

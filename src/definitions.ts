@@ -16,7 +16,7 @@ export interface NativeNavigationPlugin {
 	 * Dismiss a native UI.
 	 * @param options 
 	 */
-	dismiss(options: DismissOptions): Promise<DismissResult>
+	dismiss(options?: DismissOptions): Promise<DismissResult>
 
 	/**
 	 * Push a new component onto a stack
@@ -35,7 +35,7 @@ export interface NativeNavigationPlugin {
 	/**
 	 * Remove all of the native UI and reset back to the root Capacitor webview.
 	 */
-	reset(): Promise<void>
+	reset(options?: ResetOptions): Promise<void>
 }
 
 // use window.open to access a view... we need to specify where we want it
@@ -88,6 +88,12 @@ export interface SetRootOptions {
 	 * The component to set as the root of the application.
 	 */
 	component: ComponentSpecs
+
+	/**
+	 * Whether to animate setting the root.
+	 * Defaults to `false`
+	 */
+	animated?: boolean
 }
 
 export interface SetRootResult {
@@ -138,6 +144,12 @@ export interface PushOptions {
 	 * Defaults to `true`
 	 */
 	animated?: boolean
+
+	/**
+	 * Whether to replace the currently top component or not.
+	 * Defaults to `false`
+	 */
+	replace?: boolean
 }
 
 export interface PushResult {
@@ -159,6 +171,11 @@ export interface PopOptions {
 	stack?: ComponentId
 
 	/**
+	 * How many items to pop
+	 */
+	count?: number
+
+	/**
 	 * Whether to animate the pop.
 	 * Defaults to `true`
 	 */
@@ -168,8 +185,12 @@ export interface PopOptions {
 export interface PopResult {
 	stack: ComponentId
 
+	/** The number of components that were popped */
+	count: number
+
 	/**
-	 * The id of the component that was popped, if any
+	 * The id of the component that was popped, if any.
+	 * If multiple components are popped, the id will be of the last component popped.
 	 */
 	id?: ComponentId
 }
@@ -205,6 +226,14 @@ export interface ComponentOptions {
 	}
 
 	modalPresentationStyle?: ModalPresentationStyle
+}
+
+export interface ResetOptions {
+	/**
+	 * Whether to animate resetting the navigation back to Capacitor
+	 * Defaults to `false`
+	 */
+	animated?: boolean
 }
 
 interface StackItem {

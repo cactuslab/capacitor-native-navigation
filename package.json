@@ -13,6 +13,17 @@
     "ios/Plugin/",
     "NativeNavigation.podspec"
   ],
+  "exports": {
+    ".": "./dist/esm/index.js",
+    "./react": "./dist/esm/react/index.js",
+    "./react-router": "./dist/esm/react/router/index.js"
+  },
+  "typesVersions": {
+    "*": {
+      "react": ["./dist/esm/react/index.d.ts"],
+      "react-router": ["./dist/esm/react/router/index.d.ts"]
+    }
+  },
   "author": "",
   "license": "MIT",
   "repository": {
@@ -58,15 +69,19 @@
     "prettier-plugin-java": "~1.0.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-router-dom": "^6.4.3",
     "rimraf": "^3.0.2",
     "rollup": "^2.32.0",
     "swiftlint": "^1.0.1",
-    "typescript": "~4.1.5"
+    "typescript": "~4.8.4"
   },
   "peerDependencies": {
-    "@capacitor/core": "^4.0.0",
+    "@capacitor/core": "^4.0.0"
+  },
+  "optionalDependencies": {
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.4.3"
   },
   "prettier": "@ionic/prettier-config",
   "swiftlint": "@ionic/swiftlint-config",

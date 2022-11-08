@@ -1,0 +1,14 @@
+body {
+	font-size: 16px;
+	background-color: lightblue;
+	margin: 0 0.5em;
+}
+
+h1, body, div {
+	font-family: "Helvetica Neue";
+}
+
+dd {
+	margin: 0.5em 0;
+	text-align: center;
+}

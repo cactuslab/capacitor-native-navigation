@@ -66,7 +66,11 @@ class NativeNavigation: NSObject {
             throw NativeNavigatorError.illegalState(message: "No window")
         }
         
-        window.rootViewController = root
+        if window.rootViewController?.presentedViewController != nil {
+            window.rootViewController?.dismiss(animated: options.animated)
+        }
+        root.modalPresentationStyle = .fullScreen
+        window.rootViewController?.present(root, animated: options.animated)
         
         return SetRootResult(id: root.componentId!)
     }
@@ -102,8 +106,8 @@ class NativeNavigation: NSObject {
             throw NativeNavigatorError.illegalState(message: "The top view controller does not have a component id")
         }
 
-        if viewController.isBeingPresented {
-            viewController.presentingViewController?.dismiss(animated: options.animated)
+        if let presentingViewController = viewController.presentingViewController {
+            presentingViewController.dismiss(animated: options.animated)
             return DismissResult(id: id)
         } else {
             throw NativeNavigatorError.notPresented(name: id)
@@ -118,6 +122,10 @@ class NativeNavigation: NSObject {
         
         if stack.viewControllers.isEmpty {
             stack.setViewControllers([vc], animated: false)
+        } else if options.replace == true {
+            var viewControllers = stack.viewControllers
+            viewControllers[viewControllers.count - 1] = vc
+            stack.setViewControllers(viewControllers, animated: options.animated)
         } else {
             stack.pushViewController(vc, animated: options.animated)
         }
@@ -129,9 +137,23 @@ class NativeNavigation: NSObject {
     func pop(_ options: PopOptions) async throws -> PopResult {
         let stack = try self.findStack(name: options.stack)
         
-        let viewController = stack.popViewController(animated: options.animated)
-        
-        return PopResult(stack: stack.componentId!, id: viewController?.componentId)
+        let count = options.count ?? 1
+        if count > 1 {
+            let viewControllers = stack.viewControllers
+            if count < viewControllers.count {
+                let targetViewController = viewControllers[viewControllers.count - count - 1]
+                let popped = stack.popToViewController(targetViewController, animated: options.animated)
+                return PopResult(stack: stack.componentId!, count: popped?.count ?? 0, id: popped?.count ?? 0 > 0 ? popped?[0].componentId : nil)
+            } else {
+                let popped = stack.popToRootViewController(animated: options.animated)
+                return PopResult(stack: stack.componentId!, count: popped?.count ?? 0, id: popped?.count ?? 0 > 0 ? popped?[0].componentId : nil)
+            }
+        } else if count == 1 {
+            let viewController = stack.popViewController(animated: options.animated)
+            return PopResult(stack: stack.componentId!, count: viewController != nil ? 1 : 0, id: viewController?.componentId)
+        } else {
+            return PopResult(stack: stack.componentId!, count: 0)
+        }
     }
     
     @MainActor
@@ -146,15 +168,15 @@ class NativeNavigation: NSObject {
     }
 
     @MainActor
-    func reset() async throws {
+    func reset(_ options: ResetOptions) async throws {
         guard let window = self.window else {
             throw NativeNavigatorError.illegalState(message: "No window")
         }
         
         window.rootViewController = self.saveCapacitorRoot
 
-        if let rootViewController = window.rootViewController, rootViewController.presentedViewController != nil {
-            rootViewController.dismiss(animated: false)
+        if window.rootViewController?.presentedViewController != nil {
+            window.rootViewController?.dismiss(animated: options.animated)
         }
 
         self.componentsById.removeAll()
@@ -341,9 +363,7 @@ class NativeNavigation: NSObject {
         }
 
         if let title = options.title {
-//            viewController.title = title
-            viewController.navigationItem.title = title
-            viewController.tabBarItem.title = title
+            viewController.title = title
         }
 
         if let stackOptions = options.stack {
@@ -391,11 +411,23 @@ class NativeNavigation: NSObject {
             } catch {
                 throw NativeNavigatorError.illegalState(message: "Failed to load image \"\(path)\": \(error)")
             }
-
-            if let uiImage = UIImage(data: data) {
+            
+            let scale = determineImageScale(path)
+            if let uiImage = UIImage(data: data, scale: scale) {
                 return uiImage
             } else {
                 throw NativeNavigatorError.illegalState(message: "Not an image at \"\(path)\"")
+            }
+        }
+        
+        func determineImageScale(_ path: String) -> CGFloat {
+            let filename = ((path as NSString).lastPathComponent as NSString).deletingPathExtension
+            if filename.hasSuffix("@2x") {
+                return 2
+            } else if filename.hasSuffix("@3x") {
+                return 3
+            } else {
+                return 1
             }
         }
 

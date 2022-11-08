@@ -15,12 +15,7 @@ public class NativeNavigationPlugin: CAPPlugin {
     
     @objc func setRoot(_ call: CAPPluginCall) {
         do {
-            guard let componentValue = call.getObject("component") else {
-                throw NativeNavigatorError.missingParameter(name: "component")
-            }
-            let component = try componentSpecFromJSObject(componentValue)
-            
-            let options = SetRootOptions(component: component)
+            let options = try SetRootOptions.fromJSObject(call)
             
             Task {
                 do {
@@ -73,28 +68,18 @@ public class NativeNavigationPlugin: CAPPlugin {
                 let result = try await implementation.dismiss(options)
                 call.resolve(result.toPluginResult())
             } catch {
-                call.reject("Failed to present: \(error)")
+                call.reject("Failed to dismiss: \(error)")
             }
         }
     }
 
     @objc func push(_ call: CAPPluginCall) {
         do {
-            guard let componentValue = call.getObject("component") else {
-                throw NativeNavigatorError.missingParameter(name: "component")
-            }
-            let component = try componentSpecFromJSObject(componentValue)
-
-            let animated = call.getBool("animated", true)
-            var options = PushOptions(component: component, animated: animated)
-            
-            options.stack = call.getString("stack")
-            
-            let finalOptions = options
+            let options = try PushOptions.fromJSObject(call)
 
             Task {
                 do {
-                    let result = try await implementation.push(finalOptions)
+                    let result = try await implementation.push(options)
                     call.resolve(result.toPluginResult())
                 } catch {
                     call.reject("Failed to push: \(error)")
@@ -106,21 +91,19 @@ public class NativeNavigationPlugin: CAPPlugin {
     }
 
     @objc func pop(_ call: CAPPluginCall) {
-        let animated = call.getBool("animated", true)
-
-        var options = PopOptions(animated: animated)
-
-        options.stack = call.getString("stack")
-        
-        let finalOptions = options
-        
-        Task {
-            do {
-                let result = try await implementation.pop(finalOptions)
-                call.resolve(result.toPluginResult())
-            } catch {
-                call.reject("Failed to pop: \(error)")
+        do {
+            let options = try PopOptions.fromJSObject(call)
+            
+            Task {
+                do {
+                    let result = try await implementation.pop(options)
+                    call.resolve(result.toPluginResult())
+                } catch {
+                    call.reject("Failed to pop: \(error)")
+                }
             }
+        } catch {
+            call.reject(error.localizedDescription)
         }
     }
     
@@ -141,13 +124,19 @@ public class NativeNavigationPlugin: CAPPlugin {
     }
 
     @objc public func reset(_ call: CAPPluginCall) {
-        Task {
-            do {
-                try await implementation.reset()
-                call.resolve()
-            } catch {
-                call.reject("Failed to reset: \(error)")
+        do {
+            let options = try ResetOptions.fromJSObject(call)
+            
+            Task {
+                do {
+                    try await implementation.reset(options)
+                    call.resolve()
+                } catch {
+                    call.reject("Failed to reset: \(error)")
+                }
             }
+        } catch {
+            call.reject(error.localizedDescription)
         }
     }
 

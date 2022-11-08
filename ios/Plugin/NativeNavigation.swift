@@ -501,8 +501,12 @@ class NativeNavigationViewController: UIViewController {
         }
         didSet {
             if let webView = webView {
-                webView.frame = self.view.bounds
+                webView.translatesAutoresizingMaskIntoConstraints = false
                 self.view.addSubview(webView)
+                webView.leftAnchor.constraint(equalTo: self.view.leftAnchor).isActive = true
+                webView.rightAnchor.constraint(equalTo: self.view.rightAnchor).isActive = true
+                webView.topAnchor.constraint(equalTo: self.view.topAnchor).isActive = true
+                webView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor).isActive = true
             }
         }
     }

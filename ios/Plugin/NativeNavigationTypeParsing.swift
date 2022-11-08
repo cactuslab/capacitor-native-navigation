@@ -96,7 +96,11 @@ extension ComponentOptions {
     static func fromJSObject(_ object: JSObjectLike) throws -> ComponentOptions {
         var result = ComponentOptions()
 
-        result.title = object.getString("title")
+        if object.isNull("title") {
+            result.title = .null
+        } else if let title = object.getString("title") {
+            result.title = .value(title)
+        }
 
         if let stackOptions = object.getObject("stack") {
             result.stack = try ComponentOptions.StackOptions.fromJSObject(stackOptions)

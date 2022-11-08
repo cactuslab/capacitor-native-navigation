@@ -18,11 +18,17 @@ protocol JSObjectLike {
     func getArray(_ key: String) -> JSArray?
 
     func getObject(_ key: String) -> JSObject?
+    
+    func isNull(_ key: String) -> Bool
 
 }
 
 extension CAPPluginCall: JSObjectLike {
 
+    func isNull(_ key: String) -> Bool {
+        return (self.getAny(key) as? NSNull) != nil
+    }
+    
 }
 
 extension JSObject: JSObjectLike {
@@ -62,6 +68,10 @@ extension JSObject: JSObjectLike {
 
     func getObject(_ key: String) -> JSObject? {
         return self[key] as? JSObject
+    }
+    
+    func isNull(_ key: String) -> Bool {
+        return (self[key] as? NSNull) != nil
     }
 
 }

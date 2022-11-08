@@ -208,7 +208,7 @@ export interface SetComponentOptions {
 }
 
 export interface ComponentOptions {
-	title?: string
+	title?: string | null
 
 	/**
 	 * Options for when the component is used in a stack

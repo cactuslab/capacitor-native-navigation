@@ -172,7 +172,7 @@ struct SetComponentOptions {
 }
 
 struct ComponentOptions {
-    var title: String?
+    var title: Nullable<String>?
     var stack: ComponentOptions.StackOptions?
     var tab: ComponentOptions.TabOptions?
 
@@ -200,3 +200,7 @@ struct ResetOptions {
     var animated: Bool
 }
 
+enum Nullable<T> {
+    case value(_ value: T)
+    case null
+}

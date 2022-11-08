@@ -363,7 +363,12 @@ class NativeNavigation: NSObject {
         }
 
         if let title = options.title {
-            viewController.title = title
+            switch title {
+            case .null:
+                viewController.title = nil
+            case .value(let title):
+                viewController.title = title
+            }
         }
 
         if let stackOptions = options.stack {

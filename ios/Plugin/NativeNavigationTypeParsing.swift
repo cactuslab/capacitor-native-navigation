@@ -81,8 +81,12 @@ extension SetComponentOptions {
         }
 
         let animated = object.getBool("animated", false)
+        
+        guard let options = object.getObject("options") else {
+            throw NativeNavigatorError.missingParameter(name: "options")
+        }
 
-        return SetComponentOptions(id: id, animated: animated, options: try ComponentOptions.fromJSObject(object))
+        return SetComponentOptions(id: id, animated: animated, options: try ComponentOptions.fromJSObject(options))
     }
 
 }

@@ -2,7 +2,7 @@ import type { Plugin, PluginListenerHandle } from '@capacitor/core';
 import React, { useContext } from 'react';
 import ReactDOM from 'react-dom/client'
 
-import type { NativeNavigationPlugin, ComponentId, CreateViewEventData, DestroyViewEventData, DismissOptions, DismissResult, ClickEventData, SetComponentOptions } from '../definitions';
+import type { NativeNavigationPlugin, ComponentId, CreateViewEventData, DestroyViewEventData, DismissOptions, DismissResult, ClickEventData, AllComponentOptions } from '../definitions';
 import { NativeNavigationEvents } from '../definitions'
 
 export interface NativeNavigationReactRootProps {
@@ -61,7 +61,7 @@ export async function initReact(options: Options): Promise<void> {
 					return plugin.setOptions({
 						id,
 						animated: options.animated,
-						...options,
+						options,
 					})
 				},
 
@@ -128,7 +128,7 @@ interface CapacitorNativeNavigationContext {
 	/**
 	 * Set this component's options.
 	 */
-	setOptions: (options: Omit<SetComponentOptions, 'id'>) => Promise<void>
+	setOptions: (options: AllComponentOptions & { animated?: boolean }) => Promise<void>
 
 	/**
 	 * Dismiss this component, if it was presented.

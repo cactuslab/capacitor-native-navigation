@@ -45,7 +45,7 @@ export interface NativeNavigationPlugin {
 export type ComponentId = string
 export type ButtonId = string
 
-export interface ComponentSpec {
+export interface ComponentSpec<O extends ComponentOptions> {
 	type: ComponentType
 
 	/**
@@ -53,23 +53,23 @@ export interface ComponentSpec {
 	 */
 	id?: ComponentId
 
-	options?: ComponentOptions
+	options?: O
 }
 
 type ComponentSpecs = StackSpec | TabsSpec | ViewSpec
 
-export interface StackSpec extends ComponentSpec {
+export interface StackSpec extends ComponentSpec<StackOptions> {
 	type: 'stack'
 	stack?: ViewSpec[]
 }
 
-export interface TabsSpec extends ComponentSpec {
+export interface TabsSpec extends ComponentSpec<TabsOptions> {
 	type: 'tabs'
 	tabs: (StackSpec | ViewSpec)[]
 }
 
 export type ViewState = Record<string, string | number | boolean | null>
-export interface ViewSpec extends ComponentSpec {
+export interface ViewSpec extends ComponentSpec<ViewOptions> {
 	type: 'view'
 
 	/**
@@ -195,7 +195,7 @@ export interface PopResult {
 	id?: ComponentId
 }
 
-export interface SetComponentOptions extends ComponentOptions {
+export interface SetComponentOptions {
 	id: ComponentId
 
 	/**
@@ -203,6 +203,8 @@ export interface SetComponentOptions extends ComponentOptions {
 	 * Defaults to `false`
 	 */
 	animated?: boolean
+
+	options: AllComponentOptions
 }
 
 export interface ComponentOptions {
@@ -227,6 +229,23 @@ export interface ComponentOptions {
 
 	modalPresentationStyle?: ModalPresentationStyle
 }
+
+export interface StackOptions extends ComponentOptions {
+	bar?: {
+		background?: {
+			color?: string
+		}
+		title?: {
+			color?: string
+		}
+	}
+}
+
+export type TabsOptions = ComponentOptions
+
+export type ViewOptions = ComponentOptions
+
+export type AllComponentOptions = StackOptions | TabsOptions | ViewOptions
 
 export interface ResetOptions {
 	/**

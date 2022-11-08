@@ -377,6 +377,17 @@ class NativeNavigation: NSObject {
                 viewController.navigationItem.rightBarButtonItems = items.map({ item in toBarButtonItem(item) })
             }
         }
+        
+        if let navigationController = viewController as? UINavigationController {
+            let a = UIBarAppearance()
+            a.backgroundColor = .red
+            
+            let aa = UINavigationBarAppearance(barAppearance: a)
+            aa.titleTextAttributes = [ .foregroundColor: UIColor.blue ]
+            navigationController.navigationBar.prefersLargeTitles = true
+            navigationController.navigationBar.scrollEdgeAppearance = aa
+            navigationController.navigationBar.standardAppearance = aa
+        }
 
         if let tabOptions = options.tab {
             if let badgeValue = tabOptions.badgeValue {

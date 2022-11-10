@@ -2,7 +2,7 @@ import type { Plugin, PluginListenerHandle } from '@capacitor/core';
 import React, { useContext } from 'react';
 import ReactDOM from 'react-dom/client'
 
-import type { NativeNavigationPlugin, ComponentId, CreateViewEventData, DestroyViewEventData, DismissOptions, DismissResult, ClickEventData, AllComponentOptions } from '../definitions';
+import type { NativeNavigationPlugin, ComponentId, CreateViewEventData, DestroyViewEventData, DismissOptions, DismissResult, ClickEventData, AllComponentOptions, NativeNavigationPluginInternal } from '../definitions';
 import { NativeNavigationEvents } from '../definitions'
 
 export interface NativeNavigationReactRootProps {
@@ -102,7 +102,11 @@ export async function initReact(options: Options): Promise<void> {
 				</OptionsContext.Provider>
 			)
 	
-			reactRoots[id] = root
+			reactRoots[id] = root;
+
+			(plugin as unknown as NativeNavigationPluginInternal).viewReady({
+				id,
+			})
 		} else {
 			console.warn(`Attempted to load view "${path}" but could not find root node`)
 		}

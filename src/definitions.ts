@@ -38,6 +38,12 @@ export interface NativeNavigationPlugin {
 	reset(options?: ResetOptions): Promise<void>
 }
 
+export interface NativeNavigationPluginInternal extends NativeNavigationPlugin {
+
+	viewReady(options?: ViewReadyOptions): Promise<void>
+
+}
+
 // use window.open to access a view... we need to specify where we want it
 // ?target=<name>
 // ?mode=push|replace (replaces all in stack)
@@ -288,4 +294,11 @@ export interface DestroyViewEventData {
 export interface ClickEventData {
 	buttonId: ButtonId
 	componentId: ComponentId
+}
+
+export interface ViewReadyOptions {
+	/**
+	 * The component id of the view that has been made ready for presentation.
+	 */
+	id: ComponentId
 }

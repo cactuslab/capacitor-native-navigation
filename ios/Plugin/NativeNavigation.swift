@@ -384,14 +384,33 @@ class NativeNavigation: NSObject {
         }
         
         if let navigationController = viewController as? UINavigationController {
-            let a = UIBarAppearance()
-            a.backgroundColor = .red
-            
-            let aa = UINavigationBarAppearance(barAppearance: a)
-            aa.titleTextAttributes = [ .foregroundColor: UIColor.blue ]
-            navigationController.navigationBar.prefersLargeTitles = true
-            navigationController.navigationBar.scrollEdgeAppearance = aa
-            navigationController.navigationBar.standardAppearance = aa
+            if let barOptions = options.bar {
+                let a = UIBarAppearance(barAppearance: navigationController.navigationBar.standardAppearance)
+                if let color = barOptions.background?.color {
+                    a.backgroundColor = color
+                }
+                
+                let aa = UINavigationBarAppearance(barAppearance: a)
+                if let titleOptions = barOptions.title {
+                    if let color = titleOptions.color {
+                        aa.titleTextAttributes[.foregroundColor] = color
+                    }
+                    if let font = titleOptions.font {
+                        aa.titleTextAttributes[.font] = font
+                    }
+                }
+                if let buttonOptions = barOptions.buttons {
+                    if let color = buttonOptions.color {
+                        aa.buttonAppearance.normal.titleTextAttributes[.foregroundColor] = color
+                    }
+                    if let font = buttonOptions.font {
+                        aa.buttonAppearance.normal.titleTextAttributes[.font] = font
+                    }
+                }
+                
+                navigationController.navigationBar.scrollEdgeAppearance = aa
+                navigationController.navigationBar.standardAppearance = aa
+            }
         }
 
         if let tabOptions = options.tab {

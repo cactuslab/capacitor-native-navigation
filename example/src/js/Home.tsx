@@ -33,6 +33,23 @@ async function setupStack() {
 					}
 				}
 			],
+			options: {
+				bar: {
+					background: {
+						color: '#336699',
+					},
+					title: {
+						color: '#f00099',
+						font: {
+							name: 'Arial',
+							size: 66,
+						}
+					},
+					buttons: {
+						color: '#888866',
+					},
+				},
+			},
 		},
 	})
 	console.log('INIT: created', stackRoot.id)

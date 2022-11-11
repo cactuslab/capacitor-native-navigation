@@ -139,5 +139,22 @@ public class NativeNavigationPlugin: CAPPlugin {
             call.reject(error.localizedDescription)
         }
     }
+    
+    @objc public func viewReady(_ call: CAPPluginCall) {
+        do {
+            let options = try ViewReadyOptions.fromJSObject(call)
+            
+            Task {
+                do {
+                    try await implementation.viewReady(options)
+                    call.resolve()
+                } catch {
+                    call.reject("Failed to handle view ready: \(error)")
+                }
+            }
+        } catch {
+            call.reject(error.localizedDescription)
+        }
+    }
 
 }

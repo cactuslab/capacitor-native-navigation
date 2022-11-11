@@ -12,6 +12,8 @@ CAP_PLUGIN(NativeNavigationPlugin, "NativeNavigation",
            CAP_PLUGIN_METHOD(pop, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(setOptions, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(reset, CAPPluginReturnPromise);
+           
+           CAP_PLUGIN_METHOD(viewReady, CAPPluginReturnPromise);
 
            /* A workaround for https://github.com/ionic-team/capacitor/issues/5959 */
            CAP_PLUGIN_METHOD(removeAllListeners, CAPPluginReturnPromise);

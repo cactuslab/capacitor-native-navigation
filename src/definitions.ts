@@ -40,7 +40,10 @@ export interface NativeNavigationPlugin {
 
 export interface NativeNavigationPluginInternal extends NativeNavigationPlugin {
 
-	viewReady(options?: ViewReadyOptions): Promise<void>
+	/**
+	 * Signal that a view requested by the CreateView event is now ready to use.
+	 */
+	viewReady(options: ViewReadyOptions): Promise<void>
 
 }
 

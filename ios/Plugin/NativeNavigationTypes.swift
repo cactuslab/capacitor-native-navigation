@@ -222,3 +222,7 @@ enum Nullable<T> {
     case value(_ value: T)
     case null
 }
+
+struct ViewReadyOptions {
+    var id: ComponentId
+}

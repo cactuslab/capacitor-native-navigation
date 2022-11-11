@@ -305,3 +305,15 @@ extension ResetOptions {
     }
     
 }
+
+extension ViewReadyOptions {
+    
+    static func fromJSObject(_ object: JSObjectLike) throws -> ViewReadyOptions {
+        guard let id = object.getString("id") else {
+            throw NativeNavigatorError.missingParameter(name: "id")
+        }
+        
+        return ViewReadyOptions(id: id)
+    }
+    
+}

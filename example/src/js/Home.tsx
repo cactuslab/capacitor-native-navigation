@@ -42,7 +42,7 @@ async function setupStack() {
 						color: '#f00099',
 						font: {
 							name: 'Arial',
-							size: 66,
+							size: 26,
 						}
 					},
 					buttons: {

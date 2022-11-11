@@ -2,7 +2,7 @@ import type { Plugin, PluginListenerHandle } from '@capacitor/core';
 import React, { useContext } from 'react';
 import ReactDOM from 'react-dom/client'
 
-import type { ComponentId, CreateViewEventData, DestroyViewEventData, DismissOptions, DismissResult, ClickEventData, AllComponentOptions, NativeNavigationPluginInternal } from '../definitions';
+import type { ComponentId, CreateViewEventData, DestroyViewEventData, DismissOptions, DismissResult, ClickEventData, AllComponentOptions, NativeNavigationPluginInternal, NativeNavigationPlugin } from '../definitions';
 import { NativeNavigationEvents } from '../definitions'
 
 export interface NativeNavigationReactRootProps {
@@ -14,12 +14,13 @@ export interface NativeNavigationReactRootProps {
 export type NativeNavigationReactRoot = React.ComponentType<NativeNavigationReactRootProps>
 
 interface Options {
-	plugin: NativeNavigationPluginInternal & Plugin
+	plugin: NativeNavigationPlugin & Plugin
 	root: NativeNavigationReactRoot
 }
 
 export async function initReact(options: Options): Promise<void> {
 	const { plugin } = options
+	const internalPlugin = plugin as unknown as NativeNavigationPluginInternal
 	const reactRoots: Record<ComponentId, ReactDOM.Root> = {}
 
 	await plugin.addListener(NativeNavigationEvents.CreateView, async function(data: CreateViewEventData) {
@@ -106,7 +107,7 @@ export async function initReact(options: Options): Promise<void> {
 
 			/* Wait a moment to allow the webview to render the DOM... it would be nice to find a signal we could use instead of just waiting */
 			setTimeout(function() {
-				plugin.viewReady({
+				internalPlugin.viewReady({
 					id,
 				})
 			}, 20)

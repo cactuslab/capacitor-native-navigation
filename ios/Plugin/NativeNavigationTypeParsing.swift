@@ -117,6 +117,10 @@ extension ComponentOptions {
                 throw NativeNavigatorError.invalidParameter(name: "modalPresentationStyle", value: modalPresentationStyleString)
             }
         }
+        
+        if let barOptions = object.getObject("bar") {
+            result.bar = try ComponentOptions.BarOptions.fromJSObject(barOptions)
+        }
 
         return result
     }
@@ -161,9 +165,9 @@ extension ComponentOptions.StackOptions {
 
 extension ComponentOptions.StackItem {
 
-    typealias StackItem = ComponentOptions.StackItem
+    typealias This = ComponentOptions.StackItem
 
-    static func fromJSObject(_ object: JSObjectLike) throws -> StackItem {
+    static func fromJSObject(_ object: JSObjectLike) throws -> This {
         guard let id = object.getString("id") else {
             throw NativeNavigatorError.invalidParameter(name: "StackItem.id", value: object)
         }
@@ -171,22 +175,95 @@ extension ComponentOptions.StackItem {
             throw NativeNavigatorError.invalidParameter(name: "StackItem.title", value: object)
         }
         let image = object.getString("image")
-        return StackItem(id: id, title: title, image: image)
+        return This(id: id, title: title, image: image)
     }
 
 }
 
 extension ComponentOptions.TabOptions {
 
-    typealias TabOptions = ComponentOptions.TabOptions
+    typealias This = ComponentOptions.TabOptions
 
-    static func fromJSObject(_ object: JSObjectLike) throws -> TabOptions {
-        var result = TabOptions()
+    static func fromJSObject(_ object: JSObjectLike) throws -> This {
+        var result = This()
         result.badgeValue = object.getString("badgeValue")
         result.image = object.getString("image")
         return result
     }
 
+}
+
+extension ComponentOptions.BarOptions {
+
+    typealias This = ComponentOptions.BarOptions
+
+    static func fromJSObject(_ object: JSObjectLike) throws -> This {
+        var result = This()
+        if let backgroundOptions = object.getObject("background") {
+            result.background = try ComponentOptions.FillOptions.fromJSObject(backgroundOptions)
+        }
+        if let titleOptions = object.getObject("title") {
+            result.title = try ComponentOptions.LabelOptions.fromJSObject(titleOptions)
+        }
+        if let buttonsOptions = object.getObject("buttons") {
+            result.buttons = try ComponentOptions.LabelOptions.fromJSObject(buttonsOptions)
+        }
+        return result
+    }
+
+}
+
+func parseColor(_ color: String) throws -> UIColor {
+    if let result = UIColor(hex: color) {
+        return result
+    } else {
+        throw NativeNavigatorError.invalidParameter(name: "color", value: color)
+    }
+}
+
+extension ComponentOptions.FillOptions {
+ 
+    typealias This = ComponentOptions.FillOptions
+
+    static func fromJSObject(_ object: JSObjectLike) throws -> This {
+        var result = This()
+        if let color = object.getString("color") {
+            result.color = try parseColor(color)
+        }
+        return result
+    }
+    
+}
+
+extension ComponentOptions.LabelOptions {
+ 
+    typealias This = ComponentOptions.LabelOptions
+
+    static func fromJSObject(_ object: JSObjectLike) throws -> This {
+        var result = This()
+        if let color = object.getString("color") {
+            result.color = try parseColor(color)
+        }
+        if let font = object.getObject("font") {
+            result.font = try parseFont(font)
+        }
+        return result
+    }
+    
+}
+
+func parseFont(_ object: JSObjectLike) throws -> UIFont {
+    guard let name = object.getString("name") else {
+        throw NativeNavigatorError.missingParameter(name: "font.name")
+    }
+    guard let size = object.getFloat("size") else {
+        throw NativeNavigatorError.missingParameter(name: "font.size")
+    }
+    
+    guard let font = UIFont(name: name, size: CGFloat(size)) else {
+        throw NativeNavigatorError.invalidParameter(name: "font", value: name)
+    }
+    return font
 }
 
 extension PushOptions {
@@ -225,6 +302,18 @@ extension ResetOptions {
         let animated = object.getBool("animated", false)
         
         return ResetOptions(animated: animated)
+    }
+    
+}
+
+extension ViewReadyOptions {
+    
+    static func fromJSObject(_ object: JSObjectLike) throws -> ViewReadyOptions {
+        guard let id = object.getString("id") else {
+            throw NativeNavigatorError.missingParameter(name: "id")
+        }
+        
+        return ViewReadyOptions(id: id)
     }
     
 }

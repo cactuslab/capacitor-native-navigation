@@ -177,6 +177,8 @@ struct ComponentOptions {
     var tab: ComponentOptions.TabOptions?
 
     var modalPresentationStyle: ModalPresentationStyle?
+    
+    var bar: BarOptions?
 
     struct StackOptions {
         var backItem: StackItem?
@@ -194,6 +196,22 @@ struct ComponentOptions {
         var image: String?
         var badgeValue: String?
     }
+    
+    struct BarOptions {
+        var background: FillOptions?
+        var title: LabelOptions?
+        var buttons: LabelOptions?
+    }
+    
+    struct FillOptions {
+        var color: UIColor?
+    }
+    
+    struct LabelOptions {
+        var color: UIColor?
+        var font: UIFont?
+    }
+    
 }
 
 struct ResetOptions {
@@ -203,4 +221,8 @@ struct ResetOptions {
 enum Nullable<T> {
     case value(_ value: T)
     case null
+}
+
+struct ViewReadyOptions {
+    var id: ComponentId
 }

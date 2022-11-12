@@ -40,7 +40,10 @@ export interface NativeNavigationPlugin {
 
 export interface NativeNavigationPluginInternal extends NativeNavigationPlugin {
 
-	viewReady(options?: ViewReadyOptions): Promise<void>
+	/**
+	 * Signal that a view requested by the CreateView event is now ready to use.
+	 */
+	viewReady(options: ViewReadyOptions): Promise<void>
 
 }
 
@@ -236,19 +239,39 @@ export interface ComponentOptions {
 	modalPresentationStyle?: ModalPresentationStyle
 }
 
+/**
+ * Options for stack components
+ */
 export interface StackOptions extends ComponentOptions {
 	bar?: {
-		background?: {
-			color?: string
-		}
-		title?: {
-			color?: string
-		}
+		background?: FillOptions
+		title?: LabelOptions
+		buttons?: LabelOptions
 	}
 }
 
+export interface FillOptions {
+	color?: string
+}
+
+export interface LabelOptions {
+	color?: string
+	font?: FontOptions
+}
+
+export interface FontOptions {
+	name: string
+	size: number
+}
+
+/**
+ * Options for tabs components
+ */
 export type TabsOptions = ComponentOptions
 
+/**
+ * Options for view components
+ */
 export type ViewOptions = ComponentOptions
 
 export type AllComponentOptions = StackOptions | TabsOptions | ViewOptions

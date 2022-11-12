@@ -2,7 +2,7 @@ import type { Plugin, PluginListenerHandle } from '@capacitor/core';
 import React, { useContext } from 'react';
 import ReactDOM from 'react-dom/client'
 
-import type { NativeNavigationPlugin, ComponentId, CreateViewEventData, DestroyViewEventData, DismissOptions, DismissResult, ClickEventData, AllComponentOptions, NativeNavigationPluginInternal } from '../definitions';
+import type { ComponentId, CreateViewEventData, DestroyViewEventData, DismissOptions, DismissResult, ClickEventData, AllComponentOptions, NativeNavigationPluginInternal, NativeNavigationPlugin } from '../definitions';
 import { NativeNavigationEvents } from '../definitions'
 
 export interface NativeNavigationReactRootProps {
@@ -20,6 +20,7 @@ interface Options {
 
 export async function initReact(options: Options): Promise<void> {
 	const { plugin } = options
+	const internalPlugin = plugin as unknown as NativeNavigationPluginInternal
 	const reactRoots: Record<ComponentId, ReactDOM.Root> = {}
 
 	await plugin.addListener(NativeNavigationEvents.CreateView, async function(data: CreateViewEventData) {
@@ -102,11 +103,14 @@ export async function initReact(options: Options): Promise<void> {
 				</OptionsContext.Provider>
 			)
 	
-			reactRoots[id] = root;
+			reactRoots[id] = root
 
-			(plugin as unknown as NativeNavigationPluginInternal).viewReady({
-				id,
-			})
+			/* Wait a moment to allow the webview to render the DOM... it would be nice to find a signal we could use instead of just waiting */
+			setTimeout(function() {
+				internalPlugin.viewReady({
+					id,
+				})
+			}, 20)
 		} else {
 			console.warn(`Attempted to load view "${path}" but could not find root node`)
 		}

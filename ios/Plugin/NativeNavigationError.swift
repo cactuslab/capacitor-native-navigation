@@ -1,6 +1,6 @@
 import Foundation
 
-enum NativeNavigatorError: Error {
+enum NativeNavigatorError: LocalizedError {
     case missingParameter(name: String)
     case invalidParameter(name: String, value: Any)
     
@@ -8,28 +8,36 @@ enum NativeNavigatorError: Error {
     case notPresented(name: String)
     case notARoot(name: String)
     case componentAlreadyExists(name: String)
-    case stackAlreadyExists(name: String)
     case currentIsNotStack
     case notAStack(name: String)
     case notTabs(name: String)
     case componentNotFound(name: String)
     case illegalState(message: String)
 
-    var localizedDescription: String {
-        return "\(self)"
-//        switch self {
-//        case .unknownRoot(let name):
-//            return "Unknown root: \(name)"
-//        case .alreadyPresented(name: let name):
-//            return "Already presented: \(name)"
-//        case .notPresented(name: let name):
-//            return "Not presented: \(name)"
-//        case .notARoot(name: let name):
-//            return "Not a root: \(name)"
-//        case .rootAlreadyExists(name: let name):
-//            return "Root already exists: \(name)"
-//        case .illegalState(message: let message):
-//            return "Illegal state: \(message)"
-//        }
+    var errorDescription: String? {
+        switch self {
+        case .alreadyPresented(name: let name):
+            return "Already presented: \(name)"
+        case .notPresented(name: let name):
+            return "Not presented: \(name)"
+        case .notARoot(name: let name):
+            return "Not a root: \(name)"
+        case .illegalState(message: let message):
+            return "Illegal state: \(message)"
+        case .missingParameter(name: let name):
+            return "Missing parameter: \(name)"
+        case .invalidParameter(name: let name, value: let value):
+            return "Invalid parameter \"\(name)\": \(value)"
+        case .componentAlreadyExists(name: let name):
+            return "Component already exists: \(name)"
+        case .currentIsNotStack:
+            return "Current is not a stack"
+        case .notAStack(name: let name):
+            return "Component is not a stack: \(name)"
+        case .notTabs(name: let name):
+            return "Component is not tabs: \(name)"
+        case .componentNotFound(name: let name):
+            return "Component not found: \(name)"
+        }
     }
 }

@@ -16,7 +16,8 @@
   "exports": {
     ".": "./dist/esm/index.js",
     "./react": "./dist/esm/react/index.js",
-    "./react-router": "./dist/esm/react/router/index.js"
+    "./react-router": "./dist/esm/react/router/index.js",
+    "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {

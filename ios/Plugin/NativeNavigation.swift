@@ -7,6 +7,7 @@ class NativeNavigation: NSObject {
     private let plugin: CAPPlugin
     private var webViewDelegate: NativeNavigationWebViewDelegate?
     private var componentsById: [String: WeakContainer<UIViewController>] = [:]
+    private var viewReadyContinuations: [ComponentId: CheckedContinuation<Void, Never>] = [:]
     private var idCounter = 1
     private let saveCapacitorRoot: UIViewController?
     private var html: String? = nil
@@ -46,19 +47,6 @@ class NativeNavigation: NSObject {
     }
     
     @MainActor
-    private func createViewController(_ spec: ComponentSpec) async throws -> UIViewController {
-        if let stackSpec = spec as? StackSpec {
-            return try await createStack(stackSpec)
-        } else if let tabsSpec = spec as? TabsSpec {
-            return try await createTabs(tabsSpec)
-        } else if let viewSpec = spec as? ViewSpec {
-            return try createView(viewSpec)
-        } else {
-            throw NativeNavigatorError.illegalState(message: "Unsupported component spec \(spec.type)")
-        }
-    }
-    
-    @MainActor
     func setRoot(_ options: SetRootOptions) async throws -> SetRootResult {
         let root = try await self.createViewController(options.component)
         
@@ -66,11 +54,11 @@ class NativeNavigation: NSObject {
             throw NativeNavigatorError.illegalState(message: "No window")
         }
         
-        if window.rootViewController?.presentedViewController != nil {
-            window.rootViewController?.dismiss(animated: options.animated)
+        if window.rootViewController!.presentedViewController != nil {
+            window.rootViewController!.dismiss(animated: options.animated)
         }
         root.modalPresentationStyle = .fullScreen
-        window.rootViewController?.present(root, animated: options.animated)
+        window.rootViewController!.present(root, animated: options.animated)
         
         return SetRootResult(id: root.componentId!)
     }
@@ -180,6 +168,28 @@ class NativeNavigation: NSObject {
         }
 
         self.componentsById.removeAll()
+    }
+    
+    @MainActor
+    func viewReady(_ options: ViewReadyOptions) async throws {
+        guard let continuation = viewReadyContinuations[options.id] else {
+            throw NativeNavigatorError.illegalState(message: "No view ready continuation found: \(options.id)")
+        }
+        
+        continuation.resume()
+    }
+    
+    @MainActor
+    private func createViewController(_ spec: ComponentSpec) async throws -> UIViewController {
+        if let stackSpec = spec as? StackSpec {
+            return try await createStack(stackSpec)
+        } else if let tabsSpec = spec as? TabsSpec {
+            return try await createTabs(tabsSpec)
+        } else if let viewSpec = spec as? ViewSpec {
+            return try await createView(viewSpec)
+        } else {
+            throw NativeNavigatorError.illegalState(message: "Unsupported component spec \(spec.type)")
+        }
     }
     
     private func findStack(name: String?) throws -> UINavigationController {
@@ -319,20 +329,30 @@ class NativeNavigation: NSObject {
         if let componentOptions = options.options {
             try self.configureViewController(tc, options: componentOptions, animated: false)
         }
-
-        var vcs: [UIViewController] = []
-        for tabOption in options.tabs {
-            let tab = try await self.createViewController(tabOption)
-            vcs.append(tab)
+        
+        /* Load tabs asynchronously */
+        let vcs: [UIViewController] = try await withThrowingTaskGroup(of: UIViewController.self) { [self] group in
+            for tabOption in options.tabs {
+                group.addTask {
+                    try await self.createViewController(tabOption)
+                }
+            }
+            
+            var result: [UIViewController] = []
+            for try await vc in group {
+                result.append(vc)
+            }
+            return result
         }
-
+        
         tc.viewControllers = vcs
 
         _ = try storeComponent(tc, options: options)
         return tc
     }
 
-    private func createView(_ options: ViewSpec) throws -> UIViewController {
+    @MainActor
+    private func createView(_ options: ViewSpec) async throws -> UIViewController {
         let vc = NativeNavigationViewController(path: options.path, state: options.state)
         if let componentOptions = options.options {
             try self.configureViewController(vc, options: componentOptions, animated: false)
@@ -345,15 +365,20 @@ class NativeNavigation: NSObject {
             notificationData["state"] = state
         }
 
-        /* Callback to JavaScript to trigger a call to window.open to create the WKWebView and then init it */
-        self.plugin.notifyListeners("createView", data: notificationData, retainUntilConsumed: true)
-
         vc.onDeinit = {
             self.plugin.notifyListeners("destroyView", data: ["id": id], retainUntilConsumed: true)
             DispatchQueue.main.async {
                 self.removeComponent(id) // TODO call removeComponent for stacks and tabs too
             }
         }
+        
+        await withCheckedContinuation { continuation in
+            viewReadyContinuations[id] = continuation
+            
+            /* Callback to JavaScript to trigger a call to window.open to create the WKWebView and then init it */
+            self.plugin.notifyListeners("createView", data: notificationData, retainUntilConsumed: true)
+        }
+        
         return vc
     }
 
@@ -384,14 +409,33 @@ class NativeNavigation: NSObject {
         }
         
         if let navigationController = viewController as? UINavigationController {
-            let a = UIBarAppearance()
-            a.backgroundColor = .red
-            
-            let aa = UINavigationBarAppearance(barAppearance: a)
-            aa.titleTextAttributes = [ .foregroundColor: UIColor.blue ]
-            navigationController.navigationBar.prefersLargeTitles = true
-            navigationController.navigationBar.scrollEdgeAppearance = aa
-            navigationController.navigationBar.standardAppearance = aa
+            if let barOptions = options.bar {
+                let a = UIBarAppearance(barAppearance: navigationController.navigationBar.standardAppearance)
+                if let color = barOptions.background?.color {
+                    a.backgroundColor = color
+                }
+                
+                let aa = UINavigationBarAppearance(barAppearance: a)
+                if let titleOptions = barOptions.title {
+                    if let color = titleOptions.color {
+                        aa.titleTextAttributes[.foregroundColor] = color
+                    }
+                    if let font = titleOptions.font {
+                        aa.titleTextAttributes[.font] = font
+                    }
+                }
+                if let buttonOptions = barOptions.buttons {
+                    if let color = buttonOptions.color {
+                        aa.buttonAppearance.normal.titleTextAttributes[.foregroundColor] = color
+                    }
+                    if let font = buttonOptions.font {
+                        aa.buttonAppearance.normal.titleTextAttributes[.font] = font
+                    }
+                }
+                
+                navigationController.navigationBar.scrollEdgeAppearance = aa
+                navigationController.navigationBar.standardAppearance = aa
+            }
         }
 
         if let tabOptions = options.tab {

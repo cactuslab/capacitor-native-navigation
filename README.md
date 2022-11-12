@@ -19,7 +19,7 @@ npx cap sync
 * [`push(...)`](#push)
 * [`pop(...)`](#pop)
 * [`setOptions(...)`](#setoptions)
-* [`reset()`](#reset)
+* [`reset(...)`](#reset)
 * [Interfaces](#interfaces)
 * [Type Aliases](#type-aliases)
 
@@ -65,7 +65,7 @@ Present a new native UI as a modal.
 ### dismiss(...)
 
 ```typescript
-dismiss(options: DismissOptions) => any
+dismiss(options?: DismissOptions | undefined) => any
 ```
 
 Dismiss a native UI.
@@ -128,13 +128,17 @@ setOptions(options: SetComponentOptions) => any
 --------------------
 
 
-### reset()
+### reset(...)
 
 ```typescript
-reset() => any
+reset(options?: ResetOptions | undefined) => any
 ```
 
 Remove all of the native UI and reset back to the root Capacitor webview.
+
+| Param         | Type                                                  |
+| ------------- | ----------------------------------------------------- |
+| **`options`** | <code><a href="#resetoptions">ResetOptions</a></code> |
 
 **Returns:** <code>any</code>
 
@@ -146,9 +150,10 @@ Remove all of the native UI and reset back to the root Capacitor webview.
 
 #### SetRootOptions
 
-| Prop            | Type                                                      | Description                                          |
-| --------------- | --------------------------------------------------------- | ---------------------------------------------------- |
-| **`component`** | <code><a href="#componentspecs">ComponentSpecs</a></code> | The component to set as the root of the application. |
+| Prop            | Type                                                      | Description                                              |
+| --------------- | --------------------------------------------------------- | -------------------------------------------------------- |
+| **`component`** | <code><a href="#componentspecs">ComponentSpecs</a></code> | The component to set as the root of the application.     |
+| **`animated`**  | <code>boolean</code>                                      | Whether to animate setting the root. Defaults to `false` |
 
 
 #### StackSpec
@@ -215,11 +220,12 @@ Remove all of the native UI and reset back to the root Capacitor webview.
 
 #### PushOptions
 
-| Prop            | Type                                                | Description                                                      |
-| --------------- | --------------------------------------------------- | ---------------------------------------------------------------- |
-| **`component`** | <code><a href="#viewspec">ViewSpec</a></code>       | The options for the view to push onto the stack.                 |
-| **`stack`**     | <code><a href="#componentid">ComponentId</a></code> | The stack to push to, or undefined to push to the current stack. |
-| **`animated`**  | <code>boolean</code>                                | Whether to animate the push. Defaults to `true`                  |
+| Prop            | Type                                                | Description                                                                |
+| --------------- | --------------------------------------------------- | -------------------------------------------------------------------------- |
+| **`component`** | <code><a href="#viewspec">ViewSpec</a></code>       | The options for the view to push onto the stack.                           |
+| **`stack`**     | <code><a href="#componentid">ComponentId</a></code> | The stack to push to, or undefined to push to the current stack.           |
+| **`animated`**  | <code>boolean</code>                                | Whether to animate the push. Defaults to `true`                            |
+| **`replace`**   | <code>boolean</code>                                | Whether to replace the currently top component or not. Defaults to `false` |
 
 
 #### PushResult
@@ -250,10 +256,44 @@ Remove all of the native UI and reset back to the root Capacitor webview.
 
 #### SetComponentOptions
 
-| Prop           | Type                                                | Description                                         |
-| -------------- | --------------------------------------------------- | --------------------------------------------------- |
-| **`id`**       | <code><a href="#componentid">ComponentId</a></code> |                                                     |
-| **`animated`** | <code>boolean</code>                                | Whether to animate the changes. Defaults to `false` |
+| Prop           | Type                                                                | Description                                         |
+| -------------- | ------------------------------------------------------------------- | --------------------------------------------------- |
+| **`id`**       | <code><a href="#componentid">ComponentId</a></code>                 |                                                     |
+| **`animated`** | <code>boolean</code>                                                | Whether to animate the changes. Defaults to `false` |
+| **`options`**  | <code><a href="#allcomponentoptions">AllComponentOptions</a></code> |                                                     |
+
+
+#### StackOptions
+
+| Prop      | Type                                                                            |
+| --------- | ------------------------------------------------------------------------------- |
+| **`bar`** | <code>{ background?: { color?: string; }; title?: { color?: string; }; }</code> |
+
+
+#### ComponentOptions
+
+| Prop                         | Type                                                                                             | Description                                       |
+| ---------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------- |
+| **`title`**                  | <code>string \| null</code>                                                                      |                                                   |
+| **`stack`**                  | <code>{ backItem?: <a href="#stackitem">StackItem</a>; leftItems?: {}; rightItems?: {}; }</code> | Options for when the component is used in a stack |
+| **`tab`**                    | <code>{ image?: string; badgeValue?: string; }</code>                                            | Options for when the component is used in a tab   |
+| **`modalPresentationStyle`** | <code><a href="#modalpresentationstyle">ModalPresentationStyle</a></code>                        |                                                   |
+
+
+#### StackItem
+
+| Prop        | Type                                          |
+| ----------- | --------------------------------------------- |
+| **`id`**    | <code><a href="#buttonid">ButtonId</a></code> |
+| **`title`** | <code>string</code>                           |
+| **`image`** | <code>string</code>                           |
+
+
+#### ResetOptions
+
+| Prop           | Type                 | Description                                                                       |
+| -------------- | -------------------- | --------------------------------------------------------------------------------- |
+| **`animated`** | <code>boolean</code> | Whether to animate resetting the navigation back to Capacitor Defaults to `false` |
 
 
 ### Type Aliases
@@ -272,5 +312,30 @@ Remove all of the native UI and reset back to the root Capacitor webview.
 #### ComponentId
 
 <code>string</code>
+
+
+#### AllComponentOptions
+
+<code><a href="#stackoptions">StackOptions</a> | <a href="#tabsoptions">TabsOptions</a> | <a href="#viewoptions">ViewOptions</a></code>
+
+
+#### TabsOptions
+
+<code><a href="#componentoptions">ComponentOptions</a></code>
+
+
+#### ButtonId
+
+<code>string</code>
+
+
+#### ModalPresentationStyle
+
+<code>'fullScreen' | 'pageSheet' | 'formSheet'</code>
+
+
+#### ViewOptions
+
+<code><a href="#componentoptions">ComponentOptions</a></code>
 
 </docgen-api>

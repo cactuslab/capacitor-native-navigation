@@ -3,7 +3,13 @@ package com.cactuslab.capacitor.nativenavigation.types
 import com.cactuslab.capacitor.nativenavigation.helpers.getJSObjectArray
 import com.getcapacitor.JSObject
 
-class StackConfig(val backItem: StackItem?, val leftItems: List<StackItem>?, val rightItems: List<StackItem>?) {
+class StackConfig(var backItem: StackItem?, var leftItems: List<StackItem>?, var rightItems: List<StackItem>?) {
+
+    fun mergeOptions(other: StackConfig) {
+        other.backItem?.let { this.backItem = it }
+        other.leftItems?.let { this.leftItems = it }
+        other.rightItems?.let { this.rightItems = it }
+    }
 
     companion object {
         fun fromJSObject(jsObject: JSObject) : StackConfig {

@@ -4,8 +4,7 @@
     android:id="@+id/root_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".ui.NavigationActivity">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/navigation_host"
@@ -18,6 +17,16 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:defaultNavHost="true"
         app:navGraph="@navigation/native_navigation"
+        />
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:layout_gravity="bottom"
+        android:id="@+id/bottom_navigation_view"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

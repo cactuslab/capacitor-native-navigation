@@ -1,12 +1,10 @@
 package com.cactuslab.capacitor.nativenavigation
 
-import android.os.Build
 import android.util.Log
 import android.webkit.WebChromeClient
 import androidx.lifecycle.ViewModelProvider
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
-import com.cactuslab.capacitor.nativenavigation.exceptions.InvalidParameterException
 import com.cactuslab.capacitor.nativenavigation.exceptions.MissingParameterException
 import com.cactuslab.capacitor.nativenavigation.types.*
 import com.getcapacitor.*
@@ -37,6 +35,17 @@ class NativeNavigationPlugin : Plugin() {
                     call = call
                 )
             }
+        } catch (e: MissingParameterException) {
+            call.reject(e.localizedMessage)
+        }
+    }
+
+    @PluginMethod
+    fun viewReady(call: PluginCall) {
+        try {
+            val options = ViewReadyOptions.fromJSObject(call.data)
+            implementation.viewReady(options = options)
+            call.resolve()
         } catch (e: MissingParameterException) {
             call.reject(e.localizedMessage)
         }

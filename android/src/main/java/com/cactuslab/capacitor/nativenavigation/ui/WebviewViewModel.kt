@@ -1,6 +1,8 @@
 package com.cactuslab.capacitor.nativenavigation.ui
 
 import android.os.Bundle
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.cactuslab.capacitor.nativenavigation.types.ComponentOptions
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,11 +14,18 @@ class WebviewViewModel: ViewModel() {
 
     var bundledState: Bundle? = null
 
-    private val componentOptionsState = MutableStateFlow<ComponentOptions?>(null)
-    val componentOptionsLiveData = componentOptionsState.asLiveData()
+    private val componentOptionsState = MutableLiveData<ComponentOptions>()
+    val componentOptionsLiveData: LiveData<ComponentOptions> = componentOptionsState
 
     fun setComponentOptions(options: ComponentOptions?) {
-       componentOptionsState.value = options
+
+        val currentOptions = componentOptionsState.value
+        if (options != null && currentOptions != null) {
+            currentOptions.mergeOptions(options)
+            componentOptionsState.postValue(currentOptions!!)
+        } else if (currentOptions == null && options != null) {
+            componentOptionsState.postValue(options!!)
+        }
     }
 
 }

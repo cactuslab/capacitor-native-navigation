@@ -9,7 +9,8 @@ class SetComponentOptions(val id: String, val animated: Boolean, val options: Co
         fun fromJSObject(jsObject: JSObject): SetComponentOptions {
             val id = jsObject.getString("id") ?: throw MissingParameterException("id")
             val animated = jsObject.getBoolean("animated", false) ?: false
-            val options = ComponentOptions.fromJSObject(jsObject)
+            val componentJS = jsObject.getJSObject("options") ?: throw MissingParameterException("options")
+            val options = ComponentOptions.fromJSObject(componentJS)
 
             return SetComponentOptions(id, animated, options)
         }

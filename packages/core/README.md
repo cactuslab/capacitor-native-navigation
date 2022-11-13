@@ -5,7 +5,7 @@ Native navigation for Capacitor apps
 ## Install
 
 ```bash
-npm install native-navigation
+npm install @cactuslab/native-navigation
 npx cap sync
 ```
 

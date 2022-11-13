@@ -1,7 +1,7 @@
 import type { PluginListenerHandle } from '@capacitor/core'
-import { NativeNavigation } from 'native-navigation'
-import type { ClickEventData } from 'native-navigation'
-import { createNavigator } from 'native-navigation/react-router'
+import { NativeNavigation } from '@cactuslab/native-navigation'
+import type { ClickEventData } from '@cactuslab/native-navigation'
+import { createNavigator } from '@cactuslab/native-navigation/react-router'
 import { useEffect } from 'react'
 import {  Route, Router, Routes, useNavigate } from 'react-router-dom'
 

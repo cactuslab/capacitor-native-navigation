@@ -1,4 +1,4 @@
-import { NativeNavigation } from 'native-navigation'
+import { NativeNavigation } from '@cactuslab/native-navigation'
 
 import diamond from '../assets/imgs/diamond@2x.png'
 import flags from '../assets/imgs/flag.2.crossed@2x.png'

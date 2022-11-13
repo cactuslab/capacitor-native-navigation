@@ -14,12 +14,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@cactuslab/native-navigation": "^0.0.1",
     "@capacitor/android": "^4.3.0",
     "@capacitor/camera": "latest",
     "@capacitor/core": "latest",
     "@capacitor/ios": "^4.0.0",
     "@capacitor/splash-screen": "latest",
-    "native-navigation": "^0.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.4.1"

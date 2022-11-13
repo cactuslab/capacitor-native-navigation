@@ -1,5 +1,5 @@
-import { NativeNavigation } from 'native-navigation'
-import { useNativeNavigationContext } from 'native-navigation/react'
+import { NativeNavigation } from '@cactuslab/native-navigation'
+import { useNativeNavigationContext } from '@cactuslab/native-navigation/react'
 import React, { useCallback, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 

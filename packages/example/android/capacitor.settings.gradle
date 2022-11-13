@@ -2,11 +2,11 @@
 include ':capacitor-android'
 project(':capacitor-android').projectDir = new File('../../../node_modules/.pnpm/@capacitor+android@4.4.0_@capacitor+core@4.4.0/node_modules/@capacitor/android/capacitor')
 
+include ':cactuslab-native-navigation'
+project(':cactuslab-native-navigation').projectDir = new File('../../core/android')
+
 include ':capacitor-camera'
 project(':capacitor-camera').projectDir = new File('../../../node_modules/.pnpm/@capacitor+camera@4.1.3_@capacitor+core@4.4.0/node_modules/@capacitor/camera/android')
 
 include ':capacitor-splash-screen'
 project(':capacitor-splash-screen').projectDir = new File('../../../node_modules/.pnpm/@capacitor+splash-screen@4.1.1_@capacitor+core@4.4.0/node_modules/@capacitor/splash-screen/android')
-
-include ':native-navigation'
-project(':native-navigation').projectDir = new File('../../core/android')

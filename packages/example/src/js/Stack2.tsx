@@ -1,4 +1,4 @@
-import { NativeNavigation } from 'native-navigation'
+import { NativeNavigation } from '@cactuslab/native-navigation'
 import React, { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 

@@ -1,6 +1,6 @@
 import { SplashScreen } from '@capacitor/splash-screen';
-import { NativeNavigation } from 'native-navigation'
-import { initReact } from 'native-navigation/react'
+import { NativeNavigation } from '@cactuslab/native-navigation'
+import { initReact } from '@cactuslab/native-navigation/react'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 

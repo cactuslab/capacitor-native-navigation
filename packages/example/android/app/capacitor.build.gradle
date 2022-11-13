@@ -9,9 +9,9 @@ android {
 
 apply from: "../capacitor-cordova-android-plugins/cordova.variables.gradle"
 dependencies {
+    implementation project(':cactuslab-native-navigation')
     implementation project(':capacitor-camera')
     implementation project(':capacitor-splash-screen')
-    implementation project(':native-navigation')
 
 }
 

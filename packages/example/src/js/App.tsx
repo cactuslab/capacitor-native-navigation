@@ -1,4 +1,4 @@
-import { NativeNavigation } from 'native-navigation'
+import { NativeNavigation } from '@cactuslab/native-navigation'
 import React from 'react'
 
 export default function App(props: {

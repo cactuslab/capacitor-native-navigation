@@ -129,7 +129,7 @@ extension ComponentOptions {
 extension ComponentOptions.StackOptions {
 
     typealias StackOptions = ComponentOptions.StackOptions
-    typealias StackItem = ComponentOptions.StackItem
+    typealias StackItem = ComponentOptions.StackBarItem
 
     static func fromJSObject(_ object: JSObjectLike) throws -> StackOptions {
         var result = StackOptions()
@@ -163,9 +163,9 @@ extension ComponentOptions.StackOptions {
 
 }
 
-extension ComponentOptions.StackItem {
+extension ComponentOptions.StackBarItem {
 
-    typealias This = ComponentOptions.StackItem
+    typealias This = ComponentOptions.StackBarItem
 
     static func fromJSObject(_ object: JSObjectLike) throws -> This {
         guard let id = object.getString("id") else {

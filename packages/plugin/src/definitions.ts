@@ -223,9 +223,9 @@ export interface ComponentOptions {
 	 * Options for when the component is used in a stack
 	 */
 	stack?: {
-		backItem?: StackItem
-		leftItems?: StackItem[]
-		rightItems?: StackItem[]
+		backItem?: StackBarItem
+		leftItems?: StackBarItem[]
+		rightItems?: StackBarItem[]
 	}
 
 	/**
@@ -284,7 +284,7 @@ export interface ResetOptions {
 	animated?: boolean
 }
 
-interface StackItem {
+interface StackBarItem {
 	id: ButtonId
 	title: string
 	image?: string

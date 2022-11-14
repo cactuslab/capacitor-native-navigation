@@ -186,7 +186,7 @@ struct ComponentOptions {
         var rightItems: [StackItem]?
     }
 
-    struct StackItem {
+    struct StackBarItem {
         var id: ButtonId
         var title: String
         var image: String?

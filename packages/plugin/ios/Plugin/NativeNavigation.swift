@@ -473,7 +473,7 @@ class NativeNavigation: NSObject {
             }
         }
 
-        func toBarButtonItem(_ stackItem: ComponentOptions.StackItem) throws -> UIBarButtonItem {
+        func toBarButtonItem(_ stackItem: ComponentOptions.StackBarItem) throws -> UIBarButtonItem {
             let action = UIAction(title: stackItem.title) { [weak viewController] _ in
                 if let viewController = viewController, let componentId = viewController.componentId {
                     let data = ["buttonId": stackItem.id, "componentId": componentId]

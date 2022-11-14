@@ -1,9 +1,8 @@
+import { NativeNavigationEvents } from '@cactuslab/native-navigation'
+import type { ComponentId, CreateViewEventData, DestroyViewEventData, DismissOptions, DismissResult, ClickEventData, AllComponentOptions, NativeNavigationPluginInternal, NativeNavigationPlugin } from '@cactuslab/native-navigation';
 import type { Plugin, PluginListenerHandle } from '@capacitor/core';
 import React, { useContext } from 'react';
 import ReactDOM from 'react-dom/client'
-
-import type { ComponentId, CreateViewEventData, DestroyViewEventData, DismissOptions, DismissResult, ClickEventData, AllComponentOptions, NativeNavigationPluginInternal, NativeNavigationPlugin } from '@cactuslab/native-navigation';
-import { NativeNavigationEvents } from '@cactuslab/native-navigation'
 
 export interface NativeNavigationReactRootProps {
 	id: ComponentId

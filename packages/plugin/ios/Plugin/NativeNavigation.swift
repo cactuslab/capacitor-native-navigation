@@ -394,6 +394,11 @@ class NativeNavigation: NSObject {
                 viewController.title = nil
             case .value(let title):
                 viewController.title = title
+                
+                /* If there is no title set on a UIViewController when it's the root of a stack, the title doesn't show up immediately unless... */
+                if let nc = viewController.navigationController {
+                    nc.navigationBar.setNeedsLayout()
+                }
             }
         }
 

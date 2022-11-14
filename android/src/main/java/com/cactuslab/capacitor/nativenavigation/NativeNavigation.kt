@@ -1,5 +1,6 @@
 package com.cactuslab.capacitor.nativenavigation
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.os.Message
@@ -13,8 +14,11 @@ import android.webkit.WebViewClient
 import android.widget.LinearLayout
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavOptions
 import androidx.navigation.NavType
 import androidx.navigation.createGraph
 import androidx.navigation.fragment.NavHostFragment
@@ -24,6 +28,7 @@ import androidx.navigation.ui.AppBarConfiguration
 import com.cactuslab.capacitor.nativenavigation.databinding.ActivityNavigationBinding
 import com.cactuslab.capacitor.nativenavigation.types.*
 import com.cactuslab.capacitor.nativenavigation.ui.BlankViewFragment
+import com.cactuslab.capacitor.nativenavigation.ui.ModalBottomSheet
 import com.cactuslab.capacitor.nativenavigation.ui.NavigationViewFragment
 import com.getcapacitor.PluginCall
 import kotlinx.coroutines.delay
@@ -125,6 +130,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         }.also { activity.onBackPressedDispatcher.addCallback(it) }
     }
 
+    @SuppressLint("SetJavaScriptEnabled")
     private fun makeWebView(id: String? = null): WebView {
         val webView = WebView(plugin.context)
         val settings = webView.settings
@@ -206,7 +212,8 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                         notifyCreateView(screen.id)
 
                         viewActions[screen.id] = {
-                            navController.setGraph(R.navigation.native_navigation, startDestinationArgs = Bundle().also { it.putString("optionsId", screen.id) })
+                            navController.setGraph(R.navigation.native_navigation, startDestinationArgs = bundleOf(
+                                OPTIONS_ID to screen.id))
                         }
                     }
                 }
@@ -219,7 +226,8 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                     notifyCreateView(component.id)
 
                     viewActions[component.id] = {
-                        navController.setGraph(R.navigation.native_navigation, startDestinationArgs = Bundle().also { it.putString("optionsId", component.id) })
+                        navController.setGraph(R.navigation.native_navigation, startDestinationArgs = bundleOf(
+                            OPTIONS_ID to component.id))
                     }
                 }
                 else -> {}
@@ -230,10 +238,35 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
     }
 
     fun present(options: PresentOptions, call: PluginCall) {
-//        Log.d(TAG, "Asked to present: ${options.id}, animated: ${options.animated}")
-//        val id = options.id
-//        val result = PresentResult(id)
-//        call.resolve(result.toJSObject())
+        plugin.activity.runOnUiThread {
+            val component = options.component
+            insertComponent(component)
+
+            val webView = makeWebView(component.id)
+            viewModel.postWebView(webView, component.id)
+            val navController = navControllerOrCreate()
+
+            viewActions[component.id] = {
+                val action = NativeNavigationDirections.actionGlobalNavScreen(component.id)
+                navController.navigate(action, NavOptions.Builder()
+                    .setLaunchSingleTop(true)
+                    .setRestoreState(false)
+                    .setPopUpTo(navController.graph.findStartDestination().id, inclusive = true,
+                        saveState = true
+                    )
+                    .build())
+//                val bottomsheet = ModalBottomSheet().also {
+//                    it.arguments = bundleOf(OPTIONS_ID to component.id)
+//                }
+//                bottomsheet.show(plugin.activity.supportFragmentManager, component.id)
+            }
+
+            notifyCreateView(component.id)
+
+            val result = PresentResult(component.id)
+            call.resolve(result.toJSObject())
+        }
+
     }
 
     fun pop(call: PluginCall, activity: AppCompatActivity) {
@@ -243,36 +276,35 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
     fun push(options: PushOptions, call: PluginCall) {
 
-        val component = options.component
-        insertComponent(component)
-
-        val stackId = currentStackId ?: run {
-            UUID.randomUUID().toString().also { currentStackId = it }
-        }
-
-        Log.d(TAG, "Asked to push: ${component.id} for createOptions: $component")
-
         plugin.activity.runOnUiThread {
+            val component = options.component
+            insertComponent(component)
+
+            val stackId = currentStackId ?: run {
+                UUID.randomUUID().toString().also { currentStackId = it }
+            }
+
+            Log.d(TAG, "Asked to push: ${component.id} for createOptions: $component")
+
             val navController = navControllerOrCreate()
 
             val webView = makeWebView(component.id)
             viewModel.postWebView(webView, component.id)
-            notifyCreateView(component.id)
-
             viewActions[component.id] = {
                 val action = NativeNavigationDirections.actionGlobalNavScreen(component.id)
                 navController.navigate(action)
             }
+
+            notifyCreateView(component.id)
 //            plugin.activity.lifecycleScope.launch {
 //                delay(400)
 //                val action = NativeNavigationDirections.actionGlobalNavScreen(component.id)
 //                navController.navigate(action)
 //            }
+
+            val result = PushResult(stackId )
+            call.resolve(result.toJSObject())
         }
-
-        val result = PushResult(stackId )
-        call.resolve(result.toJSObject())
-
     }
 
 
@@ -284,7 +316,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         Log.d(TAG, "windowOpen with url ${view!!.url!!}")
 
 
-        val webView = webviewsCache.get(component.id)!!
+        val webView = webviewsCache.remove(component.id)!!
 
 //        webView.loadDataWithBaseURL()
 
@@ -299,7 +331,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         }
 
         viewModel.setHtml(view.url!!, webView)
-        webviewsCache.remove(component.id)
+
 
         return true
     }
@@ -311,6 +343,8 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
     companion object {
         private const val TAG = "NativeNavigation"
+
+        private const val OPTIONS_ID = "optionsId"
     }
 
 }

@@ -425,10 +425,10 @@ class NativeNavigation: NSObject {
                 viewController.navigationItem.backButtonTitle = item.title
             }
             if let items = stackOptions.leftItems {
-                viewController.navigationItem.leftBarButtonItems = items.map({ item in toBarButtonItem(item) })
+                viewController.navigationItem.leftBarButtonItems = try items.map({ item in try toBarButtonItem(item) })
             }
             if let items = stackOptions.rightItems {
-                viewController.navigationItem.rightBarButtonItems = items.map({ item in toBarButtonItem(item) })
+                viewController.navigationItem.rightBarButtonItems = try items.map({ item in try toBarButtonItem(item) })
             }
         }
         
@@ -473,13 +473,16 @@ class NativeNavigation: NSObject {
             }
         }
 
-        func toBarButtonItem(_ stackItem: ComponentOptions.StackItem) -> UIBarButtonItem {
+        func toBarButtonItem(_ stackItem: ComponentOptions.StackItem) throws -> UIBarButtonItem {
             let action = UIAction(title: stackItem.title) { [weak viewController] _ in
                 if let viewController = viewController, let componentId = viewController.componentId {
                     let data = ["buttonId": stackItem.id, "componentId": componentId]
                     self.plugin.notifyListeners("click:\(componentId)", data: data, retainUntilConsumed: true)
                     self.plugin.notifyListeners("click", data: data, retainUntilConsumed: true)
                 }
+            }
+            if let image = stackItem.image {
+                action.image = try toImage(image)
             }
             return UIBarButtonItem(primaryAction: action)
         }

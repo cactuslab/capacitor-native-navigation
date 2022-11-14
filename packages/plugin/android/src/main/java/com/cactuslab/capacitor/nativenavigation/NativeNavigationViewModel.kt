@@ -56,7 +56,7 @@ class NativeNavigationViewModel: ViewModel() {
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
                 val string = Jsoup.connect(url).header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8").get().toString()
-                val sanitised = string.replace("<script", "<!--").replace("</script>", "-->")
+                val sanitised = string.replace("<script", "<!-- ").replace("</script>", " -->")
 //                mHtmlLiveData.postValue(sanitised)
 
                 withContext(Dispatchers.Main) {

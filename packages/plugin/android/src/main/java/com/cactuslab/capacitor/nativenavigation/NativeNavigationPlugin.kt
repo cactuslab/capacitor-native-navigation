@@ -28,6 +28,7 @@ class NativeNavigationPlugin : Plugin() {
                 val chromeClient = capacitorChromeClient()
                 bridge.webView.webChromeClient =
                     NavigationChromeClient(chromeClient, implementation)
+                bridge.webView.settings.setSupportMultipleWindows(true)
                 implementation.setRoot(
                     options = options,
                     context = context,
@@ -119,7 +120,8 @@ class NativeNavigationPlugin : Plugin() {
             val client = capacitorChromeClient()
             bridge.webView.webChromeClient = client
 
-            implementation.reset(call)
+            implementation.reset()
+            call.resolve()
         }
     }
 

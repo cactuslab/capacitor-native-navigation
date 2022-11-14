@@ -71,7 +71,6 @@ class NavigationChromeClient(val bridgeChromeClient: WebChromeClient, val native
         return bridgeChromeClient.onConsoleMessage(consoleMessage)
     }
 
-    @SuppressLint("SetJavaScriptEnabled")
     override fun onCreateWindow(
         view: WebView?,
         isDialog: Boolean,

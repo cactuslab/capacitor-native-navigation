@@ -9,7 +9,7 @@ const config: CapacitorConfig = {
 		path: 'android'
 	},
 	server: {
-		url: 'http://tbook.local:5173/',
+		url: 'http://10.1.10.10:5173/',
 	},
 	plugins: {
 		SplashScreen: {

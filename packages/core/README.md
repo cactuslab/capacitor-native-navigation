@@ -265,9 +265,34 @@ Remove all of the native UI and reset back to the root Capacitor webview.
 
 #### StackOptions
 
-| Prop      | Type                                                                            |
-| --------- | ------------------------------------------------------------------------------- |
-| **`bar`** | <code>{ background?: { color?: string; }; title?: { color?: string; }; }</code> |
+Options for stack components
+
+| Prop      | Type                                                                                                                                                                        |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`bar`** | <code>{ background?: <a href="#filloptions">FillOptions</a>; title?: <a href="#labeloptions">LabelOptions</a>; buttons?: <a href="#labeloptions">LabelOptions</a>; }</code> |
+
+
+#### FillOptions
+
+| Prop        | Type                |
+| ----------- | ------------------- |
+| **`color`** | <code>string</code> |
+
+
+#### LabelOptions
+
+| Prop        | Type                                                |
+| ----------- | --------------------------------------------------- |
+| **`color`** | <code>string</code>                                 |
+| **`font`**  | <code><a href="#fontoptions">FontOptions</a></code> |
+
+
+#### FontOptions
+
+| Prop       | Type                |
+| ---------- | ------------------- |
+| **`name`** | <code>string</code> |
+| **`size`** | <code>number</code> |
 
 
 #### ComponentOptions
@@ -321,6 +346,8 @@ Remove all of the native UI and reset back to the root Capacitor webview.
 
 #### TabsOptions
 
+Options for tabs components
+
 <code><a href="#componentoptions">ComponentOptions</a></code>
 
 
@@ -335,6 +362,8 @@ Remove all of the native UI and reset back to the root Capacitor webview.
 
 
 #### ViewOptions
+
+Options for view components
 
 <code><a href="#componentoptions">ComponentOptions</a></code>
 

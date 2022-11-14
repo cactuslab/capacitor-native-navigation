@@ -17,7 +17,7 @@ class NativeNavigationWebViewDelegate : NSObject, WKUIDelegate {
             return self.wrapped?.webView?(webView, createWebViewWith: configuration, for: navigationAction, windowFeatures: windowFeatures)
         }
         
-        let viewId = path.dropFirst()
+        let viewId = (path as NSString).lastPathComponent
         
         do {
             return try implementation.webView(forComponent: String(viewId), configuration: configuration)

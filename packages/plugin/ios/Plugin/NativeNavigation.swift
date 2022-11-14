@@ -487,23 +487,23 @@ class NativeNavigation: NSObject {
             return UIBarButtonItem(primaryAction: action)
         }
 
-        func toImage(_ path: String) throws -> UIImage {
-            guard let url = URL(string: path, relativeTo: self.bridge.webView?.url) else {
-                throw NativeNavigatorError.illegalState(message: "Cannot construct URL for path: \(path)")
+        func toImage(_ image: ImageObject) throws -> UIImage {
+            guard let url = URL(string: image.uri, relativeTo: self.bridge.webView?.url) else {
+                throw NativeNavigatorError.illegalState(message: "Cannot construct URL for path: \(image.uri)")
             }
 
             let data: Data
             do {
                 data = try Data(contentsOf: url)
             } catch {
-                throw NativeNavigatorError.illegalState(message: "Failed to load image \"\(path)\": \(error)")
+                throw NativeNavigatorError.illegalState(message: "Failed to load image \"\(image.uri)\": \(error)")
             }
             
-            let scale = determineImageScale(path)
+            let scale = image.scale ?? determineImageScale(image.uri)
             if let uiImage = UIImage(data: data, scale: scale) {
                 return uiImage
             } else {
-                throw NativeNavigatorError.illegalState(message: "Not an image at \"\(path)\"")
+                throw NativeNavigatorError.illegalState(message: "Not an image at \"\(image.uri)\"")
             }
         }
         

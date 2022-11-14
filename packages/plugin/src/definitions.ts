@@ -232,7 +232,7 @@ export interface ComponentOptions {
 	 * Options for when the component is used in a tab
 	 */
 	tab?: {
-		image?: string
+		image?: ImageSpec
 		badgeValue?: string
 	}
 
@@ -287,7 +287,7 @@ export interface ResetOptions {
 interface StackBarItem {
 	id: ButtonId
 	title: string
-	image?: string
+	image?: ImageSpec
 }
 
 export enum NativeNavigationEvents {
@@ -324,4 +324,18 @@ export interface ViewReadyOptions {
 	 * The component id of the view that has been made ready for presentation.
 	 */
 	id: ComponentId
+}
+
+export type ImageSpec = ImageObject | string
+
+export interface ImageObject {
+	/**
+	 * The uri for the image.
+	 */
+	uri: string
+	/**
+	 * The scale to use for the image, e.g. 2 for a 2x scale image. If not provided
+	 * the scale will be determined automatically from the filename, or it will default to 1.
+	 */
+	scale?: number
 }

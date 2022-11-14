@@ -2,6 +2,8 @@ import Capacitor
 import Foundation
 
 protocol JSObjectLike {
+    
+    func has(_ key: String) -> Bool
 
     func getString(_ key: String) -> String?
 
@@ -24,6 +26,10 @@ protocol JSObjectLike {
 }
 
 extension CAPPluginCall: JSObjectLike {
+    
+    func has(_ key: String) -> Bool {
+        return self.getAny(key) != nil
+    }
 
     func isNull(_ key: String) -> Bool {
         return (self.getAny(key) as? NSNull) != nil
@@ -32,6 +38,10 @@ extension CAPPluginCall: JSObjectLike {
 }
 
 extension JSObject: JSObjectLike {
+    
+    func has(_ key: String) -> Bool {
+        return self[key] != nil
+    }
 
     func getString(_ key: String) -> String? {
         return self[key] as? String

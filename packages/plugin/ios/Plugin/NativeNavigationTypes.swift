@@ -189,11 +189,11 @@ struct ComponentOptions {
     struct StackBarItem {
         var id: ButtonId
         var title: String
-        var image: String?
+        var image: ImageObject?
     }
 
     struct TabOptions {
-        var image: String?
+        var image: ImageObject?
         var badgeValue: String?
     }
     
@@ -225,4 +225,9 @@ enum Nullable<T> {
 
 struct ViewReadyOptions {
     var id: ComponentId
+}
+
+struct ImageObject {
+    var uri: String
+    var scale: CGFloat?
 }

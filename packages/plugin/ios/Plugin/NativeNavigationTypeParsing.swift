@@ -307,7 +307,13 @@ extension PushOptions {
         
         var result = PushOptions(component: component, animated: animated)
         result.stack = object.getString("stack")
-        result.replace = object.getBool("replace")
+        if let mode = object.getString("mode") {
+            if let modeValue = PushMode(rawValue: mode) {
+                result.mode = modeValue
+            } else {
+                throw NativeNavigatorError.invalidParameter(name: "mode", value: mode)
+            }
+        }
         
         return result
     }

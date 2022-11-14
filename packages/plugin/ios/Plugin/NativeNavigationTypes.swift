@@ -120,7 +120,13 @@ struct PushOptions {
     var component: ComponentSpec
     var stack: ComponentId?
     var animated: Bool
-    var replace: Bool?
+    var mode: PushMode?
+}
+
+enum PushMode: String {
+    case push
+    case replace
+    case root
 }
 
 struct PushResult {

@@ -124,10 +124,12 @@ class NativeNavigation: NSObject {
         
         if stack.viewControllers.isEmpty {
             stack.setViewControllers([vc], animated: false)
-        } else if options.replace == true {
+        } else if options.mode == PushMode.replace {
             var viewControllers = stack.viewControllers
             viewControllers[viewControllers.count - 1] = vc
             stack.setViewControllers(viewControllers, animated: options.animated)
+        } else if options.mode == PushMode.root {
+            stack.setViewControllers([vc], animated: options.animated)
         } else {
             stack.pushViewController(vc, animated: options.animated)
         }

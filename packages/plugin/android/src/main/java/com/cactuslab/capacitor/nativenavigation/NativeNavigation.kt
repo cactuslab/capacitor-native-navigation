@@ -16,11 +16,8 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavController
+import androidx.navigation.*
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.NavOptions
-import androidx.navigation.NavType
-import androidx.navigation.createGraph
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.fragment
@@ -34,6 +31,7 @@ import com.getcapacitor.PluginCall
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.*
+import kotlin.NoSuchElementException
 import kotlin.collections.MutableMap
 import kotlin.collections.forEach
 import kotlin.collections.last
@@ -48,17 +46,21 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         viewModel.nativeNavigation = this
     }
 
+    class NavContext(val binding: ActivityNavigationBinding, val navController: NavController, val contextId: String) {
+        var currentStackId: String? = null
+    }
+
+    private val navContexts : MutableList<NavContext> = mutableListOf()
+
     private val components : MutableMap<String, ComponentSpec> = mutableMapOf()
-    var binding: ActivityNavigationBinding? = null
-    var navController: NavController? = null
 
-    var nextWindowAction: ComponentSpec? = null
-    var currentStackId: String? = null
+    private var nextWindowAction: ComponentSpec? = null
 
-    private var viewActions: MutableMap<String,() -> Unit> = mutableMapOf()
+    private val viewActions: MutableMap<String,() -> Unit> = mutableMapOf()
 
-    var onBackPressedCallback: OnBackPressedCallback? = null
-    private var webviewsCache: MutableMap<String, WebView> = mutableMapOf()
+    private var onBackPressedCallback: OnBackPressedCallback? = null
+
+    private val webviewsCache: MutableMap<String, WebView> = mutableMapOf()
 
     private fun insertComponent(component: ComponentSpec) {
         components[component.id] = component
@@ -85,18 +87,19 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         viewModel.postSetOptions(options, options.id)
     }
 
-    fun reset(call: PluginCall) {
+    fun reset() {
 
         viewActions.clear()
 
-        val binding = binding ?: return
+        navContexts.reversed().forEach { navContext ->
+            navContext.binding.root.parent?.let { viewParent ->
+                (viewParent as ViewGroup).removeView(navContext.binding.root)
+            }
+        }
 
-        binding.root.visibility = View.GONE
-//        binding.root.parent?.let { viewParent ->
-//            (viewParent as ViewGroup).removeView(binding.root)
-//        }
+        navContexts.clear()
 
-        navController?.setGraph(R.navigation.native_navigation, startDestinationArgs = Bundle())
+//        navController?.setGraph(R.navigation.native_navigation, startDestinationArgs = Bundle())
 //        this.binding = null
 
         onBackPressedCallback?.remove()
@@ -104,27 +107,47 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
 //        navController = null
         nextWindowAction = null
-        currentStackId = null
+//        currentStackId = null
 
         components.clear()
+    }
 
-        call.resolve()
+    private fun popNavContext() {
+        try {
+            val navContext = navContexts.removeLast()
+            navContext.binding.root.parent?.let { viewParent ->
+                (viewParent as ViewGroup).removeView(navContext.binding.root)
+            }
+        } catch (_: NoSuchElementException) {
+
+        }
     }
 
     private fun setupBackPressedHandler() {
         val activity = plugin.activity
-        val navController = navController!!
         onBackPressedCallback?.remove()
         onBackPressedCallback = null
         onBackPressedCallback = object: OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 Log.d(TAG, "Back pressed callback")
+
+                val navContext = navContexts.last()
+
+                val navController = navContext.navController
+
                 val didNavigate = navController.previousBackStackEntry?.let { backStackEntry ->
                     navController.navigateUp()
                 } ?: false
 
                 if (!didNavigate) {
-                    activity.finish()
+
+                    if (navContexts.size > 1) {
+                        popNavContext()
+                    } else {
+                        activity.finish()
+                    }
+
+
                 }
             }
         }.also { activity.onBackPressedDispatcher.addCallback(it) }
@@ -157,21 +180,25 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         return webView
     }
 
-    private fun navControllerOrCreate() = navController ?: kotlin.run {
-            val context = plugin.context
-            val activity = plugin.activity
-            val binding = ActivityNavigationBinding.inflate(LayoutInflater.from(context)).also { this.binding = it }
+    private fun pushNavController(id: String): NavContext {
 
-            activity.addContentView(binding.root, ViewGroup.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT))
-            activity.supportFragmentManager.findFragmentById(binding.navigationHost.id)!!.findNavController().also { navController ->
-                this.navController = navController
-                navController.addOnDestinationChangedListener { controller, destination, arguments ->
-                    Log.d(TAG, "Navigated to ${destination.displayName}")
-                }
+        val context = plugin.context
+        val activity = plugin.activity
+        val binding = ActivityNavigationBinding.inflate(LayoutInflater.from(context))
+        val navController = binding.navigationHost.getFragment<BlankViewFragment>().findNavController()
+        val navContext = NavContext(binding, navController, id)
+        val layoutParams =  ViewGroup.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT)
 
-                setupBackPressedHandler()
-            }
+        activity.addContentView(binding.root, layoutParams)
+        navController.addOnDestinationChangedListener { controller, destination, arguments ->
+            Log.d(TAG, "Navigated to ${destination.displayName}")
         }
+
+        navContexts.add(navContext)
+
+        return navContext
+    }
+
 
     fun notifyCreateView(id: String) {
         val component = components[id] as ViewSpec
@@ -192,29 +219,37 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
     }
 
     fun setRoot(options: SetRootOptions, context: Context, activity: AppCompatActivity, call: PluginCall) {
-        val component = options.component
-        insertComponent(component)
 
-        Log.d(TAG, "Asked to SetRoot: ${component.id} for createOptions: $component")
+
+
 
         plugin.activity.runOnUiThread {
-            val navController = navControllerOrCreate()
+            val component = options.component
+            insertComponent(component)
+            Log.d(TAG, "Asked to SetRoot: ${component.id} for createOptions: $component")
+
+            reset()
+            val navContext = pushNavController(component.id)
+            val navController = navContext.navController
+            val binding = navContext.binding
             setupBackPressedHandler()
-            binding?.root?.visibility = View.VISIBLE
+            binding.root.visibility = View.VISIBLE
 
             when (component) {
                 is StackSpec -> {
-                    currentStackId = component.id
                     val screen = component.stack?.last()
+
                     screen?.let {
+                        insertComponent(screen)
                         val webView = makeWebView(screen.id)
                         viewModel.postWebView(webView, screen.id)
-                        notifyCreateView(screen.id)
 
                         viewActions[screen.id] = {
                             navController.setGraph(R.navigation.native_navigation, startDestinationArgs = bundleOf(
                                 OPTIONS_ID to screen.id))
                         }
+
+                        notifyCreateView(screen.id)
                     }
                 }
                 is TabsSpec -> {
@@ -223,18 +258,18 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                 is ViewSpec -> {
                     val webView = makeWebView(component.id)
                     viewModel.postWebView(webView, component.id)
-                    notifyCreateView(component.id)
 
                     viewActions[component.id] = {
                         navController.setGraph(R.navigation.native_navigation, startDestinationArgs = bundleOf(
                             OPTIONS_ID to component.id))
                     }
+
+                    notifyCreateView(component.id)
                 }
                 else -> {}
             }
+            call.resolve(SetRootResult(component.id).toJSObject())
         }
-
-        call.resolve()
     }
 
     fun present(options: PresentOptions, call: PluginCall) {
@@ -244,17 +279,18 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
             val webView = makeWebView(component.id)
             viewModel.postWebView(webView, component.id)
-            val navController = navControllerOrCreate()
+            val navContext = pushNavController(component.id)
+            val navController = navContext.navController
 
             viewActions[component.id] = {
                 val action = NativeNavigationDirections.actionGlobalNavScreen(component.id)
-                navController.navigate(action, NavOptions.Builder()
-                    .setLaunchSingleTop(true)
-                    .setRestoreState(false)
-                    .setPopUpTo(navController.graph.findStartDestination().id, inclusive = true,
-                        saveState = true
-                    )
-                    .build())
+                navController.navigate(action, navOptions {
+                    launchSingleTop = true
+                    popUpTo(navController.graph.findStartDestination().id) {
+                        inclusive = true
+                        saveState = false
+                    }
+                })
 //                val bottomsheet = ModalBottomSheet().also {
 //                    it.arguments = bundleOf(OPTIONS_ID to component.id)
 //                }
@@ -280,13 +316,13 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
             val component = options.component
             insertComponent(component)
 
-            val stackId = currentStackId ?: run {
-                UUID.randomUUID().toString().also { currentStackId = it }
-            }
+            val navContext = navContexts.last()
+
+            val stackId = navContext.contextId
 
             Log.d(TAG, "Asked to push: ${component.id} for createOptions: $component")
 
-            val navController = navControllerOrCreate()
+            val navController = navContext.navController
 
             val webView = makeWebView(component.id)
             viewModel.postWebView(webView, component.id)

@@ -19,6 +19,8 @@ export default function Home(): React.ReactElement {
 	)
 }
 
+
+
 async function setupStack() {
 	const stackRoot = await NativeNavigation.setRoot({
 		component: {

@@ -506,8 +506,8 @@ class NativeNavigation: NSObject {
         /* Disable any JavaScript on the page, as we don't want to run any JavaScript on these
            pages... we just want to inject DOM nodes.
          */
-        let sanitizedContent = content.replacingOccurrences(of: "<script", with: "<!--")
-            .replacingOccurrences(of: "</script>", with: "-->")
+        let sanitizedContent = content.replacingOccurrences(of: "<script", with: "<!-- ")
+            .replacingOccurrences(of: "</script>", with: " -->")
         self.html = sanitizedContent
     }
 }

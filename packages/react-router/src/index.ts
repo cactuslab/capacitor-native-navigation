@@ -1,6 +1,5 @@
-import type { NavigateOptions, Navigator, To } from 'react-router-dom'
-
 import type { NativeNavigationPlugin } from '@cactuslab/native-navigation/src/definitions';
+import type { NavigateOptions, Navigator, To } from 'react-router-dom'
 
 interface Options {
 	plugin: NativeNavigationPlugin

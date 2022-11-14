@@ -8,7 +8,44 @@ importers:
     devDependencies:
       '@changesets/cli': 2.25.2
 
-  packages/core:
+  packages/example:
+    specifiers:
+      '@cactuslab/native-navigation': ^0.0.1
+      '@cactuslab/native-navigation-react': ^0.0.1
+      '@cactuslab/native-navigation-react-router': ^0.0.1
+      '@capacitor/android': ^4.3.0
+      '@capacitor/camera': latest
+      '@capacitor/cli': ^4.3.0
+      '@capacitor/core': latest
+      '@capacitor/ios': ^4.0.0
+      '@capacitor/splash-screen': latest
+      '@types/react': ^18.0.21
+      '@types/react-dom': ^18.0.6
+      '@vitejs/plugin-react': ^2.1.0
+      react: ^18.2.0
+      react-dom: ^18.2.0
+      react-router-dom: ^6.4.1
+      vite: ^3.1.3
+    dependencies:
+      '@cactuslab/native-navigation': link:../plugin
+      '@cactuslab/native-navigation-react': link:../react
+      '@cactuslab/native-navigation-react-router': link:../react-router
+      '@capacitor/android': 4.4.0_@capacitor+core@4.4.0
+      '@capacitor/camera': 4.1.3_@capacitor+core@4.4.0
+      '@capacitor/core': 4.4.0
+      '@capacitor/ios': 4.4.0_@capacitor+core@4.4.0
+      '@capacitor/splash-screen': 4.1.1_@capacitor+core@4.4.0
+      react: 18.2.0
+      react-dom: 18.2.0_react@18.2.0
+      react-router-dom: 6.4.3_biqbaboplfbrettd7655fr4n2y
+    devDependencies:
+      '@capacitor/cli': 4.4.0
+      '@types/react': 18.0.25
+      '@types/react-dom': 18.0.8
+      '@vitejs/plugin-react': 2.2.0_vite@3.2.3
+      vite: 3.2.3
+
+  packages/plugin:
     specifiers:
       '@capacitor/android': ^4.0.0
       '@capacitor/core': ^4.0.0
@@ -51,43 +88,6 @@ importers:
       swiftlint: 1.0.1
       typescript: 4.8.4
 
-  packages/example:
-    specifiers:
-      '@cactuslab/native-navigation': ^0.0.1
-      '@cactuslab/native-navigation-react': ^0.0.1
-      '@cactuslab/native-navigation-react-router': ^0.0.1
-      '@capacitor/android': ^4.3.0
-      '@capacitor/camera': latest
-      '@capacitor/cli': ^4.3.0
-      '@capacitor/core': latest
-      '@capacitor/ios': ^4.0.0
-      '@capacitor/splash-screen': latest
-      '@types/react': ^18.0.21
-      '@types/react-dom': ^18.0.6
-      '@vitejs/plugin-react': ^2.1.0
-      react: ^18.2.0
-      react-dom: ^18.2.0
-      react-router-dom: ^6.4.1
-      vite: ^3.1.3
-    dependencies:
-      '@cactuslab/native-navigation': link:../core
-      '@cactuslab/native-navigation-react': link:../react
-      '@cactuslab/native-navigation-react-router': link:../react-router
-      '@capacitor/android': 4.4.0_@capacitor+core@4.4.0
-      '@capacitor/camera': 4.1.3_@capacitor+core@4.4.0
-      '@capacitor/core': 4.4.0
-      '@capacitor/ios': 4.4.0_@capacitor+core@4.4.0
-      '@capacitor/splash-screen': 4.1.1_@capacitor+core@4.4.0
-      react: 18.2.0
-      react-dom: 18.2.0_react@18.2.0
-      react-router-dom: 6.4.3_biqbaboplfbrettd7655fr4n2y
-    devDependencies:
-      '@capacitor/cli': 4.4.0
-      '@types/react': 18.0.25
-      '@types/react-dom': 18.0.8
-      '@vitejs/plugin-react': 2.2.0_vite@3.2.3
-      vite: 3.2.3
-
   packages/react:
     specifiers:
       '@cactuslab/native-navigation': ^0.0.1
@@ -105,7 +105,7 @@ importers:
       rollup: ^2.32.0
       typescript: ~4.8.4
     devDependencies:
-      '@cactuslab/native-navigation': link:../core
+      '@cactuslab/native-navigation': link:../plugin
       '@capacitor/core': 4.4.0
       '@ionic/eslint-config': 0.3.0_3rubbgt5ekhqrcgx4uwls3neim
       '@ionic/prettier-config': 1.0.1_prettier@2.3.2
@@ -138,7 +138,7 @@ importers:
       rollup: ^2.32.0
       typescript: ~4.8.4
     devDependencies:
-      '@cactuslab/native-navigation': link:../core
+      '@cactuslab/native-navigation': link:../plugin
       '@capacitor/core': 4.4.0
       '@ionic/eslint-config': 0.3.0_3rubbgt5ekhqrcgx4uwls3neim
       '@ionic/prettier-config': 1.0.1_prettier@2.3.2
@@ -168,7 +168,7 @@ importers:
       rollup: ^2.32.0
       typescript: ~4.8.4
     dependencies:
-      '@cactuslab/native-navigation': link:../core
+      '@cactuslab/native-navigation': link:../plugin
       history: 5.3.0
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2

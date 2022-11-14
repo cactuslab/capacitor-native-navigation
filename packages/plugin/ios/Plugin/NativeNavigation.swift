@@ -54,11 +54,24 @@ class NativeNavigation: NSObject {
             throw NativeNavigatorError.illegalState(message: "No window")
         }
         
-        if window.rootViewController!.presentedViewController != nil {
-            window.rootViewController!.dismiss(animated: options.animated)
+        let container = window.rootViewController!
+        
+        /* Remove an existing root, if any */
+        for child in container.children {
+            if child.componentId != nil {
+                child.willMove(toParent: nil)
+                if let childView = child.viewIfLoaded {
+                    childView.removeFromSuperview()
+                }
+                child.removeFromParent()
+            }
         }
-        root.modalPresentationStyle = .fullScreen
-        window.rootViewController!.present(root, animated: options.animated)
+        
+        /* Add new root */
+        container.addChild(root)
+        root.view.frame = container.view.bounds
+        container.view.addSubview(root.view)
+        root.didMove(toParent: container)
         
         return SetRootResult(id: root.componentId!)
     }
@@ -244,14 +257,19 @@ class NativeNavigation: NSObject {
             throw NativeNavigatorError.illegalState(message: "No window")
         }
         
-        var result = window.rootViewController
+        var result = window.rootViewController!
+        
+        /* Find our root */
+        if let root = result.children.last {
+            result = root
+        }
 
         var foundMore = true
         while foundMore {
             foundMore = false
 
-            while result?.presentedViewController != nil {
-                result = result?.presentedViewController
+            while result.presentedViewController != nil {
+                result = result.presentedViewController!
                 foundMore = true
             }
             if let tabs = result as? UITabBarController {

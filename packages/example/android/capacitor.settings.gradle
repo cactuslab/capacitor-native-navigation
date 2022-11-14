@@ -3,7 +3,7 @@ include ':capacitor-android'
 project(':capacitor-android').projectDir = new File('../../../node_modules/.pnpm/@capacitor+android@4.4.0_@capacitor+core@4.4.0/node_modules/@capacitor/android/capacitor')
 
 include ':cactuslab-native-navigation'
-project(':cactuslab-native-navigation').projectDir = new File('../../core/android')
+project(':cactuslab-native-navigation').projectDir = new File('../../plugin/android')
 
 include ':capacitor-camera'
 project(':capacitor-camera').projectDir = new File('../../../node_modules/.pnpm/@capacitor+camera@4.1.3_@capacitor+core@4.4.0/node_modules/@capacitor/camera/android')

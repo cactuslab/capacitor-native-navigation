@@ -11,7 +11,7 @@ install! 'cocoapods', :disable_input_output_paths => true
 def capacitor_pods
   pod 'Capacitor', :path => '../../../../node_modules/.pnpm/@capacitor+ios@4.4.0_@capacitor+core@4.4.0/node_modules/@capacitor/ios'
   pod 'CapacitorCordova', :path => '../../../../node_modules/.pnpm/@capacitor+ios@4.4.0_@capacitor+core@4.4.0/node_modules/@capacitor/ios'
-  pod 'CactuslabNativeNavigation', :path => '../../../core'
+  pod 'CactuslabNativeNavigation', :path => '../../../plugin'
   pod 'CapacitorCamera', :path => '../../../../node_modules/.pnpm/@capacitor+camera@4.1.3_@capacitor+core@4.4.0/node_modules/@capacitor/camera'
   pod 'CapacitorSplashScreen', :path => '../../../../node_modules/.pnpm/@capacitor+splash-screen@4.1.1_@capacitor+core@4.4.0/node_modules/@capacitor/splash-screen'
 end

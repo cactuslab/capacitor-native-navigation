@@ -1,0 +1,75 @@
+{
+  "name": "@cactuslab/native-navigation-react-router",
+  "version": "0.0.1",
+  "description": "React Router support for Native navigation for Capacitor apps",
+  "main": "dist/plugin.cjs.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/esm/index.d.ts",
+  "unpkg": "dist/plugin.js",
+  "files": [
+    "dist/"
+  ],
+  "exports": {
+    ".": "./dist/esm/index.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cactuslab/capacitor-native-navigation.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cactuslab/capacitor-native-navigation/issues"
+  },
+  "keywords": [
+    "capacitor",
+    "plugin",
+    "native"
+  ],
+  "scripts": {
+    "lint": "npm run eslint && npm run prettier -- --check",
+    "fmt": "npm run eslint -- --fix && npm run prettier -- --write",
+    "eslint": "eslint . --ext ts",
+    "prettier": "prettier \"**/*.{css,html,ts,js,java}\"",
+    "build": "npm run clean && tsc && rollup -c rollup.config.js",
+    "clean": "rimraf ./dist",
+    "watch": "tsc --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@cactuslab/native-navigation": "^0.0.1",
+    "@capacitor/core": "^4.0.0",
+    "@ionic/eslint-config": "^0.3.0",
+    "@ionic/prettier-config": "^1.0.1",
+    "@types/react": "^18.0.24",
+    "@types/react-dom": "^18.0.8",
+    "eslint": "^7.11.0",
+    "prettier": "~2.3.0",
+    "prettier-plugin-java": "~1.0.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.4.3",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.32.0",
+    "typescript": "~4.8.4"
+  },
+  "peerDependencies": {
+    "@cactuslab/native-navigation": "^0.0.1",
+    "@capacitor/core": "^4.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.4.3"
+  },
+  "prettier": "@ionic/prettier-config",
+  "eslintConfig": {
+    "extends": "@ionic/eslint-config/recommended"
+  },
+  "capacitor": {
+    "ios": {
+      "src": "ios"
+    },
+    "android": {
+      "src": "android"
+    }
+  }
+}

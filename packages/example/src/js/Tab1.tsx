@@ -1,4 +1,4 @@
-import { useNativeNavigationContext } from '@cactuslab/native-navigation/react'
+import { useNativeNavigationContext } from '@cactuslab/native-navigation-react'
 import React, { useCallback } from 'react'
 
 let badgeCounter = 1

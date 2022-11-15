@@ -41,17 +41,21 @@ export async function initReact(options: Options): Promise<void> {
 		}
 	})
 
-	function createView(view: Window, data: CreateViewEventData) {
+	function createView(viewWindow: Window, data: CreateViewEventData) {
 		const { path, id, state } = data
 
 		/* Copy all of the currently established styles to the new window */
 		document.head.querySelectorAll('link, style').forEach(htmlElement => {
-			view.document.head.appendChild(htmlElement.cloneNode(true));
+			viewWindow.document.head.appendChild(htmlElement.cloneNode(true));
 		});
 	
-		const rootElement = view.document.getElementById(viewRootId)
+		const rootElement = viewWindow.document.getElementById(viewRootId)
 		if (rootElement) {
-			const context = createReactContext(id, plugin)
+			const context = createReactContext({
+				componentId: id,
+				viewWindow,
+				plugin,
+			})
 
 			ReactDOM.render(
 				<Context.Provider value={context}>

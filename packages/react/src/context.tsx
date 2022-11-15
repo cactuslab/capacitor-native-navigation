@@ -2,9 +2,18 @@ import type { AllComponentOptions, ClickEventData, ComponentId, DismissOptions, 
 import type { Plugin, PluginListenerHandle } from '@capacitor/core'
 import React, { useContext } from 'react'
 
-export function createReactContext(id: ComponentId, plugin: NativeNavigationPlugin & Plugin): CapacitorNativeNavigationContext {
+interface ContextInit {
+	componentId: ComponentId
+	plugin: NativeNavigationPlugin & Plugin
+	viewWindow: Window
+}
+
+export function createReactContext(options: ContextInit): CapacitorNativeNavigationContext {
+	const { componentId: id, viewWindow, plugin } = options
+
 	const context: CapacitorNativeNavigationContext = {
 		componentId: id,
+		viewWindow,
 
 		setOptions: async function(options) {
 			return plugin.setOptions({
@@ -36,7 +45,7 @@ export function createReactContext(id: ComponentId, plugin: NativeNavigationPlug
 					console.warn(`Failed to remove listener for ${id}. This may cause a memory leak.`)
 				}
 			}
-		}
+		},
 	}
 	return context
 }
@@ -47,6 +56,11 @@ type RemoveListenerFunction = () => void
 
 interface CapacitorNativeNavigationContext {
 	componentId?: string
+
+	/**
+	 * The Window that contains the current view
+	 */
+	viewWindow?: Window
 
 	/**
 	 * Set this component's options.

@@ -46,7 +46,7 @@ class BlankViewFragment : Fragment() {
 
         val binding = binding ?: return
 
-        setupToolbar(binding.toolbar)
+//        setupToolbar(binding.toolbar)
 
         setupMenu()
 

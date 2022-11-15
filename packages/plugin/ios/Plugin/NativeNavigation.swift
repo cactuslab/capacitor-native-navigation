@@ -54,11 +54,24 @@ class NativeNavigation: NSObject {
             throw NativeNavigatorError.illegalState(message: "No window")
         }
         
-        if window.rootViewController!.presentedViewController != nil {
-            window.rootViewController!.dismiss(animated: options.animated)
+        let container = window.rootViewController!
+        
+        /* Remove an existing root, if any */
+        for child in container.children {
+            if child.componentId != nil {
+                child.willMove(toParent: nil)
+                if let childView = child.viewIfLoaded {
+                    childView.removeFromSuperview()
+                }
+                child.removeFromParent()
+            }
         }
-        root.modalPresentationStyle = .fullScreen
-        window.rootViewController!.present(root, animated: options.animated)
+        
+        /* Add new root */
+        container.addChild(root)
+        root.view.frame = container.view.bounds
+        container.view.addSubview(root.view)
+        root.didMove(toParent: container)
         
         return SetRootResult(id: root.componentId!)
     }
@@ -104,16 +117,19 @@ class NativeNavigation: NSObject {
 
     @MainActor
     func push(_ options: PushOptions) async throws -> PushResult {
-        let stack = try self.findStack(name: options.stack)
-        
+        /* Create the new view controller first to avoid a race condition when the creation of a stack is waiting to complete asynchronously while push is called again */
         let vc = try await self.createViewController(options.component)
+        
+        let stack = try self.findStack(name: options.stack)
         
         if stack.viewControllers.isEmpty {
             stack.setViewControllers([vc], animated: false)
-        } else if options.replace == true {
+        } else if options.mode == PushMode.replace {
             var viewControllers = stack.viewControllers
             viewControllers[viewControllers.count - 1] = vc
             stack.setViewControllers(viewControllers, animated: options.animated)
+        } else if options.mode == PushMode.root {
+            stack.setViewControllers([vc], animated: options.animated)
         } else {
             stack.pushViewController(vc, animated: options.animated)
         }
@@ -243,14 +259,19 @@ class NativeNavigation: NSObject {
             throw NativeNavigatorError.illegalState(message: "No window")
         }
         
-        var result = window.rootViewController
+        var result = window.rootViewController!
+        
+        /* Find our root */
+        if let root = result.children.last {
+            result = root
+        }
 
         var foundMore = true
         while foundMore {
             foundMore = false
 
-            while result?.presentedViewController != nil {
-                result = result?.presentedViewController
+            while result.presentedViewController != nil {
+                result = result.presentedViewController!
                 foundMore = true
             }
             if let tabs = result as? UITabBarController {
@@ -393,6 +414,11 @@ class NativeNavigation: NSObject {
                 viewController.title = nil
             case .value(let title):
                 viewController.title = title
+                
+                /* If there is no title set on a UIViewController when it's the root of a stack, the title doesn't show up immediately unless... */
+                if let nc = viewController.navigationController {
+                    nc.navigationBar.setNeedsLayout()
+                }
             }
         }
 
@@ -401,10 +427,10 @@ class NativeNavigation: NSObject {
                 viewController.navigationItem.backButtonTitle = item.title
             }
             if let items = stackOptions.leftItems {
-                viewController.navigationItem.leftBarButtonItems = items.map({ item in toBarButtonItem(item) })
+                viewController.navigationItem.leftBarButtonItems = try items.map({ item in try toBarButtonItem(item) })
             }
             if let items = stackOptions.rightItems {
-                viewController.navigationItem.rightBarButtonItems = items.map({ item in toBarButtonItem(item) })
+                viewController.navigationItem.rightBarButtonItems = try items.map({ item in try toBarButtonItem(item) })
             }
         }
         
@@ -449,7 +475,7 @@ class NativeNavigation: NSObject {
             }
         }
 
-        func toBarButtonItem(_ stackItem: ComponentOptions.StackItem) -> UIBarButtonItem {
+        func toBarButtonItem(_ stackItem: ComponentOptions.StackBarItem) throws -> UIBarButtonItem {
             let action = UIAction(title: stackItem.title) { [weak viewController] _ in
                 if let viewController = viewController, let componentId = viewController.componentId {
                     let data = ["buttonId": stackItem.id, "componentId": componentId]
@@ -457,26 +483,29 @@ class NativeNavigation: NSObject {
                     self.plugin.notifyListeners("click", data: data, retainUntilConsumed: true)
                 }
             }
+            if let image = stackItem.image {
+                action.image = try toImage(image)
+            }
             return UIBarButtonItem(primaryAction: action)
         }
 
-        func toImage(_ path: String) throws -> UIImage {
-            guard let url = URL(string: path, relativeTo: self.bridge.webView?.url) else {
-                throw NativeNavigatorError.illegalState(message: "Cannot construct URL for path: \(path)")
+        func toImage(_ image: ImageObject) throws -> UIImage {
+            guard let url = URL(string: image.uri, relativeTo: self.bridge.webView?.url) else {
+                throw NativeNavigatorError.illegalState(message: "Cannot construct URL for path: \(image.uri)")
             }
 
             let data: Data
             do {
                 data = try Data(contentsOf: url)
             } catch {
-                throw NativeNavigatorError.illegalState(message: "Failed to load image \"\(path)\": \(error)")
+                throw NativeNavigatorError.illegalState(message: "Failed to load image \"\(image.uri)\": \(error)")
             }
             
-            let scale = determineImageScale(path)
+            let scale = image.scale ?? determineImageScale(image.uri)
             if let uiImage = UIImage(data: data, scale: scale) {
                 return uiImage
             } else {
-                throw NativeNavigatorError.illegalState(message: "Not an image at \"\(path)\"")
+                throw NativeNavigatorError.illegalState(message: "Not an image at \"\(image.uri)\"")
             }
         }
         

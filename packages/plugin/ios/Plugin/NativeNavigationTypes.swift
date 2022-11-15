@@ -120,7 +120,13 @@ struct PushOptions {
     var component: ComponentSpec
     var stack: ComponentId?
     var animated: Bool
-    var replace: Bool?
+    var mode: PushMode?
+}
+
+enum PushMode: String {
+    case push
+    case replace
+    case root
 }
 
 struct PushResult {
@@ -186,14 +192,14 @@ struct ComponentOptions {
         var rightItems: [StackItem]?
     }
 
-    struct StackItem {
+    struct StackBarItem {
         var id: ButtonId
         var title: String
-        var image: String?
+        var image: ImageObject?
     }
 
     struct TabOptions {
-        var image: String?
+        var image: ImageObject?
         var badgeValue: String?
     }
     
@@ -225,4 +231,9 @@ enum Nullable<T> {
 
 struct ViewReadyOptions {
     var id: ComponentId
+}
+
+struct ImageObject {
+    var uri: String
+    var scale: CGFloat?
 }

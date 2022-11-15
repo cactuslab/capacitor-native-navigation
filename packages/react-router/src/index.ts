@@ -1,6 +1,6 @@
-import type { NavigateOptions, Navigator, To } from 'react-router-dom'
-
+import { PushMode } from '@cactuslab/native-navigation';
 import type { NativeNavigationPlugin } from '@cactuslab/native-navigation/src/definitions';
+import type { NavigateOptions, Navigator, To } from 'react-router-dom'
 
 interface Options {
 	plugin: NativeNavigationPlugin
@@ -72,7 +72,7 @@ export function createNavigator(options: Options): Navigator {
 						state: state || opts?.state,
 					},
 					animated: false,
-					replace: true,
+					mode: PushMode.REPLACE,
 				})
 			} catch (error) {
 				console.log(`Failed to replace ${error}`)

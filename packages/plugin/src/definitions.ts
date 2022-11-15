@@ -155,10 +155,24 @@ export interface PushOptions {
 	animated?: boolean
 
 	/**
-	 * Whether to replace the currently top component or not.
-	 * Defaults to `false`
+	 * The mode to use for the push. Defaults to `PushMode.PUSH`.
 	 */
-	replace?: boolean
+	mode?: PushMode
+}
+
+export enum PushMode {
+	/**
+	 * Push the component onto the stack.
+	 */
+	PUSH = 'push',
+	/**
+	 * Replace the current top-most component in the stack.
+	 */
+	REPLACE = 'replace',
+	/**
+	 * Reset the stack back to just the new component.
+	 */
+	ROOT = 'root',
 }
 
 export interface PushResult {
@@ -223,16 +237,16 @@ export interface ComponentOptions {
 	 * Options for when the component is used in a stack
 	 */
 	stack?: {
-		backItem?: StackItem
-		leftItems?: StackItem[]
-		rightItems?: StackItem[]
+		backItem?: StackBarItem
+		leftItems?: StackBarItem[]
+		rightItems?: StackBarItem[]
 	}
 
 	/**
 	 * Options for when the component is used in a tab
 	 */
 	tab?: {
-		image?: string
+		image?: ImageSpec
 		badgeValue?: string
 	}
 
@@ -284,10 +298,10 @@ export interface ResetOptions {
 	animated?: boolean
 }
 
-interface StackItem {
+interface StackBarItem {
 	id: ButtonId
 	title: string
-	image?: string
+	image?: ImageSpec
 }
 
 export enum NativeNavigationEvents {
@@ -324,4 +338,18 @@ export interface ViewReadyOptions {
 	 * The component id of the view that has been made ready for presentation.
 	 */
 	id: ComponentId
+}
+
+export type ImageSpec = ImageObject | string
+
+export interface ImageObject {
+	/**
+	 * The uri for the image.
+	 */
+	uri: string
+	/**
+	 * The scale to use for the image, e.g. 2 for a 2x scale image. If not provided
+	 * the scale will be determined automatically from the filename, or it will default to 1.
+	 */
+	scale?: number
 }

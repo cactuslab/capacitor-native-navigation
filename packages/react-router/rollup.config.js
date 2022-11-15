@@ -7,9 +7,7 @@ export default [
         format: 'iife',
         name: 'CapacitorNativeNavigationReactRouter',
         globals: {
-          '@capacitor/core': 'capacitorExports',
-          'react': 'React',
-          'react-dom/client': 'ReactDOM',
+          '@cactuslab/native-navigation': 'CapacitorNativeNavigation',
           'react-router-dom': 'ReactRouterDOM',
         },
         sourcemap: true,
@@ -23,9 +21,7 @@ export default [
       },
     ],
     external: [
-      '@capacitor/core',
-      'react',
-      'react-dom/client',
+      '@cactuslab/native-navigation',
       'react-router-dom'
     ],
   },

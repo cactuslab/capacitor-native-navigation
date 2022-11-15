@@ -129,7 +129,7 @@ extension ComponentOptions {
 extension ComponentOptions.StackOptions {
 
     typealias StackOptions = ComponentOptions.StackOptions
-    typealias StackItem = ComponentOptions.StackItem
+    typealias StackItem = ComponentOptions.StackBarItem
 
     static func fromJSObject(_ object: JSObjectLike) throws -> StackOptions {
         var result = StackOptions()
@@ -163,9 +163,9 @@ extension ComponentOptions.StackOptions {
 
 }
 
-extension ComponentOptions.StackItem {
+extension ComponentOptions.StackBarItem {
 
-    typealias This = ComponentOptions.StackItem
+    typealias This = ComponentOptions.StackBarItem
 
     static func fromJSObject(_ object: JSObjectLike) throws -> This {
         guard let id = object.getString("id") else {
@@ -174,10 +174,39 @@ extension ComponentOptions.StackItem {
         guard let title = object.getString("title") else {
             throw NativeNavigatorError.invalidParameter(name: "StackItem.title", value: object)
         }
-        let image = object.getString("image")
+        let image = try ImageObject.fromJSObject(object, key: "image")
         return This(id: id, title: title, image: image)
     }
 
+}
+
+extension ImageObject {
+    
+    typealias This = ImageObject
+    
+    static func fromJSObject(_ object: JSObjectLike) throws -> This {
+        guard let uri = object.getString("uri") else {
+            throw NativeNavigatorError.invalidParameter(name: "ImageObject.uri", value: object)
+        }
+        
+        var result = This(uri: uri)
+        if let scale = object.getFloat("scale") {
+            result.scale = CGFloat(scale)
+        }
+        return result
+    }
+    
+    static func fromJSObject(_ object: JSObjectLike, key: String) throws -> This? {
+        if let imageObject = object.getObject(key) {
+            return try ImageObject.fromJSObject(imageObject)
+        } else if let imageUri = object.getString(key) {
+            return This(uri: imageUri)
+        } else if object.has(key) {
+            throw NativeNavigatorError.invalidParameter(name: key, value: object)
+        } else {
+            return nil
+        }
+    }
 }
 
 extension ComponentOptions.TabOptions {
@@ -187,7 +216,7 @@ extension ComponentOptions.TabOptions {
     static func fromJSObject(_ object: JSObjectLike) throws -> This {
         var result = This()
         result.badgeValue = object.getString("badgeValue")
-        result.image = object.getString("image")
+        result.image = try ImageObject.fromJSObject(object, key: "image")
         return result
     }
 
@@ -278,7 +307,13 @@ extension PushOptions {
         
         var result = PushOptions(component: component, animated: animated)
         result.stack = object.getString("stack")
-        result.replace = object.getBool("replace")
+        if let mode = object.getString("mode") {
+            if let modeValue = PushMode(rawValue: mode) {
+                result.mode = modeValue
+            } else {
+                throw NativeNavigatorError.invalidParameter(name: "mode", value: mode)
+            }
+        }
         
         return result
     }

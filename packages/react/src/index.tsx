@@ -1,8 +1,12 @@
-import { NativeNavigationEvents } from '@cactuslab/native-navigation'
-import type { ComponentId, CreateViewEventData, DestroyViewEventData, DismissOptions, DismissResult, ClickEventData, AllComponentOptions, NativeNavigationPluginInternal, NativeNavigationPlugin } from '@cactuslab/native-navigation';
-import type { Plugin, PluginListenerHandle } from '@capacitor/core';
-import React, { useContext } from 'react';
+import { initViewHandler } from '@cactuslab/native-navigation'
+import type { ComponentId, CreateViewEventData, NativeNavigationPluginInternal, NativeNavigationPlugin } from '@cactuslab/native-navigation';
+import type { Plugin } from '@capacitor/core';
+import React from 'react';
 import ReactDOM from 'react-dom/client'
+
+import { createReactContext, Context } from './context';
+
+export { useNativeNavigationContext } from './context'
 
 export interface NativeNavigationReactRootProps {
 	id: ComponentId
@@ -15,35 +19,29 @@ export type NativeNavigationReactRoot = React.ComponentType<NativeNavigationReac
 interface Options {
 	plugin: NativeNavigationPlugin & Plugin
 	root: NativeNavigationReactRoot
+	
+	/**
+	 * The element id to use for the root in new windows.
+	 */
+	viewRootId?: string
 }
 
 export async function initReact(options: Options): Promise<void> {
-	const { plugin } = options
+	const { plugin, root } = options
+	const viewRootId = options.viewRootId || 'root'
 	const internalPlugin = plugin as unknown as NativeNavigationPluginInternal
 	const reactRoots: Record<ComponentId, ReactDOM.Root> = {}
 
-	await plugin.addListener(NativeNavigationEvents.CreateView, async function(data: CreateViewEventData) {
-		const { id } = data
-		console.log('view event', id)
-
-		const view = window.open(id)
-		if (view) {
-			attemptLoad(view, data)
+	initViewHandler({
+		plugin,
+		handler: {
+			createView,
+			destroyView,
+			ready,
 		}
 	})
 
-	await plugin.addListener(NativeNavigationEvents.DestroyView, function(data: DestroyViewEventData) {
-		const { id } = data
-		console.log('destroy view event', data)
-
-		const root = reactRoots[id]
-		if (root) {
-			root.unmount()
-			delete reactRoots[id]
-		}
-	})
-
-	function loadView(view: Window, data: CreateViewEventData) {
+	function createView(view: Window, data: CreateViewEventData) {
 		const { path, id, state } = data
 
 		/* Copy all of the currently established styles to the new window */
@@ -51,58 +49,24 @@ export async function initReact(options: Options): Promise<void> {
 			view.document.head.appendChild(htmlElement.cloneNode(true));
 		});
 	
-		const rootElement = view.document.getElementById("root")
+		const rootElement = view.document.getElementById(viewRootId)
 		if (rootElement) {
-			const root = ReactDOM.createRoot(rootElement)
-			const context: CapacitorNativeNavigationContext = {
-				componentId: id,
+			const reactRoot = ReactDOM.createRoot(rootElement)
+			const context = createReactContext(id, plugin)
 
-				setOptions: async function(options) {
-					return plugin.setOptions({
-						id,
-						animated: options.animated,
-						options,
-					})
-				},
-
-				dismiss: async function(options) {
-					return plugin.dismiss({
-						id,
-						...options,
-					})
-				},
-
-				addClickListener: function(func) {
-					let handle: PluginListenerHandle | undefined
-					plugin.addListener(`click:${id}`, func).then(result => {
-						handle = result
-					}).catch(reason => {
-						console.warn(`Failed to add listener for ${id}: ${reason}`)
-					})
-
-					return function() {
-						if (handle) {
-							handle.remove()
-						} else {
-							console.warn(`Failed to remove listener for ${id}. This may cause a memory leak.`)
-						}
-					}
-				}
-			}
-
-			root.render(
-				<OptionsContext.Provider value={context}>
+			reactRoot.render(
+				<Context.Provider value={context}>
 				{
-					React.createElement(options.root, {
+					React.createElement(root, {
 						path,
 						id,
 						state,
 					})
 				}
-				</OptionsContext.Provider>
+				</Context.Provider>
 			)
 	
-			reactRoots[id] = root
+			reactRoots[id] = reactRoot
 
 			/* Wait a moment to allow the webview to render the DOM... it would be nice to find a signal we could use instead of just waiting */
 			setTimeout(function() {
@@ -111,55 +75,19 @@ export async function initReact(options: Options): Promise<void> {
 				})
 			}, 20)
 		} else {
-			console.warn(`Attempted to load view "${path}" but could not find root node`)
+			console.warn(`Attempted to load view "${path}" but could not find root node: #${viewRootId}`)
 		}
 	}
-	
-	function attemptLoad(view: Window, data: CreateViewEventData) {
-		const root = view.document.getElementById("root")
-		console.log("Attempting load with root", root)
-		if (root) {
-			loadView(view, data)
-		} else {
-			setTimeout(() => attemptLoad(view, data), 9)
+
+	function destroyView(id: ComponentId) {
+		const reactRoot = reactRoots[id]
+		if (reactRoot) {
+			reactRoot.unmount()
+			delete reactRoots[id]
 		}
-	}	
-}
+	}
 
-type ClickListenerFunc = (data: ClickEventData) => void
-type RemoveListenerFunction = () => void
-
-interface CapacitorNativeNavigationContext {
-	componentId?: string
-
-	/**
-	 * Set this component's options.
-	 */
-	setOptions: (options: AllComponentOptions & { animated?: boolean }) => Promise<void>
-
-	/**
-	 * Dismiss this component, if it was presented.
-	 */
-	dismiss: (options: Omit<DismissOptions, 'id'>) => Promise<DismissResult>
-
-	/**
-	 * Add a listener for native clicks in this component.
-	 */
-	addClickListener: (func: ClickListenerFunc) => RemoveListenerFunction
-}
-
-const OptionsContext = React.createContext<CapacitorNativeNavigationContext>({
-	setOptions: async () => {
-		throw new Error('Not in a native component context')
-	},
-	dismiss: async () => {
-		throw new Error('Not in a native component context')
-	},
-	addClickListener: () => {
-		throw new Error('Not in a native component context')
-	},
-})
-
-export function useNativeNavigationContext(): CapacitorNativeNavigationContext {
-	return useContext(OptionsContext)
+	function ready(view: Window) {
+		return !!view.document.getElementById(viewRootId)
+	}
 }

@@ -22,6 +22,7 @@ npx cap sync
 * [`reset(...)`](#reset)
 * [Interfaces](#interfaces)
 * [Type Aliases](#type-aliases)
+* [Enums](#enums)
 
 </docgen-index>
 
@@ -220,12 +221,12 @@ Remove all of the native UI and reset back to the root Capacitor webview.
 
 #### PushOptions
 
-| Prop            | Type                                                | Description                                                                |
-| --------------- | --------------------------------------------------- | -------------------------------------------------------------------------- |
-| **`component`** | <code><a href="#viewspec">ViewSpec</a></code>       | The options for the view to push onto the stack.                           |
-| **`stack`**     | <code><a href="#componentid">ComponentId</a></code> | The stack to push to, or undefined to push to the current stack.           |
-| **`animated`**  | <code>boolean</code>                                | Whether to animate the push. Defaults to `true`                            |
-| **`replace`**   | <code>boolean</code>                                | Whether to replace the currently top component or not. Defaults to `false` |
+| Prop            | Type                                                | Description                                                                        |
+| --------------- | --------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| **`component`** | <code><a href="#viewspec">ViewSpec</a></code>       | The options for the view to push onto the stack.                                   |
+| **`stack`**     | <code><a href="#componentid">ComponentId</a></code> | The stack to push to, or undefined to push to the current stack.                   |
+| **`animated`**  | <code>boolean</code>                                | Whether to animate the push. Defaults to `true`                                    |
+| **`mode`**      | <code><a href="#pushmode">PushMode</a></code>       | The mode to use for the push. Defaults to <a href="#pushmode">`PushMode.PUSH`</a>. |
 
 
 #### PushResult
@@ -297,21 +298,29 @@ Options for stack components
 
 #### ComponentOptions
 
-| Prop                         | Type                                                                                             | Description                                       |
-| ---------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------- |
-| **`title`**                  | <code>string \| null</code>                                                                      |                                                   |
-| **`stack`**                  | <code>{ backItem?: <a href="#stackitem">StackItem</a>; leftItems?: {}; rightItems?: {}; }</code> | Options for when the component is used in a stack |
-| **`tab`**                    | <code>{ image?: string; badgeValue?: string; }</code>                                            | Options for when the component is used in a tab   |
-| **`modalPresentationStyle`** | <code><a href="#modalpresentationstyle">ModalPresentationStyle</a></code>                        |                                                   |
+| Prop                         | Type                                                                                                   | Description                                       |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------- |
+| **`title`**                  | <code>string \| null</code>                                                                            |                                                   |
+| **`stack`**                  | <code>{ backItem?: <a href="#stackbaritem">StackBarItem</a>; leftItems?: {}; rightItems?: {}; }</code> | Options for when the component is used in a stack |
+| **`tab`**                    | <code>{ image?: <a href="#imagespec">ImageSpec</a>; badgeValue?: string; }</code>                      | Options for when the component is used in a tab   |
+| **`modalPresentationStyle`** | <code><a href="#modalpresentationstyle">ModalPresentationStyle</a></code>                              |                                                   |
 
 
-#### StackItem
+#### StackBarItem
 
-| Prop        | Type                                          |
-| ----------- | --------------------------------------------- |
-| **`id`**    | <code><a href="#buttonid">ButtonId</a></code> |
-| **`title`** | <code>string</code>                           |
-| **`image`** | <code>string</code>                           |
+| Prop        | Type                                            |
+| ----------- | ----------------------------------------------- |
+| **`id`**    | <code><a href="#buttonid">ButtonId</a></code>   |
+| **`title`** | <code>string</code>                             |
+| **`image`** | <code><a href="#imagespec">ImageSpec</a></code> |
+
+
+#### ImageObject
+
+| Prop        | Type                | Description                                                                                                                                                         |
+| ----------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`uri`**   | <code>string</code> | The uri for the image.                                                                                                                                              |
+| **`scale`** | <code>number</code> | The scale to use for the image, e.g. 2 for a 2x scale image. If not provided the scale will be determined automatically from the filename, or it will default to 1. |
 
 
 #### ResetOptions
@@ -356,6 +365,11 @@ Options for tabs components
 <code>string</code>
 
 
+#### ImageSpec
+
+<code><a href="#imageobject">ImageObject</a> | string</code>
+
+
 #### ModalPresentationStyle
 
 <code>'fullScreen' | 'pageSheet' | 'formSheet'</code>
@@ -366,5 +380,17 @@ Options for tabs components
 Options for view components
 
 <code><a href="#componentoptions">ComponentOptions</a></code>
+
+
+### Enums
+
+
+#### PushMode
+
+| Members       | Value                  | Description                                          |
+| ------------- | ---------------------- | ---------------------------------------------------- |
+| **`PUSH`**    | <code>'push'</code>    | Push the component onto the stack.                   |
+| **`REPLACE`** | <code>'replace'</code> | Replace the current top-most component in the stack. |
+| **`ROOT`**    | <code>'root'</code>    | Reset the stack back to just the new component.      |
 
 </docgen-api>

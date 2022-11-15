@@ -1,6 +1,6 @@
 import type { AllComponentOptions, ClickEventData, ComponentId, DismissOptions, DismissResult, NativeNavigationPlugin } from '@cactuslab/native-navigation'
 import type { Plugin, PluginListenerHandle } from '@capacitor/core'
-import React, { useContext } from 'React'
+import React, { useContext } from 'react'
 
 export function createReactContext(id: ComponentId, plugin: NativeNavigationPlugin & Plugin): CapacitorNativeNavigationContext {
 	const context: CapacitorNativeNavigationContext = {

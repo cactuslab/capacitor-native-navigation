@@ -20,6 +20,7 @@ npx cap sync
 * [`pop(...)`](#pop)
 * [`setOptions(...)`](#setoptions)
 * [`reset(...)`](#reset)
+* [`get(...)`](#get)
 * [Interfaces](#interfaces)
 * [Type Aliases](#type-aliases)
 * [Enums](#enums)
@@ -146,6 +147,23 @@ Remove all of the native UI and reset back to the root Capacitor webview.
 --------------------
 
 
+### get(...)
+
+```typescript
+get(options?: GetOptions | undefined) => any
+```
+
+Get the spec of a component
+
+| Param         | Type                                              |
+| ------------- | ------------------------------------------------- |
+| **`options`** | <code><a href="#getoptions">GetOptions</a></code> |
+
+**Returns:** <code>any</code>
+
+--------------------
+
+
 ### Interfaces
 
 
@@ -227,6 +245,7 @@ Remove all of the native UI and reset back to the root Capacitor webview.
 | **`stack`**     | <code><a href="#componentid">ComponentId</a></code> | The stack to push to, or undefined to push to the current stack.                   |
 | **`animated`**  | <code>boolean</code>                                | Whether to animate the push. Defaults to `true`                                    |
 | **`mode`**      | <code><a href="#pushmode">PushMode</a></code>       | The mode to use for the push. Defaults to <a href="#pushmode">`PushMode.PUSH`</a>. |
+| **`popCount`**  | <code>number</code>                                 | How many items to pop first                                                        |
 
 
 #### PushResult
@@ -328,6 +347,13 @@ Options for stack components
 | Prop           | Type                 | Description                                                                       |
 | -------------- | -------------------- | --------------------------------------------------------------------------------- |
 | **`animated`** | <code>boolean</code> | Whether to animate resetting the navigation back to Capacitor Defaults to `false` |
+
+
+#### GetOptions
+
+| Prop     | Type                                                | Description                                                     |
+| -------- | --------------------------------------------------- | --------------------------------------------------------------- |
+| **`id`** | <code><a href="#componentid">ComponentId</a></code> | The component id to get, or undefined to get the top-most root. |
 
 
 ### Type Aliases

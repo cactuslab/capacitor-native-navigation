@@ -663,4 +663,7 @@ class NativeNavigationViewController: UIViewController {
         }
     }
 
+    override var debugDescription: String {
+        return "\(super.debugDescription) componentId=\(componentId ?? "none") path=\(path)"
+    }
 }

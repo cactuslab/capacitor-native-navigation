@@ -315,6 +315,10 @@ extension PushOptions {
             }
         }
         
+        if let popCount = object.getInt("popCount") {
+            result.popCount = popCount
+        }
+        
         return result
     }
 }

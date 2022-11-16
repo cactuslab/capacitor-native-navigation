@@ -175,6 +175,7 @@ struct PushOptions {
     var stack: ComponentId?
     var animated: Bool
     var mode: PushMode?
+    var popCount: Int?
 }
 
 enum PushMode: String {

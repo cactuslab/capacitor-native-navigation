@@ -163,6 +163,11 @@ export interface PushOptions {
 	 * The mode to use for the push. Defaults to `PushMode.PUSH`.
 	 */
 	mode?: PushMode
+
+	/**
+	 * How many items to pop first
+	 */
+	popCount?: number
 }
 
 export enum PushMode {

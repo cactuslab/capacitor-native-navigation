@@ -120,6 +120,10 @@ class NativeNavigation: NSObject {
         /* Create the new view controller first to avoid a race condition when the creation of a stack is waiting to complete asynchronously while push is called again */
         let vc = try await self.createViewController(options.component)
         
+        if let popCount = options.popCount, popCount > 0 {
+            _ = try await pop(PopOptions(stack: options.stack, count: popCount, animated: false))
+        }
+        
         let stack = try self.findStack(name: options.stack)
         
         if stack.viewControllers.isEmpty {

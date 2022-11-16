@@ -8,6 +8,8 @@ protocol ComponentSpec {
     var type: ComponentType { get }
     var id: ComponentId? { get set }
     var options: ComponentOptions? { get set }
+    
+    func toPluginResult() -> PluginCallResultData
 }
 
 struct StackSpec: ComponentSpec {
@@ -33,6 +35,58 @@ struct ViewSpec: ComponentSpec {
     
     var path: String
     var state: JSObject?
+}
+
+fileprivate func componentSpecToPluginResult(_ spec: ComponentSpec) -> PluginCallResultData {
+    var result: PluginCallResultData = [
+        "type": spec.type.rawValue,
+        ]
+    if let id = spec.id {
+        result["id"] = id
+    }
+    if let options = spec.options {
+        result["options"] = options.toPluginResult()
+    }
+    return result
+}
+
+extension StackSpec {
+    func toPluginResult() -> PluginCallResultData {
+        var result = componentSpecToPluginResult(self)
+        
+        var stackResult: [PluginCallResultData] = []
+        for child in self.stack {
+            stackResult.append(child.toPluginResult())
+        }
+        result["stack"] = stackResult
+        
+        return result
+    }
+}
+
+extension TabsSpec {
+    func toPluginResult() -> PluginCallResultData {
+        var result = componentSpecToPluginResult(self)
+        
+        var tabsResult: [PluginCallResultData] = []
+        for child in self.tabs {
+            tabsResult.append(child.toPluginResult())
+        }
+        result["tabs"] = tabsResult
+        
+        return result
+    }
+}
+
+extension ViewSpec {
+    func toPluginResult() -> PluginCallResultData {
+        var result = componentSpecToPluginResult(self)
+        result["path"] = self.path
+        if let state = self.state {
+            result["state"] = state
+        }
+        return result
+    }
 }
 
 enum ComponentType: String {
@@ -220,6 +274,15 @@ struct ComponentOptions {
     
 }
 
+extension ComponentOptions {
+    
+    func toPluginResult() -> PluginCallResultData {
+        // TODO
+        return [:]
+    }
+    
+}
+
 struct ResetOptions {
     var animated: Bool
 }
@@ -236,4 +299,8 @@ struct ViewReadyOptions {
 struct ImageObject {
     var uri: String
     var scale: CGFloat?
+}
+
+struct GetOptions {
+    var id: ComponentId?
 }

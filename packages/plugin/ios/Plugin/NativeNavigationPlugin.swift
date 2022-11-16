@@ -140,6 +140,22 @@ public class NativeNavigationPlugin: CAPPlugin {
         }
     }
     
+    @objc func get(_ call: CAPPluginCall) {
+        do {
+            let options = try GetOptions.fromJSObject(call)
+            Task {
+                do {
+                    let result = try await implementation.get(options)
+                    call.resolve(result.toPluginResult())
+                } catch {
+                    call.reject("Failed to get: \(error)")
+                }
+            }
+        } catch {
+            call.reject(error.localizedDescription)
+        }
+    }
+    
     @objc public func viewReady(_ call: CAPPluginCall) {
         do {
             let options = try ViewReadyOptions.fromJSObject(call)

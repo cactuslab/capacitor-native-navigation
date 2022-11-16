@@ -352,3 +352,17 @@ extension ViewReadyOptions {
     }
     
 }
+
+extension GetOptions {
+    
+    static func fromJSObject(_ object: JSObjectLike) throws -> GetOptions {
+        var result = GetOptions()
+        
+        if let id = object.getString("id") {
+            result.id = id
+        }
+        
+        return result
+    }
+    
+}

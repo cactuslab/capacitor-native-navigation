@@ -187,6 +187,48 @@ class NativeNavigation: NSObject {
     }
     
     @MainActor
+    func get(_ options: GetOptions) async throws -> ComponentSpec {
+        var vc: UIViewController?
+        if let id = options.id {
+            vc = self.component(id)
+            guard vc != nil else {
+                throw NativeNavigatorError.componentNotFound(name: id)
+            }
+        } else {
+            vc = try self.topViewController()
+        }
+        
+        guard let vc = vc else {
+            throw NativeNavigatorError.illegalState(message: "No current component")
+        }
+        
+        return try self.options(vc)
+    }
+    
+    @MainActor
+    private func options(_ vc: UIViewController) throws -> ComponentSpec {
+        if let vc = vc as? UINavigationController {
+            var result = StackSpec(stack: [])
+            result.id = vc.componentId
+            
+            for child in vc.viewControllers {
+                result.stack.append(try options(child))
+            }
+            return result
+        } else if let vc = vc as? UITabBarController {
+            var result = TabsSpec(tabs: [])
+            result.id = vc.componentId
+            return result
+        } else if let vc = vc as? NativeNavigationViewController {
+            var result = ViewSpec(path: vc.path)
+            result.id = vc.componentId
+            return result
+        } else {
+            throw NativeNavigatorError.illegalState(message: "Component is not of an expected type: \(vc.componentId ?? "no id")")
+        }
+    }
+    
+    @MainActor
     func viewReady(_ options: ViewReadyOptions) async throws {
         guard let continuation = viewReadyContinuations[options.id] else {
             throw NativeNavigatorError.illegalState(message: "No view ready continuation found: \(options.id)")

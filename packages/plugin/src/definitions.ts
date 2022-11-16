@@ -36,6 +36,11 @@ export interface NativeNavigationPlugin {
 	 * Remove all of the native UI and reset back to the root Capacitor webview.
 	 */
 	reset(options?: ResetOptions): Promise<void>
+
+	/**
+	 * Get the spec of a component
+	 */
+	get(options?: GetOptions): Promise<ComponentSpecs>
 }
 
 export interface NativeNavigationPluginInternal extends NativeNavigationPlugin {
@@ -352,4 +357,11 @@ export interface ImageObject {
 	 * the scale will be determined automatically from the filename, or it will default to 1.
 	 */
 	scale?: number
+}
+
+export interface GetOptions {
+	/**
+	 * The component id to get, or undefined to get the top-most root.
+	 */
+	id?: ComponentId
 }

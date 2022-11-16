@@ -45,7 +45,6 @@
     "@types/react-dom": "^18.0.8",
     "eslint": "^7.11.0",
     "prettier": "~2.3.0",
-    "prettier-plugin-java": "~1.0.2",
     "react-router-dom": "^6.4.3",
     "rimraf": "^3.0.2",
     "rollup": "^2.32.0",
@@ -61,13 +60,5 @@
   "prettier": "@ionic/prettier-config",
   "eslintConfig": {
     "extends": "@ionic/eslint-config/recommended"
-  },
-  "capacitor": {
-    "ios": {
-      "src": "ios"
-    },
-    "android": {
-      "src": "android"
-    }
   }
 }

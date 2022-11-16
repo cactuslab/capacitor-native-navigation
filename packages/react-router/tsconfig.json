@@ -14,8 +14,7 @@
     "pretty": true,
     "sourceMap": true,
     "strict": true,
-    "target": "es2017",
-    "jsx": "react"
+    "target": "es2017"
   },
   "files": ["src/index.ts"]
 }

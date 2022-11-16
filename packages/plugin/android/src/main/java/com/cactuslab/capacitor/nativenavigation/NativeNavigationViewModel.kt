@@ -18,9 +18,6 @@ class NativeNavigationViewModel: ViewModel() {
         data class SetOptions(val options: SetComponentOptions) : Signal(false)
     }
 
-    private val webViewStateFlow = MutableStateFlow<WebView?>(null)
-    val webViewLiveData = webViewStateFlow.asLiveData()
-
     var nativeNavigation: NativeNavigation? = null
 
     private val signals : MutableMap<String, MutableLiveData<Signal>> = mutableMapOf()
@@ -28,6 +25,11 @@ class NativeNavigationViewModel: ViewModel() {
 
     private val webViews : MutableMap<String, MutableLiveData<WebView>> = mutableMapOf()
     fun webViewLiveDataForId(id: String): LiveData<WebView> = findOrCreateWebViewLiveData(id)
+
+    fun reset() {
+        signals.clear()
+        webViews.clear()
+    }
 
     fun cleanUpComponentWithId(id: String) {
         signals.remove(id)

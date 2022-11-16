@@ -27,14 +27,14 @@
     "native"
   ],
   "scripts": {
-    "lint": "npm run eslint && npm run prettier -- --check",
-    "fmt": "npm run eslint -- --fix && npm run prettier -- --write",
+    "lint": "pnpm run eslint && pnpm run prettier -- --check",
+    "fmt": "pnpm run eslint -- --fix && pnpm run prettier -- --write",
     "eslint": "eslint . --ext ts",
     "prettier": "prettier \"**/*.{css,html,ts,js,java}\"",
-    "build": "npm run clean && tsc && rollup -c rollup.config.js",
+    "build": "pnpm run clean && tsc && rollup -c rollup.config.js",
     "clean": "rimraf ./dist",
     "watch": "tsc --watch",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "pnpm run build"
   },
   "devDependencies": {
     "@cactuslab/native-navigation": "^0.0.1",

@@ -11,7 +11,7 @@
     "android/build.gradle",
     "dist/",
     "ios/Plugin/",
-    "NativeNavigation.podspec"
+    "CactuslabNativeNavigation.podspec"
   ],
   "exports": {
     ".": "./dist/esm/index.js",

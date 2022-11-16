@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { WebPlugin } from '@capacitor/core'
 
-import type { SetRootResult, DismissOptions, NativeNavigationPlugin, PopOptions, PopResult, PresentOptions, PresentResult, PushOptions, PushResult, DismissResult, SetRootOptions, SetComponentOptions } from './definitions'
+import type { SetRootResult, DismissOptions, NativeNavigationPlugin, PopOptions, PopResult, PresentOptions, PresentResult, PushOptions, PushResult, DismissResult, SetRootOptions, SetComponentOptions, StackSpec, TabsSpec, ViewSpec } from './definitions'
 
 export class NativeNavigationWeb
 	extends WebPlugin
@@ -32,6 +32,10 @@ export class NativeNavigationWeb
 	}
 
 	async reset(): Promise<void> {
+		throw new Error('Not available on web')
+	}
+
+	async get(): Promise<StackSpec | TabsSpec | ViewSpec> {
 		throw new Error('Not available on web')
 	}
 

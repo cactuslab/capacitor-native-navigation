@@ -22,36 +22,40 @@ export function initSync(views: Record<ComponentId, Window>): void {
 			}
 
 			if (mutation.addedNodes.length) {
+				const add: HTMLElement[] = []
+
 				/* Assign each added node an id */
 				mutation.addedNodes.forEach(function(node) {
-					if (node.nodeType === Node.ELEMENT_NODE) {
-						(node as HTMLElement).dataset['capacitorNativeNavigationId'] = `${copyNodeId++}`
+					if (shouldCopyNode(node)) {
+						const element = node as HTMLElement
+						element.dataset['capacitorNativeNavigationId'] = `${copyNodeId++}`
+						add.push(element)
 					}
 				})
 
-				const prevSiblingId = mutation.previousSibling && mutation.previousSibling.nodeType === Node.ELEMENT_NODE ? (mutation.previousSibling as HTMLElement).dataset['capacitorNativeNavigationId'] : undefined
-				if (prevSiblingId) {
-					/* Copy added nodes to each view */
-					for (const viewId of Object.keys(views)) {
-						const view = views[viewId]
-						const prevSibling = view.document.head.querySelector(`[data-capacitor-native-navigation-id="${prevSiblingId}"]`)
-						if (!prevSibling) {
-							console.warn(`Marker "${prevSiblingId}" not found in head for view: ${viewId}`)
-							continue
-						}
+				if (add.length) {
+					const prevSiblingId = mutation.previousSibling && mutation.previousSibling.nodeType === Node.ELEMENT_NODE ? (mutation.previousSibling as HTMLElement).dataset['capacitorNativeNavigationId'] : undefined
+					if (prevSiblingId) {
+						/* Copy added nodes to each view */
+						for (const viewId of Object.keys(views)) {
+							const view = views[viewId]
+							const prevSibling = view.document.head.querySelector(`[data-capacitor-native-navigation-id="${prevSiblingId}"]`)
+							if (!prevSibling) {
+								console.warn(`Marker "${prevSiblingId}" not found in head for view: ${viewId}`)
+								continue
+							}
 
-						let marker = prevSibling
+							let marker = prevSibling
 
-						mutation.addedNodes.forEach(function(node) {
-							if (node.nodeType === Node.ELEMENT_NODE) {
+							for (const node of add) {
 								const clone = node.cloneNode(true) as Element
 								marker.insertAdjacentElement('afterend', clone)
 								marker = clone
 							}
-						})
+						}
+					} else {
+						console.warn(`Nodes (${add.length}, e.g. ${add[0].outerHTML}) added to head in an unexpected location (${(mutation.previousSibling as HTMLElement).outerHTML})`)
 					}
-				} else {
-					console.warn('Nodes added to head in an unexpected location')
 				}
 			}
 
@@ -66,8 +70,6 @@ export function initSync(views: Record<ComponentId, Window>): void {
 								nodeToRemove.remove()
 							}
 						}
-					} else {
-						console.warn('Ignoring unknown node removed from head')
 					}
 				})
 			}
@@ -85,8 +87,27 @@ export function initSync(views: Record<ComponentId, Window>): void {
 
 export function prepareWindowForSync(viewWindow: Window): void {
 	/* Copy all of the nodes with ids to the new window, this will include the sentinel */
-	const nodes = window.document.head.querySelectorAll('[data-capacitor-native-navigation-id]')
-	nodes.forEach(function(node) {
-		viewWindow.document.head.append(node.cloneNode(true))
+	window.document.head.childNodes.forEach(function(node) {
+		if (shouldCopyNode(node)) {
+			viewWindow.document.head.append(node.cloneNode(true))
+		}
 	})
+}
+
+function shouldCopyNode(node: Node): boolean {
+	if (node.nodeType !== Node.ELEMENT_NODE) {
+		return false
+	}
+
+	const element = node as Element
+	const name = node.nodeName.toUpperCase()
+	if (name === 'STYLE') {
+		return true
+	}
+	if (name === 'LINK') {
+		if (element.getAttribute("rel") === 'stylesheet') {
+			return true
+		}
+	}
+	return false
 }

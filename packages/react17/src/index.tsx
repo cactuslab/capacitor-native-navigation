@@ -47,11 +47,6 @@ export async function initReact(options: Options): Promise<void> {
 
 	function createView(viewWindow: Window, data: CreateViewEventData) {
 		const { path, id, state } = data
-
-		/* Copy all of the currently established styles to the new window */
-		document.head.querySelectorAll('link, style').forEach(htmlElement => {
-			viewWindow.document.head.appendChild(htmlElement.cloneNode(true));
-		});
 	
 		const rootElement = viewWindow.document.getElementById(viewRootId)
 		if (rootElement) {

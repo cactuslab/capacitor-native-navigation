@@ -80,6 +80,16 @@ interface CapacitorNativeNavigationContext {
 
 export const Context = React.createContext<CapacitorNativeNavigationContext | undefined>(undefined)
 
-export function useNativeNavigationContext(): CapacitorNativeNavigationContext | undefined {
-	return useContext(Context)
+export function useNativeNavigationContext(): CapacitorNativeNavigationContext | undefined
+export function useNativeNavigationContext(defaultValue: Partial<CapacitorNativeNavigationContext>): Partial<CapacitorNativeNavigationContext>
+
+export function useNativeNavigationContext(defaultValue?: Partial<CapacitorNativeNavigationContext>): CapacitorNativeNavigationContext | Partial<CapacitorNativeNavigationContext> | undefined {
+	const context = useContext(Context)
+	if (context) {
+		return context
+	} else if (defaultValue) {
+		return defaultValue
+	} else {
+		return undefined
+	}
 }

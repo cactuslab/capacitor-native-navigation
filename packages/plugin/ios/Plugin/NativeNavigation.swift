@@ -497,12 +497,19 @@ class NativeNavigation: NSObject {
                     }
                 }
                 if let buttonOptions = barOptions.buttons {
+                    let navButtonAppearance = UIBarButtonItemAppearance()
+                    
                     if let color = buttonOptions.color {
-                        aa.buttonAppearance.normal.titleTextAttributes[.foregroundColor] = color
+                        navButtonAppearance.normal.titleTextAttributes[.foregroundColor] = color
+                        navigationController.navigationBar.tintColor = color
                     }
                     if let font = buttonOptions.font {
-                        aa.buttonAppearance.normal.titleTextAttributes[.font] = font
+                        navButtonAppearance.normal.titleTextAttributes[.font] = font
                     }
+                    
+                    aa.backButtonAppearance = navButtonAppearance
+                    aa.buttonAppearance = navButtonAppearance
+                    aa.doneButtonAppearance = navButtonAppearance
                 }
                 
                 navigationController.navigationBar.scrollEdgeAppearance = aa

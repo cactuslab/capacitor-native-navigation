@@ -58,13 +58,7 @@ class NativeNavigation: NSObject {
         
         /* Remove an existing root, if any */
         for child in container.children {
-            if child.componentId != nil {
-                child.willMove(toParent: nil)
-                if let childView = child.viewIfLoaded {
-                    childView.removeFromSuperview()
-                }
-                child.removeFromParent()
-            }
+            removeRoot(child, animated: options.animated)
         }
         
         /* Add new root */
@@ -181,10 +175,11 @@ class NativeNavigation: NSObject {
             throw NativeNavigatorError.illegalState(message: "No window")
         }
         
-        window.rootViewController = self.saveCapacitorRoot
-
-        if window.rootViewController?.presentedViewController != nil {
-            window.rootViewController?.dismiss(animated: options.animated)
+        let container = window.rootViewController!
+        
+        /* Remove an existing root, if any */
+        for child in container.children {
+            removeRoot(child, animated: options.animated)
         }
 
         self.componentsById.removeAll()
@@ -592,6 +587,19 @@ class NativeNavigation: NSObject {
             .replacingOccurrences(of: "</script>", with: " -->")
         self.html = sanitizedContent
     }
+    private func removeRoot(_ root: UIViewController, animated: Bool) {
+        if root.componentId != nil {
+            if root.presentedViewController != nil {
+                root.dismiss(animated: animated)
+            }
+            root.willMove(toParent: nil)
+            if let rootView = root.viewIfLoaded {
+                rootView.removeFromSuperview()
+            }
+            root.removeFromParent()
+        }
+    }
+    
 }
 
 struct AssociatedKeys {

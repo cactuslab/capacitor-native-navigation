@@ -1,3 +1,4 @@
+import type { ViewState } from '@cactuslab/native-navigation';
 import type { NativeNavigationPlugin } from '@cactuslab/native-navigation/src/definitions';
 import type { NavigateOptions, Navigator, To } from 'react-router-dom'
 
@@ -47,14 +48,16 @@ export function createNavigator(options: Options): Navigator {
 				return navigator.replace(to, state, opts)
 			}
 
+			const viewState = toViewState(state, opts?.state)
 			const path = navigator.createHref(to)
 			try {
 				await plugin.push({
 					component: {
 						type: 'view',
 						path,
-						state: state || opts?.state,
+						state: viewState,
 					},
+					mode: viewState?.root ? 'root' : undefined,
 				})
 			} catch (error) {
 				console.log(`Failed to push ${error}`)
@@ -62,16 +65,17 @@ export function createNavigator(options: Options): Navigator {
 		},
 
 		replace: async function (to: To, state?: any, opts?: NavigateOptions | undefined): Promise<void> {
+			const viewState = toViewState(state, opts?.state)
 			const path = navigator.createHref(to)
 			try {
 				await plugin.push({
 					component: {
 						type: 'view',
 						path,
-						state: state || opts?.state,
+						state: viewState,
 					},
 					animated: false,
-					mode: 'replace',
+					mode: viewState?.root ? 'root' : 'replace',
 				})
 			} catch (error) {
 				console.log(`Failed to replace ${error}`)
@@ -79,4 +83,17 @@ export function createNavigator(options: Options): Navigator {
 		}
 	}
 	return navigator
+}
+
+function toViewState(...args: unknown[]): ViewState | undefined {
+	for (const arg of args) {
+		if (arg) {
+			if (typeof arg === 'object') {
+				return arg as ViewState
+			} else {
+				return undefined
+			}
+		}
+	}
+	return undefined
 }

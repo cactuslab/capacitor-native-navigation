@@ -5,6 +5,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client'
 
 import { createReactContext, Context } from './context';
+import { initSync, prepareWindowForSync } from './sync'
 
 export { useNativeNavigationContext } from './context'
 
@@ -30,7 +31,10 @@ export async function initReact(options: Options): Promise<void> {
 	const { plugin, root } = options
 	const viewRootId = options.viewRootId || 'root'
 	const internalPlugin = plugin as unknown as NativeNavigationPluginInternal
+	const views: Record<ComponentId, Window> = {}
 	const reactRoots: Record<ComponentId, ReactDOM.Root> = {}
+
+	initSync(views)
 
 	initViewHandler({
 		plugin,
@@ -51,6 +55,9 @@ export async function initReact(options: Options): Promise<void> {
 	
 		const rootElement = viewWindow.document.getElementById(viewRootId)
 		if (rootElement) {
+			prepareWindowForSync(viewWindow)
+			views[id] = viewWindow
+
 			const reactRoot = ReactDOM.createRoot(rootElement)
 			const context = createReactContext({
 				componentId: id,
@@ -88,6 +95,7 @@ export async function initReact(options: Options): Promise<void> {
 		if (reactRoot) {
 			reactRoot.unmount()
 			delete reactRoots[id]
+			delete views[id]
 		}
 	}
 

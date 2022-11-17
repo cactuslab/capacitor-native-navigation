@@ -1,10 +1,11 @@
+import { initViewHandler } from '@cactuslab/native-navigation'
+import type { ComponentId, NativeNavigationPluginInternal, NativeNavigationPlugin, CreateViewEventData } from '@cactuslab/native-navigation';
 import type { Plugin } from '@capacitor/core';
 import React from 'react';
 import ReactDOM from 'react-dom'
 
-import { ComponentId, NativeNavigationPluginInternal, NativeNavigationPlugin, initViewHandler, CreateViewEventData } from '@cactuslab/native-navigation';
-
 import { createReactContext, Context } from './context';
+import { initSync, prepareWindowForSync } from './sync'
 
 export { useNativeNavigationContext } from './context'
 
@@ -30,7 +31,10 @@ export async function initReact(options: Options): Promise<void> {
 	const { plugin, root } = options
 	const viewRootId = options.viewRootId || 'root'
 	const internalPlugin = plugin as unknown as NativeNavigationPluginInternal
+	const views: Record<ComponentId, Window> = {}
 	const rootElements: Record<ComponentId, Element> = {}
+
+	initSync(views)
 
 	initViewHandler({
 		plugin,
@@ -51,6 +55,9 @@ export async function initReact(options: Options): Promise<void> {
 	
 		const rootElement = viewWindow.document.getElementById(viewRootId)
 		if (rootElement) {
+			prepareWindowForSync(viewWindow)
+			views[id] = viewWindow
+
 			const context = createReactContext({
 				componentId: id,
 				viewWindow,
@@ -88,6 +95,7 @@ export async function initReact(options: Options): Promise<void> {
 		if (reactRoot) {
 			ReactDOM.unmountComponentAtNode(reactRoot)
 			delete rootElements[id]
+			delete views[id]
 		}
 	}
 

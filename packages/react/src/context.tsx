@@ -78,18 +78,8 @@ interface CapacitorNativeNavigationContext {
 	addClickListener: (func: ClickListenerFunc) => RemoveListenerFunction
 }
 
-export const Context = React.createContext<CapacitorNativeNavigationContext>({
-	setOptions: async () => {
-		throw new Error('Not in a native component context')
-	},
-	dismiss: async () => {
-		throw new Error('Not in a native component context')
-	},
-	addClickListener: () => {
-		throw new Error('Not in a native component context')
-	},
-})
+export const Context = React.createContext<CapacitorNativeNavigationContext | undefined>(undefined)
 
-export function useNativeNavigationContext(): CapacitorNativeNavigationContext {
+export function useNativeNavigationContext(): CapacitorNativeNavigationContext | undefined {
 	return useContext(Context)
 }

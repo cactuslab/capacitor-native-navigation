@@ -1,4 +1,4 @@
-import { NativeNavigation, PushMode } from '@cactuslab/native-navigation'
+import { NativeNavigation } from '@cactuslab/native-navigation'
 import type { ViewSpec, ViewState } from '@cactuslab/native-navigation'
 import type { Action, History, Location, LocationDescriptor, LocationDescriptorObject, UnregisterCallback } from 'history'
 
@@ -130,7 +130,7 @@ export class NativeNavigationHistory implements History {
 		if (navigationState.root || decision.action === 'root') {
 			await NativeNavigation.push({
 				component,
-				mode: PushMode.ROOT,
+				mode: 'root',
 				animated: false,
 			})
 		} else if (decision.action === 'push') {
@@ -141,7 +141,7 @@ export class NativeNavigationHistory implements History {
 		} else if (decision.action === 'replace') {
 			await NativeNavigation.push({
 				component,
-				mode: PushMode.REPLACE,
+				mode: 'replace',
 				animated: false,
 				popCount: decision.popCount,
 			})

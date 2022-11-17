@@ -160,7 +160,10 @@ export interface PushOptions {
 	animated?: boolean
 
 	/**
-	 * The mode to use for the push. Defaults to `PushMode.PUSH`.
+	 * The mode to use for the push. Defaults to `'push'`.
+	 * push: Push the component onto the stack.
+	 * replace: Replace the current top-most component in the stack.
+	 * root: Reset the stack back to just the new component.
 	 */
 	mode?: PushMode
 
@@ -170,20 +173,12 @@ export interface PushOptions {
 	popCount?: number
 }
 
-export enum PushMode {
-	/**
-	 * Push the component onto the stack.
-	 */
-	PUSH = 'push',
-	/**
-	 * Replace the current top-most component in the stack.
-	 */
-	REPLACE = 'replace',
-	/**
-	 * Reset the stack back to just the new component.
-	 */
-	ROOT = 'root',
-}
+/**
+ * push: Push the component onto the stack.
+ * replace: Replace the current top-most component in the stack.
+ * root: Reset the stack back to just the new component.
+ */
+export type PushMode = 'push' | 'replace' | 'root'
 
 export interface PushResult {
 	/**

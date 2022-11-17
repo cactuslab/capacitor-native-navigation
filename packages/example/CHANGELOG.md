@@ -1,5 +1,12 @@
 # capacitor-app
 
+## 1.0.2
+
+### Patch Changes
+
+- Updated dependencies [c5bd5ba]
+  - @cactuslab/native-navigation-react@0.0.3
+
 ## 1.0.1
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@cactuslab/native-navigation-react17",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "",
   "main": "index.js",
   "module": "dist/esm/index.js",

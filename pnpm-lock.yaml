@@ -11,7 +11,7 @@ importers:
   packages/example:
     specifiers:
       '@cactuslab/native-navigation': ^0.0.2
-      '@cactuslab/native-navigation-react': ^0.0.2
+      '@cactuslab/native-navigation-react': ^0.0.3
       '@cactuslab/native-navigation-react-router': ^0.0.2
       '@capacitor/android': ^4.3.0
       '@capacitor/camera': latest

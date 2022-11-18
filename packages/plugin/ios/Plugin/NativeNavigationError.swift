@@ -8,7 +8,6 @@ enum NativeNavigatorError: LocalizedError {
     case notPresented(name: String)
     case notARoot(name: String)
     case componentAlreadyExists(name: String)
-    case currentIsNotStack
     case notAStack(name: String)
     case notTabs(name: String)
     case componentNotFound(name: String)
@@ -30,8 +29,6 @@ enum NativeNavigatorError: LocalizedError {
             return "Invalid parameter \"\(name)\": \(value)"
         case .componentAlreadyExists(name: let name):
             return "Component already exists: \(name)"
-        case .currentIsNotStack:
-            return "Current is not a stack"
         case .notAStack(name: let name):
             return "Component is not a stack: \(name)"
         case .notTabs(name: let name):

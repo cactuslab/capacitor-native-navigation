@@ -21,6 +21,9 @@ class NativeNavigation: NSObject {
                 // Finally, keep only the key window
                 .first(where: \.isKeyWindow)
         } // TODO the window is nil if we launch the app with slow animations
+    
+    /** The stack of root ids, starting with the root and then with any presented roots on top. */
+    private var rootStack: [ComponentId] = []
 
     public init(bridge: CAPBridgeProtocol, plugin: CAPPlugin) {
         self.bridge = bridge
@@ -47,6 +50,7 @@ class NativeNavigation: NSObject {
     func setRoot(_ options: SetRootOptions) async throws -> SetRootResult {
         let root = try await self.createViewController(options.component)
         
+        rootStack = [root.componentId!]
         await waitForViewsReady(root)
 
         guard let window = self.window else {
@@ -73,6 +77,7 @@ class NativeNavigation: NSObject {
     func present(_ options: PresentOptions) async throws -> PresentResult {
         let root = try await self.createViewController(options.component)
         
+        rootStack.append(root.componentId!)
         await waitForViewsReady(root)
         
         guard let top = try self.topViewController() else {
@@ -90,6 +95,8 @@ class NativeNavigation: NSObject {
         
         if let id = options.id {
             viewController = self.component(id)
+        } else if let topRootId = rootStack.last {
+            viewController = self.component(topRootId)
         } else {
             viewController = try self.topViewController()
         }
@@ -103,6 +110,7 @@ class NativeNavigation: NSObject {
         }
 
         if let presentingViewController = viewController.presentingViewController {
+            rootStack.removeAll { $0 == id }
             presentingViewController.dismiss(animated: options.animated)
             return DismissResult(id: id)
         } else {
@@ -112,34 +120,65 @@ class NativeNavigation: NSObject {
 
     @MainActor
     func push(_ options: PushOptions) async throws -> PushResult {
-        /* Create the new view controller first to avoid a race condition when the creation of a stack is waiting to complete asynchronously while push is called again */
-        let vc = try await self.createViewController(options.component)
-        await waitForViewsReady(vc)
-        
-        if let popCount = options.popCount, popCount > 0 {
-            _ = try await pop(PopOptions(stack: options.stack, count: popCount, animated: false))
-        }
-        
-        let stack = try self.findStack(name: options.stack)
-        
-        if stack.viewControllers.isEmpty {
-            stack.setViewControllers([vc], animated: false)
-        } else if options.mode == PushMode.replace {
-            var viewControllers = stack.viewControllers
-            viewControllers[viewControllers.count - 1] = vc
-            stack.setViewControllers(viewControllers, animated: options.animated)
-        } else if options.mode == PushMode.root {
-            stack.setViewControllers([vc], animated: options.animated)
+        let container: UIViewController?
+        if let id = options.stack {
+            container = self.component(id)
+        } else if let topRootId = rootStack.last {
+            container = self.component(topRootId)
         } else {
-            stack.pushViewController(vc, animated: options.animated)
+            throw NativeNavigatorError.illegalState(message: "No root found to push to")
         }
-
-        return PushResult(id: vc.componentId!, stack: stack.componentId!)
+        
+        if let stack = container as? UINavigationController {
+            if let popCount = options.popCount, popCount > 0 {
+                _ = try await pop(PopOptions(stack: options.stack, count: popCount, animated: false))
+            }
+            
+            let vc = try await self.createView(options.component)
+            await waitForViewsReady(vc)
+            
+            /* Push onto a stack */
+            if stack.viewControllers.isEmpty {
+                stack.setViewControllers([vc], animated: false)
+            } else if options.mode == PushMode.replace {
+                var viewControllers = stack.viewControllers
+                viewControllers[viewControllers.count - 1] = vc
+                stack.setViewControllers(viewControllers, animated: options.animated)
+            } else if options.mode == PushMode.root {
+                stack.setViewControllers([vc], animated: options.animated)
+            } else {
+                stack.pushViewController(vc, animated: options.animated)
+            }
+            return PushResult(id: vc.componentId!, stack: stack.componentId!)
+        } else {
+            /* Replace current root */
+            //            let w = container as! NativeNavigationViewController
+            //            w.webView = vc.webView
+            //            w.componentId = vc.componentId
+            fatalError()
+        }
     }
     
     @MainActor
     func pop(_ options: PopOptions) async throws -> PopResult {
-        let stack = try self.findStack(name: options.stack)
+        let container: UIViewController
+        if let id = options.stack {
+            guard let component = self.component(id) else {
+                throw NativeNavigatorError.componentNotFound(name: id)
+            }
+            container = component
+        } else if let topRootId = rootStack.last {
+            guard let component = self.component(topRootId) else {
+                throw NativeNavigatorError.illegalState(message: "Top root not found: \(topRootId)")
+            }
+            container = component
+        } else {
+            throw NativeNavigatorError.illegalState(message: "No stack found to pop from")
+        }
+        
+        guard let stack = container as? UINavigationController else {
+            throw NativeNavigatorError.notAStack(name: container.componentId!)
+        }
         
         let count = options.count ?? 1
         if count > 1 {
@@ -195,8 +234,8 @@ class NativeNavigation: NSObject {
             guard vc != nil else {
                 throw NativeNavigatorError.componentNotFound(name: id)
             }
-        } else {
-            vc = try self.topViewController()
+        } else if let topRootId = rootStack.last {
+            vc = self.component(topRootId)
         }
         
         guard let vc = vc else {
@@ -256,30 +295,6 @@ class NativeNavigation: NSObject {
             return try await createView(viewSpec)
         } else {
             throw NativeNavigatorError.illegalState(message: "Unsupported component spec \(spec.type)")
-        }
-    }
-    
-    private func findStack(name: String?) throws -> UINavigationController {
-        if let stackNameValue = name {
-            guard let possibleStackValue = self.component(stackNameValue) else {
-                throw NativeNavigatorError.componentNotFound(name: stackNameValue)
-            }
-            
-            guard let stack = possibleStackValue as? UINavigationController else {
-                throw NativeNavigatorError.notAStack(name: stackNameValue)
-            }
-            
-            return stack
-        } else {
-            guard let stack = try self.topViewController() as? UINavigationController else {
-                throw NativeNavigatorError.currentIsNotStack
-            }
-            
-            guard stack.componentId != nil else {
-                throw NativeNavigatorError.illegalState(message: "Top view controller does not have a componentId")
-            }
-            
-            return stack
         }
     }
     

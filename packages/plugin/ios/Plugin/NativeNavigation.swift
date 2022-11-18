@@ -9,7 +9,6 @@ class NativeNavigation: NSObject {
     private var componentsById: [String: WeakContainer<UIViewController>] = [:]
     private var viewReadyContinuations: [ComponentId: CheckedContinuation<Void, Never>] = [:]
     private var idCounter = 1
-    private let saveCapacitorRoot: UIViewController?
     private var html: String? = nil
     private var window: UIWindow? {
             // Get connected scenes
@@ -27,7 +26,6 @@ class NativeNavigation: NSObject {
     public init(bridge: CAPBridgeProtocol, plugin: CAPPlugin) {
         self.bridge = bridge
         self.plugin = plugin
-        self.saveCapacitorRoot = bridge.viewController /* Attempt to prevent the view controller disappearing */
 
         super.init()
         

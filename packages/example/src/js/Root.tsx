@@ -5,6 +5,7 @@ import {  Route, Router, Routes } from 'react-router-dom'
 import PageWithState from './PageWithState'
 import Stack1 from './Stack1'
 import Stack2 from './Stack2'
+import StackImmediatePush from './StackImmediatePush'
 import Tab1 from './Tab1'
 import View1 from './View1'
 
@@ -29,6 +30,7 @@ export default function Root(props: Props): JSX.Element {
 				<Route path="view1" element={<View1 />} />
 				<Route path="state" element={<PageWithState />} />
 				<Route path="tab1" element={<Tab1 />} />
+				<Route path="stack-immediate-push" element={<StackImmediatePush />} />
 			</Routes>
 		</Router>
 	)

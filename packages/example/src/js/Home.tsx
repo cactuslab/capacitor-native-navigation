@@ -14,6 +14,8 @@ export default function Home(): React.ReactElement {
 				<dd><button style={{fontSize: '2rem'}} onClick={setupStack}>Stack</button></dd>
 				<dd><button style={{fontSize: '2rem'}} onClick={setupTabs}>Tabs</button></dd>
 				<dd><button style={{fontSize: '2rem'}} onClick={setupView}>View</button></dd>
+				<h2>Stacks</h2>
+				<dd><button onClick={setupStackImmediatePush}>Immediate push</button></dd>
 			</dl>
 		</div>
 	)
@@ -112,4 +114,22 @@ async function setupView() {
 		},
 	})
 	console.log('INIT: created', standaloneViewRoot.id)
+}
+
+async function setupStackImmediatePush() {
+	await NativeNavigation.setRoot({
+		component: {
+			id: 'rootStack',
+			type: 'stack',
+			stack: [
+				{
+					type: 'view',
+					path: '/stack-immediate-push',
+					options: {
+						title: 'Stack Immediate Push',
+					}
+				}
+			],
+		},
+	})
 }

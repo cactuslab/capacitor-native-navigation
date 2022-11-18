@@ -130,12 +130,12 @@ class NativeNavigation: NSObject {
         }
         
         if let stack = container as? UINavigationController {
+            let vc = try await self.createView(options.component)
+            await waitForViewsReady(vc)
+            
             if let popCount = options.popCount, popCount > 0 {
                 _ = try await pop(PopOptions(stack: options.stack, count: popCount, animated: false))
             }
-            
-            let vc = try await self.createView(options.component)
-            await waitForViewsReady(vc)
             
             /* Push onto a stack */
             if stack.viewControllers.isEmpty {

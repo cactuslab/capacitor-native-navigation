@@ -17,7 +17,7 @@ struct StackSpec: ComponentSpec {
     var id: ComponentId?
     var options: ComponentOptions?
     
-    var stack: [ComponentSpec]
+    var stack: [ViewSpec]
 }
 
 struct TabsSpec: ComponentSpec {
@@ -171,7 +171,7 @@ extension DismissResult {
 }
 
 struct PushOptions {
-    var component: ComponentSpec
+    var component: ViewSpec
     var stack: ComponentId?
     var animated: Bool
     var mode: PushMode?

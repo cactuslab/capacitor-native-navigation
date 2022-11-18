@@ -209,7 +209,11 @@ class NativeNavigation: NSObject {
             result.id = vc.componentId
             
             for child in vc.viewControllers {
-                result.stack.append(try options(child))
+                if let childOptions = try options(child) as? ViewSpec {
+                    result.stack.append(childOptions)
+                } else {
+                    throw NativeNavigatorError.illegalState(message: "Stack contained view controller of an unexpected type: \(child.componentId ?? "no id")")
+                }
             }
             return result
         } else if let vc = vc as? UITabBarController {

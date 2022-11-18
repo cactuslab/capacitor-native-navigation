@@ -24,7 +24,11 @@ func componentSpecFromJSObject(_ object: JSObjectLike) throws -> ComponentSpec {
 
         if let initialStack = object.getArray("stack") as? [JSObject] {
             for initialStackItem in initialStack {
-                spec.stack.append(try componentSpecFromJSObject(initialStackItem))
+                if let initialStackItemSpec = try componentSpecFromJSObject(initialStackItem) as? ViewSpec {
+                    spec.stack.append(initialStackItemSpec)
+                } else {
+                    throw NativeNavigatorError.invalidParameter(name: "stack", value: initialStackItem)
+                }
             }
         }
 
@@ -301,7 +305,9 @@ extension PushOptions {
         guard let componentValue = object.getObject("component") else {
             throw NativeNavigatorError.missingParameter(name: "component")
         }
-        let component = try componentSpecFromJSObject(componentValue)
+        guard let component = try componentSpecFromJSObject(componentValue) as? ViewSpec else {
+            throw NativeNavigatorError.invalidParameter(name: "component", value: componentValue)
+        }
 
         let animated = object.getBool("animated", true)
         

@@ -1,15 +1,30 @@
 import { NativeNavigation } from '@cactuslab/native-navigation'
 import { useNativeNavigationContext } from '@cactuslab/native-navigation-react'
-import React, { useCallback, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-
-let counter = 1
+import React, { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 export default function StackImmediatePush(): JSX.Element {
 	const navigate = useNavigate()
+	const { setOptions, addClickListener } = useNativeNavigationContext({})
 
 	useEffect(function() {
+		setOptions && setOptions({
+			stack: {
+				rightItems: [
+					{
+						id: 'reset',
+						title: 'Reset',
+					}
+				]
+			}
+		})
 		navigate('/stack2')
+
+		return addClickListener && addClickListener(function({ buttonId }) {
+			if (buttonId === 'reset') {
+				NativeNavigation.reset()
+			}
+		})
 	}, [])
 
 	return (

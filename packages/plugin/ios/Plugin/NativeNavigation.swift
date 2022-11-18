@@ -6,8 +6,7 @@ class NativeNavigation: NSObject {
     private let bridge: CAPBridgeProtocol
     private let plugin: CAPPlugin
     private var webViewDelegate: NativeNavigationWebViewDelegate?
-    private var componentsById: [String: WeakContainer<UIViewController>] = [:]
-    private var viewReadyContinuations: [ComponentId: CheckedContinuation<Void, Never>] = [:]
+    private var componentsById: [ComponentId: WeakContainer<UIViewController>] = [:]
     private var idCounter = 1
     private var html: String? = nil
     private var window: UIWindow? {
@@ -48,6 +47,8 @@ class NativeNavigation: NSObject {
     func setRoot(_ options: SetRootOptions) async throws -> SetRootResult {
         let root = try await self.createViewController(options.component)
         
+        await waitForViewsReady(root)
+
         guard let window = self.window else {
             throw NativeNavigatorError.illegalState(message: "No window")
         }
@@ -71,6 +72,8 @@ class NativeNavigation: NSObject {
     @MainActor
     func present(_ options: PresentOptions) async throws -> PresentResult {
         let root = try await self.createViewController(options.component)
+        
+        await waitForViewsReady(root)
         
         guard let top = try self.topViewController() else {
             throw NativeNavigatorError.illegalState(message: "Cannot find top")
@@ -111,6 +114,7 @@ class NativeNavigation: NSObject {
     func push(_ options: PushOptions) async throws -> PushResult {
         /* Create the new view controller first to avoid a race condition when the creation of a stack is waiting to complete asynchronously while push is called again */
         let vc = try await self.createViewController(options.component)
+        await waitForViewsReady(vc)
         
         if let popCount = options.popCount, popCount > 0 {
             _ = try await pop(PopOptions(stack: options.stack, count: popCount, animated: false))
@@ -231,11 +235,15 @@ class NativeNavigation: NSObject {
     
     @MainActor
     func viewReady(_ options: ViewReadyOptions) async throws {
-        guard let continuation = viewReadyContinuations[options.id] else {
-            throw NativeNavigatorError.illegalState(message: "No view ready continuation found: \(options.id)")
+        guard let component = self.component(options.id) else {
+            throw NativeNavigatorError.componentNotFound(name: options.id)
         }
         
-        continuation.resume()
+        guard let component = component as? NativeNavigationViewController else {
+            throw NativeNavigatorError.illegalState(message: "Component is not a view in viewReady: \(options.id)")
+        }
+        
+        try component.webViewReady()
     }
     
     @MainActor
@@ -349,7 +357,7 @@ class NativeNavigation: NSObject {
     private func storeComponent(_ component: UIViewController, options: ComponentSpec) throws -> String {
         let id = options.id ?? generateId()
 
-        if self.component(id) != nil {
+        guard self.component(id) == nil else {
             throw NativeNavigatorError.componentAlreadyExists(name: id)
         }
 
@@ -376,9 +384,9 @@ class NativeNavigation: NSObject {
             try self.configureViewController(nc, options: componentOptions, animated: false)
         }
         
-        var viewControllers = [UIViewController]()
+        var viewControllers = [NativeNavigationViewController]()
         for stackItemCreateOptions in options.stack {
-            let stackItem = try await self.createViewController(stackItemCreateOptions)
+            let stackItem = try await self.createView(stackItemCreateOptions)
             viewControllers.append(stackItem)
         }
         nc.viewControllers = viewControllers
@@ -416,19 +424,15 @@ class NativeNavigation: NSObject {
     }
 
     @MainActor
-    private func createView(_ options: ViewSpec) async throws -> UIViewController {
-        let vc = NativeNavigationViewController(path: options.path, state: options.state)
+    private func createView(_ options: ViewSpec) async throws -> NativeNavigationViewController {
+        let vc = NativeNavigationViewController(path: options.path, state: options.state, plugin: plugin)
         if let componentOptions = options.options {
             try self.configureViewController(vc, options: componentOptions, animated: false)
         }
 
+        /* We store the view before creating the webview so it is ready to be referred to by any JavaScript that runs when the view is mounted. */
         let id = try storeComponent(vc, options: options)
         
-        var notificationData: [String : Any] = ["path": options.path, "id": id]
-        if let state = options.state {
-            notificationData["state"] = state
-        }
-
         vc.onDeinit = {
             self.plugin.notifyListeners("destroyView", data: ["id": id], retainUntilConsumed: true)
             DispatchQueue.main.async {
@@ -436,14 +440,25 @@ class NativeNavigation: NSObject {
             }
         }
         
-        await withCheckedContinuation { continuation in
-            viewReadyContinuations[id] = continuation
-            
-            /* Callback to JavaScript to trigger a call to window.open to create the WKWebView and then init it */
-            self.plugin.notifyListeners("createView", data: notificationData, retainUntilConsumed: true)
-        }
-        
         return vc
+    }
+    
+    /**
+     Create and wait for all of the views in the hierarchy to be ready.
+     */
+    @MainActor
+    private func waitForViewsReady(_ vc: UIViewController) async {
+        if let vc = vc as? NativeNavigationViewController {
+            await vc.createWebView()
+        } else if let nc = vc as? UINavigationController {
+            for vc in nc.viewControllers {
+                await waitForViewsReady(vc)
+            }
+        } else if let tc = vc as? UITabBarController {
+            for vc in tc.viewControllers ?? [] {
+                await waitForViewsReady(vc)
+            }
+        }
     }
 
     private func configureViewController(_ viewController: UIViewController, options: ComponentOptions, animated: Bool) throws {
@@ -643,6 +658,7 @@ struct WeakContainer<T> where T: AnyObject {
 
 class NativeNavigationViewController: UIViewController {
 
+    private weak var plugin: CAPPlugin!
     var path: String
     var state: JSObject?
     var webView: WKWebView? {
@@ -663,10 +679,12 @@ class NativeNavigationViewController: UIViewController {
         }
     }
     var onDeinit: (() -> Void)?
+    private var viewReadyContinuation: CheckedContinuation<Void, Never>?
 
-    init(path: String, state: JSObject?) {
+    init(path: String, state: JSObject?, plugin: CAPPlugin) {
         self.path = path
         self.state = state
+        self.plugin = plugin
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -683,4 +701,31 @@ class NativeNavigationViewController: UIViewController {
     override var debugDescription: String {
         return "\(super.debugDescription) componentId=\(componentId ?? "none") path=\(path)"
     }
+    
+    /**
+     Create the webview required for this view. Waits for the view to be ready before returning.
+     */
+    func createWebView() async {
+        await withCheckedContinuation { continuation in
+            self.viewReadyContinuation = continuation
+            
+            var notificationData: [String : Any] = ["path": self.path, "id": self.componentId!]
+            if let state = self.state {
+                notificationData["state"] = state
+            }
+            
+            /* Callback to JavaScript to trigger a call to window.open to create the WKWebView and then init it */
+            self.plugin.notifyListeners("createView", data: notificationData, retainUntilConsumed: true)
+        }
+    }
+    
+    func webViewReady() throws {
+        guard let continuation = viewReadyContinuation else {
+            throw NativeNavigatorError.illegalState(message: "View has already been reported as ready or has not been created")
+        }
+        
+        self.viewReadyContinuation = nil
+        continuation.resume()
+    }
+    
 }

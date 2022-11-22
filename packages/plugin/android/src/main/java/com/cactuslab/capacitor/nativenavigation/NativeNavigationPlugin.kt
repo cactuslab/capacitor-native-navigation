@@ -64,8 +64,14 @@ class NativeNavigationPlugin : Plugin() {
 
     @PluginMethod
     fun dismiss(call: PluginCall) {
-
-        call.reject("Dismiss not ready")
+        try {
+            val options = DismissOptions.fromJSObject(call.data)
+            activity.runOnUiThread {
+                implementation.dismiss(options, call)
+            }
+        } catch (e: MissingParameterException) {
+            call.reject(e.localizedMessage)
+        }
     }
 
     @PluginMethod

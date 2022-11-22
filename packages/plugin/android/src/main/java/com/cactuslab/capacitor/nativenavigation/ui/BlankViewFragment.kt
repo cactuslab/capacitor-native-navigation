@@ -2,12 +2,16 @@ package com.cactuslab.capacitor.nativenavigation.ui
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.text.Html
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.*
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.graphics.toColorInt
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -46,7 +50,7 @@ class BlankViewFragment : Fragment() {
 
         val binding = binding ?: return
 
-//        setupToolbar(binding.toolbar)
+        setupToolbar(binding.toolbar)
 
         setupMenu()
 
@@ -106,13 +110,44 @@ class BlankViewFragment : Fragment() {
 
     private fun updateToolbar(options: ComponentOptions?) {
         val toolbar = binding?.toolbar ?: return
+        val componentId = componentId ?: return
+
+        val stackOptions = viewModel.nativeNavigation?.findStackComponentIdHosting(componentId)?.let {
+            viewModel.nativeNavigation?.componentSpecForId(it)
+        }
+
 
         Log.d(TAG, "viewModel setOptions being applied $componentId")
-        if (options == null) {
+        if (options == null && stackOptions == null) {
             toolbar.visibility = View.GONE
         } else {
             toolbar.visibility = View.VISIBLE
-            toolbar.title = options.title?.value()
+            toolbar.title = options?.title?.value()
+
+            stackOptions?.options?.bar?.let { bar ->
+                bar.background?.color?.let { color ->
+                    toolbar.setBackgroundColor(color.toColorInt())
+                }
+
+                bar.title?.let { labelOptions ->
+                    labelOptions.color?.let { color ->
+                        toolbar.setTitleTextColor(color.toColorInt())
+                    }
+                }
+
+                bar.buttons?.let { labelOptions ->
+                    labelOptions.color?.let { color ->
+                        toolbar.setNavigationIconTint(color.toColorInt())
+                    }
+                }
+            }
+
+            options?.bar?.let { bar ->
+                bar.background?.color?.let { color ->
+                    toolbar.setBackgroundColor(color.toColorInt())
+                }
+            }
+
         }
 
         toolbar.invalidateMenu()
@@ -128,14 +163,26 @@ class BlankViewFragment : Fragment() {
         menuhost.addMenuProvider(object: MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
 
+                val componentId = componentId ?: return
+
+                val stackOptions = viewModel.nativeNavigation?.findStackComponentIdHosting(componentId)?.let {
+                    viewModel.nativeNavigation?.componentSpecForId(it)
+                }
+
                 val options = webviewViewModel.componentOptionsLiveData.value
                 if (options != null) {
                     options.stack?.rightItems?.forEach { item ->
-                        val menuItem = menu.add(0, item.id.hashCode(), 0, item.title)
+                        val spanString = SpannableString(item.title)
+                        stackOptions?.options?.bar?.buttons?.let { labelOptions ->
+                            labelOptions.color?.let { color ->
+                                spanString.setSpan(ForegroundColorSpan(color.toColorInt()), 0, spanString.length, 0)
+                            }
+                        }
+
+                        val menuItem = menu.add(0, item.id.hashCode(), 0, spanString)
                         menuItem.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM)
                     }
                 }
-
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {

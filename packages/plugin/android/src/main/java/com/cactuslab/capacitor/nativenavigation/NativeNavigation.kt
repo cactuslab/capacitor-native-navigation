@@ -16,6 +16,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.os.bundleOf
+import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.*
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -29,6 +30,7 @@ import com.cactuslab.capacitor.nativenavigation.ui.BlankViewFragment
 import com.cactuslab.capacitor.nativenavigation.ui.HostFragment
 import com.cactuslab.capacitor.nativenavigation.ui.ModalBottomSheet
 import com.cactuslab.capacitor.nativenavigation.ui.NavigationViewFragment
+import com.getcapacitor.JSObject
 import com.getcapacitor.PluginCall
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -48,7 +50,53 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         viewModel.nativeNavigation = this
     }
 
-    class NavContext(val binding: ActivityNavigationBinding, val navHostFragment: NavHostFragment, val contextId: String)
+    class NavContext(
+        val contextId: String,
+        val fragment: HostFragment,
+        private val addToActivityBlock: (transaction: FragmentTransaction) -> Unit,
+        private val removeFromActivityBlock: (transaction: FragmentTransaction) -> Unit) {
+        var isAddedToActivity: Boolean = fragment.isAdded
+
+        fun getBinding(): ActivityNavigationBinding? {
+            return fragment.binding
+        }
+
+        fun navHostFragment(): NavHostFragment? {
+            if (!isAddedToActivity) {
+                return null
+            }
+
+            return getBinding()?.navigationHost?.getFragment<NavHostFragment>()
+        }
+
+        fun navController(): NavController? {
+            return fragment.binding?.navigationHost?.findNavController()
+        }
+
+        fun tryAddToActivity(transaction: FragmentTransaction) {
+            if (!isAddedToActivity) {
+                addToActivityBlock(transaction)
+            }
+        }
+
+        fun tryRemoveFromActivity(transaction: FragmentTransaction) {
+//            if (isAddedToActivity) {
+                removeFromActivityBlock(transaction)
+//            }
+        }
+
+        fun runSetup(startDestination: String) {
+            val host = getBinding()?.navigationHost?.getFragment<NavHostFragment>() ?: throw Exception("The navigation host is null")
+            val graph = host.createGraph(startDestination = "$contextId/{${nav_arguments.component_id}}", route = "$contextId/$startDestination") {
+                fragment<BlankViewFragment>("$contextId/{${nav_arguments.component_id}}") {
+                    argument(nav_arguments.component_id) {
+                        type = NavType.StringType
+                    }
+                }
+            }
+            host.navController.setGraph(graph = graph, bundleOf(nav_arguments.component_id to startDestination))
+        }
+    }
 
     private val navContexts : MutableList<NavContext> = mutableListOf()
 
@@ -79,12 +127,31 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         return components.get(id)
     }
 
+    fun findStackComponentIdHosting(componentId: String): String? {
+        navContexts.forEach { navContext ->
+            navContext.fragment.binding?.navigationHost?.findNavController()?.let { navController ->
+                navController.backQueue.forEach { entry ->
+                    if (entry.arguments?.getString(nav_arguments.component_id) == componentId) {
+                        return navContext.contextId
+                    }
+                }
+
+            }
+        }
+        return null
+    }
+
     fun setOptions(options: SetComponentOptions) {
         Log.d(TAG, "setOptions -> $options")
         val spec = components.get(options.id)!!
-        spec.options = options.options
-
-        viewModel.postSetOptions(options, options.id)
+        val specOptions = spec.options
+        if (specOptions != null) {
+            specOptions.mergeOptions(options.options)
+            viewModel.postSetOptions(SetComponentOptions(options.id, options.animated, specOptions), options.id)
+        } else {
+            spec.options = options.options
+            viewModel.postSetOptions(options, options.id)
+        }
     }
 
     fun reset() {
@@ -94,15 +161,9 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
         val transaction = plugin.activity.supportFragmentManager.beginTransaction()
         navContexts.reversed().forEach { navContext ->
-            transaction.remove(navContext.navHostFragment)
+            navContext.tryRemoveFromActivity(transaction)
         }
         transaction.commitNowAllowingStateLoss()
-
-        navContexts.reversed().forEach { navContext ->
-            navContext.binding.root.parent?.let { viewParent ->
-                (viewParent as ViewGroup).removeView(navContext.binding.root)
-            }
-        }
 
         navContexts.clear()
 
@@ -123,17 +184,16 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         Log.d(TAG, "--- RESET COMPLETE ---")
     }
 
+    private fun removeNavContext(navContext: NavContext) {
+        val transaction = plugin.activity.supportFragmentManager.beginTransaction()
+        navContext.tryRemoveFromActivity(transaction)
+        transaction.commitNowAllowingStateLoss()
+    }
+
     private fun popNavContext() {
         try {
             val navContext = navContexts.removeLast()
-
-            val transaction = plugin.activity.supportFragmentManager.beginTransaction()
-            transaction.remove(navContext.navHostFragment)
-            transaction.commitNowAllowingStateLoss()
-
-            navContext.binding.root.parent?.let { viewParent ->
-                (viewParent as ViewGroup).removeView(navContext.binding.root)
-            }
+            removeNavContext(navContext)
         } catch (_: NoSuchElementException) {
 
         }
@@ -149,9 +209,9 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
                 val navContext = navContexts.last()
 
-                val navController = navContext.navHostFragment.navController
+                val navController = navContext.navController()
 
-                val didNavigate = navController.previousBackStackEntry?.let { backStackEntry ->
+                val didNavigate = navController?.previousBackStackEntry?.let { backStackEntry ->
                     navController.navigateUp()
                 } ?: false
 
@@ -194,7 +254,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         return webView
     }
 
-    private fun pushNavController(id: String): NavContext {
+    private fun pushNavController(id: String, animated: Boolean): NavContext {
 
         val context = plugin.context
         val activity = plugin.activity
@@ -202,27 +262,24 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
         val fragment = HostFragment()
 
-        activity.supportFragmentManager.beginTransaction().add(com.getcapacitor.android.R.id.webview, fragment).commitNow()
+//        activity.supportFragmentManager.beginTransaction().add(com.getcapacitor.android.R.id.webview, fragment).commitNow()
 
         //val binding = ActivityNavigationBinding.inflate(LayoutInflater.from(context), parent, true)
-        val host = fragment.binding!!.navigationHost.getFragment<NavHostFragment>()
-//        host.onCreate(null)
-        val graph = host.createGraph(startDestination = id) {
-            fragment<BlankViewFragment>("$id/{${nav_arguments.component_id}}") {
-                argument(nav_arguments.component_id) {
-                    type = NavType.StringType
-                }
+
+        val navContext = NavContext(id, fragment, addToActivityBlock = { transaction ->
+            if (animated) {
+                transaction.setCustomAnimations(R.anim.slide_up_in, 0)
             }
-            fragment<BlankViewFragment>(id) {
+            transaction.add(com.getcapacitor.android.R.id.webview, fragment)
+
+        }, removeFromActivityBlock = { transaction ->
+            if (animated) {
+                transaction.setCustomAnimations(0, R.anim.slide_down_out)
             }
-        }
-        host.navController.setGraph(graph = graph, null)
+            transaction.remove(fragment)
+        })
 
-
-
-        val navContext = NavContext(fragment.binding!!, host, id)
-
-        Log.d(TAG, "navController - ${navContext.navHostFragment.navController}")
+//        Log.d(TAG, "navController - ${navContext.navHostFragment.navController}")
 //        val layoutParams =  ViewGroup.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT)
 
 //        activity.addContentView(binding.root, layoutParams)
@@ -267,12 +324,8 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
             insertComponent(component)
             Log.d(TAG, "Asked to SetRoot: ${component.id} for createOptions: $component")
 
-            val navContext = pushNavController(component.id)
-            val navController = navContext.navHostFragment.navController
-            val binding = navContext.binding
+            val navContext = pushNavController(component.id, options.animated)
             setupBackPressedHandler()
-            binding.root.visibility = View.VISIBLE
-
 
             when (component) {
                 is StackSpec -> {
@@ -284,12 +337,21 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                         viewModel.postWebView(webView, screen.id)
 
                         viewActions[screen.id] = {
-                            navContext.navHostFragment.navController.navigate(route = "${component.id}/${screen.id}", navOptions {
-                                popUpTo(component.id) {
-                                    inclusive = true
-                                    saveState = false
-                                }
-                            })
+
+                            val transaction = activity.supportFragmentManager.beginTransaction()
+//                            transaction.setCustomAnimations(-1, -1, -1, -1)
+                            navContext.tryAddToActivity(transaction)
+                            transaction.commitNow()
+
+                            navContext.runSetup(screen.id)
+//                            val controller = navContext.fragment.binding?.navigationHost?.findNavController()
+//                            controller!!.navigate(route = "${component.id}/${screen.id}", navOptions {
+//                                popUpTo(component.id) {
+//                                    inclusive = true
+//                                    saveState = false
+//                                }
+//                            })
+
 //                            navController.setGraph(R.navigation.native_navigation, startDestinationArgs = bundleOf(
 //                                OPTIONS_ID to screen.id))
                         }
@@ -306,12 +368,12 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
                     viewActions[component.id] = {
 
-                        navContext.navHostFragment.navController.navigate(route = "${component.id}/${component.id}", navOptions {
-                            popUpTo(component.id) {
-                                inclusive = true
-                                saveState = false
-                            }
-                        })
+//                        navContext.navHostFragment.navController.navigate(route = "${component.id}/${component.id}", navOptions {
+//                            popUpTo(component.id) {
+//                                inclusive = true
+//                                saveState = false
+//                            }
+//                        })
                     //                        navController.setGraph(R.navigation.native_navigation, startDestinationArgs = bundleOf(
 //                            OPTIONS_ID to component.id))
                     }
@@ -331,18 +393,24 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
             val webView = makeWebView(component.id)
             viewModel.postWebView(webView, component.id)
-            val navContext = pushNavController(component.id)
+            val navContext = pushNavController(component.id, options.animated)
 //            val navController = navContext.navController
 
 
 //            navContext.navHostFragment.navController = NavController(context = plugin.context)
             viewActions[component.id] = {
-                navContext.navHostFragment.navController.navigate(route = "${component.id}/${component.id}", navOptions {
-                    popUpTo(component.id) {
-                        inclusive = true
-                        saveState = false
-                    }
-                })
+
+                val transaction = plugin.activity.supportFragmentManager.beginTransaction()
+                navContext.tryAddToActivity(transaction)
+                transaction.commitNow()
+
+                navContext.runSetup(component.id)
+//                navContext.navController()!!.navigate(route = "${component.id}/${component.id}", navOptions {
+//                    popUpTo(component.id) {
+//                        inclusive = true
+//                        saveState = false
+//                    }
+//                })
 
 //                navController.navigate(R.id.action_global_nav_screen, bundleOf(OPTIONS_ID to component.id), navOptions {
 //                    launchSingleTop = true
@@ -370,6 +438,27 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         call.resolve()
     }
 
+    fun dismiss(options: DismissOptions, call: PluginCall) {
+        if (options.componentId.isNullOrBlank() && navContexts.isNotEmpty()) {
+            val navContext = navContexts.last()
+            popNavContext()
+
+            val result = DismissResult(navContext.contextId)
+            call.resolve(result.toJSObject())
+        } else {
+
+            val navContext = navContexts.find { it.contextId == options.componentId }
+            if (navContext != null) {
+                navContexts.remove(navContext)
+                removeNavContext(navContext)
+                val result = DismissResult(navContext.contextId)
+                call.resolve(result.toJSObject())
+            } else {
+                call.reject("No such component is presented")
+            }
+        }
+    }
+
     fun push(options: PushOptions, call: PluginCall) {
 
         plugin.activity.runOnUiThread {
@@ -382,12 +471,19 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
             Log.d(TAG, "Asked to push: ${component.id} for createOptions: $component")
 
-            val navController = navContext.navHostFragment.navController
-
             val webView = makeWebView(component.id)
             viewModel.postWebView(webView, component.id)
             viewActions[component.id] = {
-                navController.navigate("${stackId}/${component.id}")
+                val navController = navContext.fragment.binding?.navigationHost?.findNavController()
+
+                navController!!.navigate("${stackId}/${component.id}") {
+                    anim {
+                        enter = R.anim.slide_in_right
+                        exit = R.anim.slide_out_left
+                        popEnter = R.anim.slide_in_left
+                        popExit = R.anim.slide_out_right
+                    }
+                }
             }
 
             notifyCreateView(component.id)

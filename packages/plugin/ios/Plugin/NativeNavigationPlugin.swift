@@ -12,34 +12,10 @@ public class NativeNavigationPlugin: CAPPlugin {
     @objc override public func load() {
         self.implementation = NativeNavigation(bridge: self.bridge!, plugin: self)
     }
-    
-    @objc func setRoot(_ call: CAPPluginCall) {
-        do {
-            let options = try SetRootOptions.fromJSObject(call)
-            
-            Task {
-                do {
-                    let result = try await implementation.setRoot(options)
-                    call.resolve(result.toPluginResult())
-                } catch {
-                    call.reject("Failed to set root: \(error)")
-                }
-            }
-        } catch {
-            call.reject(error.localizedDescription)
-        }
-    }
 
     @objc func present(_ call: CAPPluginCall) {
         do {
-            guard let componentValue = call.getObject("component") else {
-                throw NativeNavigatorError.missingParameter(name: "component")
-            }
-            let component = try componentSpecFromJSObject(componentValue)
-            
-            let animated = call.getBool("animated", true)
-
-            let options = PresentOptions(component: component, animated: animated)
+            let options = try PresentOptions.fromJSObject(call)
 
             Task {
                 do {

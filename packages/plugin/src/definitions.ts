@@ -1,13 +1,7 @@
 export interface NativeNavigationPlugin {
-	
-	/**
-	 * Set the root UI of the application.
-	 * @param options 
-	 */
-	setRoot(options: SetRootOptions): Promise<SetRootResult>
 
 	/**
-	 * Present a new native UI as a modal.
+	 * Present a new native UI.
 	 * @param options 
 	 */
 	present(options: PresentOptions): Promise<PresentResult>
@@ -96,29 +90,17 @@ export interface ViewSpec extends ComponentSpec<ViewOptions> {
 
 export type ComponentType = 'stack' | 'tabs' | 'view'
 
-export interface SetRootOptions {
-
-	/**
-	 * The component to set as the root of the application.
-	 */
-	component: ComponentSpecs
-
-	/**
-	 * Whether to animate setting the root.
-	 * Defaults to `false`
-	 */
-	animated?: boolean
-}
-
-export interface SetRootResult {
-	id: ComponentId
-}
-
 export interface PresentOptions {
 	/**
-	 * The component to present as a modal.
+	 * The component to present.
 	 */
 	component: ComponentSpecs
+
+	/**
+	 * The presentation style.
+	 * Defaults to `'fullScreen'`
+	 */
+	style?: PresentationStyle
 
 	/**
 	 * Whether to animate the presenting.
@@ -131,7 +113,7 @@ export interface PresentResult {
 	id: ComponentId
 }
 
-export type ModalPresentationStyle = 'fullScreen' | 'pageSheet' | 'formSheet' // TODO mimic what's available in iOS and Android
+export type PresentationStyle = 'fullScreen' | 'pageSheet' | 'formSheet' | 'dialog'
 
 export interface DismissOptions {
 	id?: ComponentId
@@ -254,8 +236,6 @@ export interface ComponentOptions {
 		image?: ImageSpec
 		badgeValue?: string
 	}
-
-	modalPresentationStyle?: ModalPresentationStyle
 }
 
 /**

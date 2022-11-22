@@ -22,7 +22,7 @@ export default function Home(): React.ReactElement {
 }
 
 async function setupStack() {
-	const stackRoot = await NativeNavigation.setRoot({
+	const stackRoot = await NativeNavigation.present({
 		component: {
 			id: 'rootStack',
 			type: 'stack',
@@ -53,12 +53,13 @@ async function setupStack() {
 				},
 			},
 		},
+		animated: false,
 	})
 	console.log('INIT: created', stackRoot.id)
 }
 
 async function setupTabs() {
-	const tabsRoot = await NativeNavigation.setRoot({
+	const tabsRoot = await NativeNavigation.present({
 		component: {
 			id: 'rootTabs',
 			type: 'tabs',
@@ -102,22 +103,24 @@ async function setupTabs() {
 				},
 			],
 		},
+		animated: false,
 	})
 	console.log('INIT: created', tabsRoot.id)
 }
 
 async function setupView() {
-	const standaloneViewRoot = await NativeNavigation.setRoot({
+	const standaloneViewRoot = await NativeNavigation.present({
 		component: {
 			type: 'view',
 			path: '/view1'
 		},
+		animated: false,
 	})
 	console.log('INIT: created', standaloneViewRoot.id)
 }
 
 async function setupStackImmediatePush() {
-	await NativeNavigation.setRoot({
+	await NativeNavigation.present({
 		component: {
 			id: 'rootStack',
 			type: 'stack',
@@ -131,5 +134,6 @@ async function setupStackImmediatePush() {
 				}
 			],
 		},
+		animated: false,
 	})
 }

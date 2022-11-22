@@ -45,33 +45,6 @@ class NativeNavigation: NSObject {
             try await self.loadPageContent()
         }
     }
-    
-    @MainActor
-    func setRoot(_ options: SetRootOptions) async throws -> SetRootResult {
-        let root = try await self.createViewController(options.component)
-        
-        rootStack = [root.componentId!]
-        await waitForViewsReady(root)
-
-        guard let window = self.window else {
-            throw NativeNavigatorError.illegalState(message: "No window")
-        }
-        
-        let container = window.rootViewController!
-        
-        /* Remove an existing root, if any */
-        for child in container.children {
-            removeRoot(child, animated: options.animated)
-        }
-        
-        /* Add new root */
-        container.addChild(root)
-        root.view.frame = container.view.bounds
-        container.view.addSubview(root.view)
-        root.didMove(toParent: container)
-        
-        return SetRootResult(id: root.componentId!)
-    }
 
     @MainActor
     func present(_ options: PresentOptions) async throws -> PresentResult {
@@ -80,12 +53,33 @@ class NativeNavigation: NSObject {
         rootStack.append(root.componentId!)
         await waitForViewsReady(root)
         
-        guard let top = try self.topViewController() else {
-            throw NativeNavigatorError.illegalState(message: "Cannot find top")
+        if !options.animated && options.style == PresentationStyle.fullScreen {
+            guard let window = self.window else {
+                throw NativeNavigatorError.illegalState(message: "No window")
+            }
+            
+            let container = window.rootViewController!
+            
+            /* Remove an existing root, if any */
+            for child in container.children {
+                removeRoot(child, animated: options.animated)
+            }
+            
+            /* Add new root */
+            container.addChild(root)
+            root.view.frame = container.view.bounds
+            container.view.addSubview(root.view)
+            root.didMove(toParent: container)
+        } else {
+            guard let top = try self.topViewController() else {
+                throw NativeNavigatorError.illegalState(message: "Cannot find top")
+            }
+            
+            root.modalPresentationStyle = options.style.toUIModalPresentationStyle()
+
+            top.present(root, animated: options.animated)
         }
-
-        top.present(root, animated: options.animated)
-
+        
         return PresentResult(id: root.componentId!)
     }
 
@@ -509,10 +503,6 @@ class NativeNavigation: NSObject {
     }
 
     private func configureViewController(_ viewController: UIViewController, options: ComponentOptions, animated: Bool) throws {
-        if let modalPresentationStyle = options.modalPresentationStyle {
-            viewController.modalPresentationStyle = modalPresentationStyle.toUIModalPresentationStyle()
-        }
-
         if let title = options.title {
             switch title {
             case .null:

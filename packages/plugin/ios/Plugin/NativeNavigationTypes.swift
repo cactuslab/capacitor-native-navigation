@@ -95,27 +95,9 @@ enum ComponentType: String {
     case view
 }
 
-struct SetRootOptions {
-    var component: ComponentSpec
-    var animated: Bool
-}
-
-struct SetRootResult {
-    var id: ComponentId
-}
-
-extension SetRootResult {
-    
-    func toPluginResult() -> PluginCallResultData {
-        return [
-            "id": id
-        ]
-    }
-    
-}
-
 struct PresentOptions {
     var component: ComponentSpec
+    var style: PresentationStyle
     var animated: Bool
 }
 
@@ -133,17 +115,17 @@ extension PresentResult {
 
 }
 
-enum ModalPresentationStyle: String {
+enum PresentationStyle: String {
     case fullScreen
     case pageSheet
     case formSheet
 }
 
-extension ModalPresentationStyle {
+extension PresentationStyle {
 
     func toUIModalPresentationStyle() -> UIModalPresentationStyle {
         switch self {
-        case .fullScreen: return .fullScreen
+        case .fullScreen: return .overFullScreen
         case .pageSheet: return .pageSheet
         case .formSheet: return .formSheet
         }
@@ -240,8 +222,6 @@ struct ComponentOptions {
     var title: Nullable<String>?
     var stack: ComponentOptions.StackOptions?
     var tab: ComponentOptions.TabOptions?
-
-    var modalPresentationStyle: ModalPresentationStyle?
     
     var bar: BarOptions?
 

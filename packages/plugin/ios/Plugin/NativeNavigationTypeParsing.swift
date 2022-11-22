@@ -63,16 +63,29 @@ func componentSpecFromJSObject(_ object: JSObjectLike) throws -> ComponentSpec {
     }
 }
 
-extension SetRootOptions {
+func toPresentationStyle(_ object: JSObjectLike, key: String) throws -> PresentationStyle {
+    if let presentationStyleString = object.getString(key) {
+        if let presentationStyleValue = PresentationStyle(rawValue: presentationStyleString) {
+            return presentationStyleValue
+        } else {
+            throw NativeNavigatorError.invalidParameter(name: key, value: presentationStyleString)
+        }
+    } else {
+        return .fullScreen
+    }
+}
+
+extension PresentOptions {
     
-    static func fromJSObject(_ object: JSObjectLike) throws -> SetRootOptions {
+    static func fromJSObject(_ object: JSObjectLike) throws -> PresentOptions {
         guard let componentValue = object.getObject("component") else {
             throw NativeNavigatorError.missingParameter(name: "component")
         }
         let component = try componentSpecFromJSObject(componentValue)
-        let animated = object.getBool("animated", false)
-        
-        return SetRootOptions(component: component, animated: animated)
+        let style = try toPresentationStyle(object, key: "style")
+        let animated = object.getBool("animated", true)
+
+        return PresentOptions(component: component, style: style, animated: animated)
     }
     
 }
@@ -112,14 +125,6 @@ extension ComponentOptions {
 
         if let tabOptions = object.getObject("tab") {
             result.tab = try ComponentOptions.TabOptions.fromJSObject(tabOptions)
-        }
-
-        if let modalPresentationStyleString = object.getString("modalPresentationStyle") {
-            if let modalPresentationStyleValue = ModalPresentationStyle(rawValue: modalPresentationStyleString) {
-                result.modalPresentationStyle = modalPresentationStyleValue
-            } else {
-                throw NativeNavigatorError.invalidParameter(name: "modalPresentationStyle", value: modalPresentationStyleString)
-            }
         }
         
         if let barOptions = object.getObject("bar") {

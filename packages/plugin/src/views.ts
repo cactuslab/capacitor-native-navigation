@@ -27,7 +27,6 @@ export async function initViewHandler(options: Options): Promise<void> {
 
 	await plugin.addListener(NativeNavigationEvents.CreateView, async function(data: CreateViewEventData) {
 		const { id } = data
-		console.log('view event', id)
 
 		const view = window.open(id)
 		if (view) {
@@ -49,7 +48,6 @@ export async function initViewHandler(options: Options): Promise<void> {
 
 	await plugin.addListener(NativeNavigationEvents.DestroyView, function(data: DestroyViewEventData) {
 		const { id } = data
-		console.log('destroy view event', data)
 
 		handler.destroyView(id)
 		delete windows[id]

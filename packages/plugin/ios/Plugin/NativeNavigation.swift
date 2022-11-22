@@ -130,7 +130,14 @@ class NativeNavigation: NSObject {
         }
         
         if let stack = container as? UINavigationController {
-            let vc = try await self.createView(options.component)
+            let vc: NativeNavigationViewController
+            if options.mode == PushMode.replace, let replaceViewController = stack.topViewController as? NativeNavigationViewController {
+                try await updateView(options.component, viewController: replaceViewController)
+                vc = replaceViewController
+            } else {
+                vc = try await self.createView(options.component)
+            }
+            
             await waitForViewsReady(vc)
             
             if let popCount = options.popCount, popCount > 0 {
@@ -440,22 +447,35 @@ class NativeNavigation: NSObject {
 
     @MainActor
     private func createView(_ options: ViewSpec) async throws -> NativeNavigationViewController {
-        let vc = NativeNavigationViewController(path: options.path, state: options.state, plugin: plugin)
+        let viewController = NativeNavigationViewController(path: options.path, state: options.state, plugin: plugin)
         if let componentOptions = options.options {
-            try self.configureViewController(vc, options: componentOptions, animated: false)
+            try self.configureViewController(viewController, options: componentOptions, animated: false)
         }
 
         /* We store the view before creating the webview so it is ready to be referred to by any JavaScript that runs when the view is mounted. */
-        let id = try storeComponent(vc, options: options)
+        let id = try storeComponent(viewController, options: options)
         
-        vc.onDeinit = {
+        viewController.onDeinit = {
             self.plugin.notifyListeners("destroyView", data: ["id": id], retainUntilConsumed: true)
             DispatchQueue.main.async {
                 self.removeComponent(id) // TODO call removeComponent for stacks and tabs too
             }
         }
         
-        return vc
+        return viewController
+    }
+    
+    @MainActor
+    private func updateView(_ options: ViewSpec, viewController: NativeNavigationViewController) async throws {
+        viewController.navigationItem.leftBarButtonItems = nil
+        viewController.navigationItem.rightBarButtonItems = nil
+        
+        if let componentOptions = options.options {
+            try self.configureViewController(viewController, options: componentOptions, animated: false)
+        }
+        
+        viewController.path = options.path
+        viewController.state = options.state
     }
     
     /**
@@ -464,7 +484,7 @@ class NativeNavigation: NSObject {
     @MainActor
     private func waitForViewsReady(_ vc: UIViewController) async {
         if let vc = vc as? NativeNavigationViewController {
-            await vc.createWebView()
+            await vc.createOpdateWebView()
         } else if let nc = vc as? UINavigationController {
             for vc in nc.viewControllers {
                 await waitForViewsReady(vc)
@@ -674,8 +694,16 @@ struct WeakContainer<T> where T: AnyObject {
 class NativeNavigationViewController: UIViewController {
 
     private weak var plugin: CAPPlugin!
-    var path: String
-    var state: JSObject?
+    var path: String {
+        didSet {
+            webViewNeedsUpdate = true
+        }
+    }
+    var state: JSObject? {
+        didSet {
+            webViewNeedsUpdate = true
+        }
+    }
     var webView: WKWebView? {
         willSet {
             if let webView = webView {
@@ -694,7 +722,8 @@ class NativeNavigationViewController: UIViewController {
         }
     }
     var onDeinit: (() -> Void)?
-    private var viewReadyContinuation: CheckedContinuation<Void, Never>?
+    private var viewReadyContinuations: [CheckedContinuation<Void, Never>] = []
+    private var webViewNeedsUpdate = false
 
     init(path: String, state: JSObject?, plugin: CAPPlugin) {
         self.path = path
@@ -720,26 +749,35 @@ class NativeNavigationViewController: UIViewController {
     /**
      Create the webview required for this view. Waits for the view to be ready before returning.
      */
-    func createWebView() async {
+    func createOpdateWebView() async {
+        guard webView == nil || webViewNeedsUpdate else {
+            return
+        }
+        
         await withCheckedContinuation { continuation in
-            self.viewReadyContinuation = continuation
+            self.viewReadyContinuations.append(continuation)
             
             var notificationData: [String : Any] = ["path": self.path, "id": self.componentId!]
             if let state = self.state {
                 notificationData["state"] = state
             }
             
-            /* Callback to JavaScript to trigger a call to window.open to create the WKWebView and then init it */
-            self.plugin.notifyListeners("createView", data: notificationData, retainUntilConsumed: true)
+            if webView == nil {
+                /* Callback to JavaScript to trigger a call to window.open to create the WKWebView and then init it */
+                self.plugin.notifyListeners("createView", data: notificationData, retainUntilConsumed: true)
+            } else {
+                self.plugin.notifyListeners("updateView", data: notificationData, retainUntilConsumed: true)
+            }
         }
     }
     
     func webViewReady() throws {
-        guard let continuation = viewReadyContinuation else {
+        guard let continuation = viewReadyContinuations.first else {
             throw NativeNavigatorError.illegalState(message: "View has already been reported as ready or has not been created")
         }
         
-        self.viewReadyContinuation = nil
+        viewReadyContinuations.removeFirst()
+        
         continuation.resume()
     }
     

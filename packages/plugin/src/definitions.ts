@@ -315,6 +315,8 @@ export enum NativeNavigationEvents {
 	 */
 	CreateView = 'createView',
 
+	UpdateView = 'updateView',
+
 	DestroyView = 'destroyView',
 
 	/**
@@ -328,6 +330,8 @@ export interface CreateViewEventData {
 	path: string
 	state?: unknown
 }
+
+export type UpdateViewEventData = CreateViewEventData
 
 export interface DestroyViewEventData {
 	id: ComponentId

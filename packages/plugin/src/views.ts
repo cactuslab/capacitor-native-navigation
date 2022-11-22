@@ -1,7 +1,7 @@
 import type { Plugin } from '@capacitor/core';
 
 import { NativeNavigationEvents } from './definitions'
-import type { ComponentId, CreateViewEventData, DestroyViewEventData, NativeNavigationPlugin } from './definitions';
+import type { ComponentId, CreateViewEventData, DestroyViewEventData, NativeNavigationPlugin, UpdateViewEventData } from './definitions';
 
 interface Options {
 	plugin: NativeNavigationPlugin & Plugin
@@ -11,6 +11,7 @@ interface Options {
 export interface ViewHandlerImpl {
 
 	createView: (view: Window, data: CreateViewEventData) => void
+	updateView: (view: Window, data: UpdateViewEventData) => void
 	destroyView: (id: string) => void
 
 	/**
@@ -32,6 +33,18 @@ export async function initViewHandler(options: Options): Promise<void> {
 		if (view) {
 			attemptLoad(view, data)
 		}
+	})
+
+	await plugin.addListener(NativeNavigationEvents.UpdateView, async function(data: UpdateViewEventData) {
+		const { id } = data
+		
+		const view = windows[id]
+		if (!view) {
+			console.warn(`Attempted to update a view that doesn't exist: ${id}`)
+			return
+		}
+
+		handler.updateView(view, data)
 	})
 
 	await plugin.addListener(NativeNavigationEvents.DestroyView, function(data: DestroyViewEventData) {

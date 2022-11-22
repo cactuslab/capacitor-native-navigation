@@ -1,7 +1,7 @@
 import { NativeNavigation } from '@cactuslab/native-navigation'
 import { useNativeNavigationContext } from '@cactuslab/native-navigation-react'
 import React, { useCallback, useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 
 export default function View1(): JSX.Element {
 	const { dismiss } = useNativeNavigationContext({})
@@ -39,6 +39,7 @@ export default function View1(): JSX.Element {
 			<h2>Unmounting</h2>
 			<p>Note that this view will show an alert when it is UNMOUNTED, so if it doesn't alert there is a fault!</p>
 			<p><button onClick={handleReset}>Reset</button></p>
+			<p><Link to="/stack1">Go to Stack 1</Link></p>
 		</div>
 	)
 }

@@ -1,5 +1,5 @@
 import { initViewHandler } from '@cactuslab/native-navigation'
-import type { ComponentId, NativeNavigationPluginInternal, NativeNavigationPlugin, CreateViewEventData } from '@cactuslab/native-navigation';
+import type { ComponentId, NativeNavigationPluginInternal, NativeNavigationPlugin, CreateViewEventData, UpdateViewEventData } from '@cactuslab/native-navigation';
 import type { Plugin } from '@capacitor/core';
 import React from 'react';
 import ReactDOM from 'react-dom'
@@ -40,49 +40,72 @@ export async function initReact(options: Options): Promise<void> {
 		plugin,
 		handler: {
 			createView,
+			updateView,
 			destroyView,
 			ready,
 		}
 	})
 
 	function createView(viewWindow: Window, data: CreateViewEventData) {
-		const { path, id, state } = data
+		const { path, id } = data
 	
 		const rootElement = viewWindow.document.getElementById(viewRootId)
 		if (rootElement) {
 			prepareWindowForSync(viewWindow)
 			views[id] = viewWindow
-
-			const context = createReactContext({
-				componentId: id,
-				viewWindow,
-				plugin,
-			})
-
-			ReactDOM.render(
-				<Context.Provider value={context}>
-				{
-					React.createElement(root, {
-						path,
-						id,
-						state,
-					})
-				}
-				</Context.Provider>,
-				rootElement
-			)
-	
 			rootElements[id] = rootElement
 
-			/* Wait a moment to allow the webview to render the DOM... it would be nice to find a signal we could use instead of just waiting */
-			setTimeout(function() {
-				internalPlugin.viewReady({
-					id,
-				})
-			}, 20)
+			const props: NativeNavigationReactRootProps = {
+				id: data.id,
+				path: data.path,
+				state: data.state,
+			}
+			render(viewWindow, rootElement, props)
 		} else {
 			console.warn(`Attempted to load view "${path}" but could not find root node #${viewRootId}`)
 		}
+	}
+
+	function updateView(viewWindow: Window, data: UpdateViewEventData) {
+		const { id } = data
+
+		const rootElement = rootElements[id]
+		if (!rootElement) {
+			console.warn(`Attempted to update a React element that doesn't exist: ${id}`)
+			return
+		}
+
+		const props: NativeNavigationReactRootProps = {
+			id: data.id,
+			path: data.path,
+			state: data.state,
+		}
+		render(viewWindow, rootElement, props)
+	}
+
+	function render(viewWindow: Window, rootElement: Element, props: NativeNavigationReactRootProps) {
+		const { id } = props
+		const context = createReactContext({
+			componentId: id,
+			viewWindow,
+			plugin,
+		})
+
+		ReactDOM.render(
+			<Context.Provider value={context}>
+			{
+				React.createElement(root, props)
+			}
+			</Context.Provider>,
+			rootElement
+		)
+
+		/* Wait a moment to allow the webview to render the DOM... it would be nice to find a signal we could use instead of just waiting */
+		setTimeout(function() {
+			internalPlugin.viewReady({
+				id,
+			})
+		}, 20)
 	}
 
 	function destroyView(id: ComponentId) {

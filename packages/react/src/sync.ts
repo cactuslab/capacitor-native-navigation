@@ -99,7 +99,7 @@ function shouldCopyNode(node: Node): boolean {
 		return false
 	}
 
-	const element = node as Element
+	const element = node as HTMLElement
 	const name = node.nodeName.toUpperCase()
 	if (name === 'STYLE') {
 		return true
@@ -108,6 +108,9 @@ function shouldCopyNode(node: Node): boolean {
 		if (element.getAttribute("rel") === 'stylesheet') {
 			return true
 		}
+	}
+	if (name === 'META' && element.dataset['capacitorNativeNavigationId'] === 'sentinel') {
+		return true
 	}
 	return false
 }

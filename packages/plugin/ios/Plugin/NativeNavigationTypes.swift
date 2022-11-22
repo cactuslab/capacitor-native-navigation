@@ -172,7 +172,7 @@ extension DismissResult {
 
 struct PushOptions {
     var component: ViewSpec
-    var stack: ComponentId?
+    var target: ComponentId?
     var animated: Bool
     var mode: PushMode?
     var popCount: Int?
@@ -186,15 +186,19 @@ enum PushMode: String {
 
 struct PushResult {
     var id: ComponentId
-    var stack: ComponentId
+    var stack: ComponentId?
 }
 
 extension PushResult {
 
     func toPluginResult() -> PluginCallResultData {
-        return [
-            "stack": stack
+        var result = [
+            "id": id
         ]
+        if let stack = self.stack {
+            result["stack"] = stack
+        }
+        return result
     }
 
 }

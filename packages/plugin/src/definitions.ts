@@ -149,9 +149,9 @@ export interface PushOptions {
 	component: ViewSpec
 
 	/**
-	 * The stack to push to, or undefined to push to the current stack.
+	 * The target component to push to, or undefined to push to the current stack.
 	 */
-	stack?: ComponentId
+	target?: ComponentId
 
 	/**
 	 * Whether to animate the push.
@@ -187,9 +187,9 @@ export interface PushResult {
 	id: ComponentId
 
 	/**
-	 * The stack that was pushed to.
+	 * The stack that was pushed to, if it was pushed to a stack.
 	 */
-	stack: ComponentId
+	stack?: ComponentId
 }
 
 export interface PopOptions {

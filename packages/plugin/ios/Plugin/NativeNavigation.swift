@@ -120,14 +120,7 @@ class NativeNavigation: NSObject {
 
     @MainActor
     func push(_ options: PushOptions) async throws -> PushResult {
-        let container: UIViewController?
-        if let id = options.stack {
-            container = self.component(id)
-        } else if let topRootId = rootStack.last {
-            container = self.component(topRootId)
-        } else {
-            throw NativeNavigatorError.illegalState(message: "No root found to push to")
-        }
+        let container = try findStackOrView(id: options.target)
         
         if let stack = container as? UINavigationController {
             let vc: NativeNavigationViewController
@@ -141,7 +134,7 @@ class NativeNavigation: NSObject {
             await waitForViewsReady(vc)
             
             if let popCount = options.popCount, popCount > 0 {
-                _ = try await pop(PopOptions(stack: options.stack, count: popCount, animated: false))
+                _ = try await pop(PopOptions(stack: options.target, count: popCount, animated: false))
             }
             
             /* Push onto a stack */
@@ -157,34 +150,20 @@ class NativeNavigation: NSObject {
                 stack.pushViewController(vc, animated: options.animated)
             }
             return PushResult(id: vc.componentId!, stack: stack.componentId!)
+        } else if let vc = container as? NativeNavigationViewController {
+            /* We can push without a UINavigationController; we just always replace the component's contents */
+            try await updateView(options.component, viewController: vc)
+            await waitForViewsReady(vc)
+            return PushResult(id: vc.componentId!)
         } else {
-            /* Replace current root */
-            //            let w = container as! NativeNavigationViewController
-            //            w.webView = vc.webView
-            //            w.componentId = vc.componentId
-            fatalError()
+            throw NativeNavigatorError.illegalState(message: "Cannot push to component: \(container.componentId ?? "no id")")
         }
     }
     
     @MainActor
     func pop(_ options: PopOptions) async throws -> PopResult {
-        let container: UIViewController
-        if let id = options.stack {
-            guard let component = self.component(id) else {
-                throw NativeNavigatorError.componentNotFound(name: id)
-            }
-            container = component
-        } else if let topRootId = rootStack.last {
-            guard let component = self.component(topRootId) else {
-                throw NativeNavigatorError.illegalState(message: "Top root not found: \(topRootId)")
-            }
-            container = component
-        } else {
-            throw NativeNavigatorError.illegalState(message: "No stack found to pop from")
-        }
-        
-        guard let stack = container as? UINavigationController else {
-            throw NativeNavigatorError.notAStack(name: container.componentId!)
+        guard let stack = try findStackOrView(id: options.stack) as? UINavigationController else {
+            throw NativeNavigatorError.illegalState(message: "Can only pop from a stack")
         }
         
         let count = options.count ?? 1
@@ -325,6 +304,39 @@ class NativeNavigation: NSObject {
         viewController.webView = newWebView
         
         return newWebView
+    }
+    
+    func findStackOrView(id: ComponentId?) throws -> UIViewController {
+        if let id = id {
+            guard let component = self.component(id) else {
+                throw NativeNavigatorError.componentNotFound(name: id)
+            }
+            return try findStackOrView(component: component)
+        } else if let topRootId = rootStack.last {
+            guard let component = self.component(topRootId) else {
+                throw NativeNavigatorError.illegalState(message: "Top root not found: \(topRootId)")
+            }
+            return try findStackOrView(component: component)
+        } else {
+            throw NativeNavigatorError.illegalState(message: "No current component")
+        }
+    }
+    
+    func findStackOrView(component: UIViewController) throws -> UIViewController {
+        if let stack = component as? UINavigationController {
+            return stack
+        }
+        if let view = component as? NativeNavigationViewController {
+            return view
+        }
+        if let tabs = component as? UITabBarController {
+            if let selectedViewController = tabs.selectedViewController {
+                return try findStackOrView(component: selectedViewController)
+            } else {
+                throw NativeNavigatorError.illegalState(message: "Tabs controller found with no tabs")
+            }
+        }
+        throw NativeNavigatorError.illegalState(message: "Non-component found: \(component)")
     }
 
     private func topViewController() throws -> UIViewController? {

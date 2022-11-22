@@ -312,7 +312,7 @@ extension PushOptions {
         let animated = object.getBool("animated", true)
         
         var result = PushOptions(component: component, animated: animated)
-        result.stack = object.getString("stack")
+        result.target = object.getString("target")
         if let mode = object.getString("mode") {
             if let modeValue = PushMode(rawValue: mode) {
                 result.mode = modeValue

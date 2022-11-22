@@ -202,6 +202,10 @@ class NativeNavigation: NSObject {
         for child in container.children {
             removeRoot(child, animated: options.animated)
         }
+        
+        if container.presentedViewController != nil {
+            container.dismiss(animated: options.animated)
+        }
 
         self.componentsById.removeAll()
     }

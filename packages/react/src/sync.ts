@@ -34,27 +34,24 @@ export function initSync(views: Record<ComponentId, Window>): void {
 				})
 
 				if (add.length) {
-					const prevSiblingId = mutation.previousSibling && mutation.previousSibling.nodeType === Node.ELEMENT_NODE ? (mutation.previousSibling as HTMLElement).dataset['capacitorNativeNavigationId'] : undefined
-					if (prevSiblingId) {
-						/* Copy added nodes to each view */
-						for (const viewId of Object.keys(views)) {
-							const view = views[viewId]
-							const prevSibling = view.document.head.querySelector(`[data-capacitor-native-navigation-id="${prevSiblingId}"]`)
-							if (!prevSibling) {
-								console.warn(`Marker "${prevSiblingId}" not found in head for view: ${viewId}`)
-								continue
-							}
-
-							let marker = prevSibling
-
-							for (const node of add) {
-								const clone = node.cloneNode(true) as Element
-								marker.insertAdjacentElement('afterend', clone)
-								marker = clone
-							}
+					const prevSiblingId = findPreviousSiblingId(mutation.previousSibling)
+					
+					/* Copy added nodes to each view */
+					for (const viewId of Object.keys(views)) {
+						const view = views[viewId]
+						const prevSibling = view.document.head.querySelector(`[data-capacitor-native-navigation-id="${prevSiblingId}"]`)
+						if (!prevSibling) {
+							console.warn(`Marker "${prevSiblingId}" not found in head for view: ${viewId}`)
+							continue
 						}
-					} else {
-						console.warn(`Nodes (${add.length}, e.g. ${add[0].outerHTML}) added to head in an unexpected location (${(mutation.previousSibling as HTMLElement).outerHTML})`)
+
+						let marker = prevSibling
+
+						for (const node of add) {
+							const clone = node.cloneNode(true) as Element
+							marker.insertAdjacentElement('afterend', clone)
+							marker = clone
+						}
 					}
 				}
 			}
@@ -113,4 +110,23 @@ function shouldCopyNode(node: Node): boolean {
 		return true
 	}
 	return false
+}
+
+/**
+ * Find the capacitorNativeNavigationId of the node to use as the previous sibling for nodes to insert.
+ * @param node 
+ */
+function findPreviousSiblingId(node: Node | null): string {
+	while (node) {
+		if (node.nodeType === Node.ELEMENT_NODE) {
+			const id = (node as HTMLElement).dataset['capacitorNativeNavigationId']
+			if (id) {
+				return id
+			}
+		}
+		node = node.previousSibling
+	}
+
+	/* If we don't find a valid sibling, use the sentinel */
+	return 'sentinel'
 }

@@ -16,7 +16,8 @@ export default function Stack2(): JSX.Element {
 					modal: true,
 				},
 			},
-			animated: true
+			style: 'pageSheet',
+			animated: true,
 		})
 	}, [])
 

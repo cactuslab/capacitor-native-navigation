@@ -2,7 +2,7 @@
 import type { LocationDescriptorObject } from 'history'
 
 import { defaultDecider } from './NavigationDecider'
-import type { NavigationDecision } from './NavigationDecider'
+import type { NavigationDecision, DefaultNavigationDeciderOptions } from './NavigationDecider'
 
 const DEFAULT_STACK = '__default'
 
@@ -21,7 +21,10 @@ export class BrowserNavigationDecider {
 	 */
 	private stacks: Record<string, StackInfo> = {}
 
-	public constructor() {
+	private navigationDeciderOptions: DefaultNavigationDeciderOptions
+
+	public constructor(options: DefaultNavigationDeciderOptions) {
+		this.navigationDeciderOptions = options
 		this.stacks[DEFAULT_STACK] = { history: [] }
 	}
 
@@ -130,7 +133,7 @@ export class BrowserNavigationDecider {
 		}
 
 		const history = this.stacks[stack].history
-		return defaultDecider(location, action, history)
+		return defaultDecider(location, action, history, this.navigationDeciderOptions)
 	}
 
 	private pushOrReplace(location: LocationDescriptorObject<unknown>, action: 'push' | 'replace', stack?: string): void {

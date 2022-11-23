@@ -17,7 +17,11 @@ export interface NavigationDecision {
  */
 export type NavigationDecider = (location: LocationDescriptorObject<unknown>, action: NavigationDeciderAction, stack?: string) => NavigationDecision
 
-export function defaultDecider(location: LocationDescriptorObject<unknown>, action: 'push' | 'replace', history: LocationDescriptorObject<unknown>[]): NavigationDecision {
+export interface DefaultNavigationDeciderOptions {
+	rootIsSeparateLevel: boolean
+}
+
+export function defaultDecider(location: LocationDescriptorObject<unknown>, action: 'push' | 'replace', history: LocationDescriptorObject<unknown>[], options: DefaultNavigationDeciderOptions): NavigationDecision {
 	const state: NavigationState = location.state ? location.state as NavigationState : {}
 
 	function contextForUri(uri: string): string {
@@ -26,7 +30,11 @@ export function defaultDecider(location: LocationDescriptorObject<unknown>, acti
 		}
 		const i = uri.lastIndexOf('/')
 		if (i === 0) {
-			return uri
+			if (options.rootIsSeparateLevel) {
+				return uri
+			} else {
+				return '/'
+			}
 		} else if (i !== -1) {
 			return uri.substring(0, i)
 		} else {

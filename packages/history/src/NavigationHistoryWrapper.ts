@@ -1,6 +1,7 @@
 import type { Action, Action as HistoryAction, History, Location as HistoryLocation, Location, LocationDescriptor, LocationDescriptorObject, LocationListener, LocationState, TransitionPromptHook, UnregisterCallback } from 'history'
 
 import { BrowserNavigationDecider } from './BrowserNavigationDecider'
+import type { DefaultNavigationDeciderOptions } from './NavigationDecider'
 import { toLocation, toLocationDescriptorObject } from './utils'
 
 /**
@@ -17,9 +18,9 @@ export class NavigationHistoryWrapper implements History {
 	private waitingForPop: (() => void)[]
 	private listeners: LocationListener<unknown>[]
 
-	public constructor(wrapped: History) {
+	public constructor(wrapped: History, options: DefaultNavigationDeciderOptions) {
 		this.wrapped = wrapped
-		this.decider = new BrowserNavigationDecider()
+		this.decider = new BrowserNavigationDecider(options)
 		this.lastAction = wrapped.action
 		this.listeners = []
 		this.waitingForPop = []

@@ -3,7 +3,7 @@ import type { ViewSpec, ViewState } from '@cactuslab/native-navigation'
 import type { Action, History, Location, LocationDescriptor, LocationDescriptorObject, UnregisterCallback } from 'history'
 
 import { defaultDecider } from './NavigationDecider'
-import type { NavigationDecision } from './NavigationDecider'
+import type { DefaultNavigationDeciderOptions, NavigationDecision } from './NavigationDecider'
 import type { NavigationState } from './types'
 import { toLocationDescriptorObject } from './utils'
 
@@ -14,7 +14,11 @@ import { toLocationDescriptorObject } from './utils'
  */
 export class NativeNavigationHistory implements History {
 
-	public constructor() {
+	private navigationDeciderOptions: DefaultNavigationDeciderOptions
+
+	public constructor(options: DefaultNavigationDeciderOptions) {
+		this.navigationDeciderOptions = options
+		
 		/* Bind all member functions so callers can pass our member functions as bare functions */
 		const proto = Object.getPrototypeOf(this)
 		for (const p of Object.getOwnPropertyNames(proto) as (keyof this)[]) {
@@ -112,7 +116,7 @@ export class NativeNavigationHistory implements History {
 		const current = await NativeNavigation.get() // TODO we need to get the current containing stack
 		let decision: NavigationDecision
 		if (current.stack) {
-			decision = defaultDecider(location, action, current.stack ? current.stack.stack.map(s => toLocationDescriptorObject(s.path, s.state)) : [])
+			decision = defaultDecider(location, action, current.stack ? current.stack.stack.map(s => toLocationDescriptorObject(s.path, s.state)) : [], this.navigationDeciderOptions)
 		} else {
 			decision = {
 				action,

@@ -1,9 +1,11 @@
-import type { ViewState } from '@cactuslab/native-navigation';
+import type { ComponentId, ViewState } from '@cactuslab/native-navigation';
 import type { NativeNavigationPlugin } from '@cactuslab/native-navigation/src/definitions';
 import type { NavigateOptions, Navigator, To } from 'react-router-dom'
 
 interface Options {
 	plugin: NativeNavigationPlugin
+	componentId: ComponentId
+	stack?: ComponentId
 }
 
 /**
@@ -11,7 +13,7 @@ interface Options {
  * using Capacitor Native Navigation.
  */
 export function createNavigator(options: Options): Navigator {
-	const { plugin } = options
+	const { plugin, componentId, stack } = options
 	
 	const navigator: Navigator = {
 
@@ -35,9 +37,14 @@ export function createNavigator(options: Options): Navigator {
 
 		go: async function (delta: number): Promise<void> {
 			if (delta < 0) {
-				await plugin.pop({
-					count: -delta,
-				})
+				if (stack) {
+					await plugin.pop({
+						count: -delta,
+						stack,
+					})
+				} else {
+					console.warn(`Failed to pop as component ${componentId} is not in a stack`)
+				}
 			} else if (delta > 0) {
 				throw new Error(`go(delta) is not implemented for going forward`)
 			}
@@ -58,6 +65,7 @@ export function createNavigator(options: Options): Navigator {
 						state: viewState,
 					},
 					mode: viewState?.root ? 'root' : undefined,
+					target: stack || componentId,
 				})
 			} catch (error) {
 				console.log(`Failed to push ${error}`)
@@ -76,6 +84,7 @@ export function createNavigator(options: Options): Navigator {
 					},
 					animated: false,
 					mode: viewState?.root ? 'root' : 'replace',
+					target: stack || componentId,
 				})
 			} catch (error) {
 				console.log(`Failed to replace ${error}`)

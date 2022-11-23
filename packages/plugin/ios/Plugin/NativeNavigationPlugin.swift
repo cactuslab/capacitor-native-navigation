@@ -31,21 +31,19 @@ public class NativeNavigationPlugin: CAPPlugin {
     }
 
     @objc func dismiss(_ call: CAPPluginCall) {
-        guard let id = call.getString("id") else {
-            call.reject(NativeNavigatorError.missingParameter(name: "id").localizedDescription)
-            return
-        }
-
-        let animated = call.getBool("animated", true)
-        let options = DismissOptions(id: id, animated: animated)
-
-        Task {
-            do {
-                let result = try await implementation.dismiss(options)
-                call.resolve(result.toPluginResult())
-            } catch {
-                call.reject("Failed to dismiss: \(error)")
+        do {
+            let options = try DismissOptions.fromJSObject(call)
+            
+            Task {
+                do {
+                    let result = try await implementation.dismiss(options)
+                    call.resolve(result.toPluginResult())
+                } catch {
+                    call.reject("Failed to dismiss: \(error)")
+                }
             }
+        } catch {
+            call.reject(error.localizedDescription)
         }
     }
 

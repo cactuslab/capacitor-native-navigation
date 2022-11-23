@@ -22,8 +22,6 @@ class NativeNavigation: NSObject {
                 .first(where: \.isKeyWindow)
         } // TODO the window is nil if we launch the app with slow animations
     
-    /** The stack of root ids, starting with the root and then with any presented roots on top. */
-    private var rootStack: [ComponentId] = []
 
     public init(bridge: CAPBridgeProtocol, plugin: CAPPlugin) {
         self.bridge = bridge
@@ -50,7 +48,6 @@ class NativeNavigation: NSObject {
     func present(_ options: PresentOptions) async throws -> PresentResult {
         let root = try await self.createViewController(options.component)
         
-        rootStack.append(root.componentId!)
         await waitForViewsReady(root)
         
         if !options.animated && options.style == PresentationStyle.fullScreen {
@@ -71,7 +68,7 @@ class NativeNavigation: NSObject {
             container.view.addSubview(root.view)
             root.didMove(toParent: container)
         } else {
-            guard let top = try self.topViewController() else {
+            guard let top = try self.currentRoot() else {
                 throw NativeNavigatorError.illegalState(message: "Cannot find top")
             }
             
@@ -85,26 +82,13 @@ class NativeNavigation: NSObject {
 
     @MainActor
     func dismiss(_ options: DismissOptions) async throws -> DismissResult {
-        var viewController: UIViewController!
-        
-        if let id = options.id {
-            viewController = self.component(id)
-        } else if let topRootId = rootStack.last {
-            viewController = self.component(topRootId)
-        } else {
-            viewController = try self.topViewController()
-        }
-        
-        guard let viewController = viewController else {
-            throw NativeNavigatorError.illegalState(message: "Cannot find a view controller to dismiss")
-        }
+        let viewController = try findRoot(id: options.id)
         
         guard let id = viewController.componentId else {
-            throw NativeNavigatorError.illegalState(message: "The top view controller does not have a component id")
+            throw NativeNavigatorError.illegalState(message: "The view controller to dismiss does not have a component id")
         }
 
         if let presentingViewController = viewController.presentingViewController {
-            rootStack.removeAll { $0 == id }
             presentingViewController.dismiss(animated: options.animated)
             return DismissResult(id: id)
         } else {
@@ -212,20 +196,7 @@ class NativeNavigation: NSObject {
     
     @MainActor
     func get(_ options: GetOptions) async throws -> ComponentSpec {
-        var vc: UIViewController?
-        if let id = options.id {
-            vc = self.component(id)
-            guard vc != nil else {
-                throw NativeNavigatorError.componentNotFound(name: id)
-            }
-        } else if let topRootId = rootStack.last {
-            vc = self.component(topRootId)
-        }
-        
-        guard let vc = vc else {
-            throw NativeNavigatorError.illegalState(message: "No current component")
-        }
-        
+        let vc = try findComponent(id: options.id)
         return try self.options(vc)
     }
     
@@ -304,20 +275,78 @@ class NativeNavigation: NSObject {
         return newWebView
     }
     
+    /** Find the root component with the given id, or if no id is given, find the current root component. A root is a component that has been presented. */
+    func findRoot(id: ComponentId?) throws -> UIViewController {
+        if let id = id {
+            guard let component = self.component(id) else {
+                throw NativeNavigatorError.componentNotFound(name: id)
+            }
+            return component
+        }
+        
+        if let root = try self.currentRoot() {
+            return root
+        }
+        
+        throw NativeNavigatorError.illegalState(message: "No current root component found")
+    }
+    
+    /** Find the component with the given id, or if no id is given, find the current leaf component. */
+    func findComponent(id: ComponentId?) throws -> UIViewController {
+        if let id = id {
+            guard let component = self.component(id) else {
+                throw NativeNavigatorError.componentNotFound(name: id)
+            }
+            return component
+        }
+        
+        if let root = try self.currentRoot() {
+            return findLeaf(root)
+        }
+        
+        throw NativeNavigatorError.illegalState(message: "No current component found")
+    }
+    
+    /** Given a component, find the currently active leaf of that component, or the component itself if it is a leaf. */
+    func findLeaf(_ component: UIViewController) -> UIViewController {
+        if let stack = component as? UINavigationController {
+            if let top = stack.topViewController {
+                return top
+            } else {
+                return stack
+            }
+        } else if let tabs = component as? UITabBarController {
+            if let selected = tabs.selectedViewController {
+                return findLeaf(selected)
+            } else {
+                return tabs
+            }
+        } else {
+            return component
+        }
+    }
+    
     func findStackOrView(id: ComponentId?) throws -> UIViewController {
         if let id = id {
             guard let component = self.component(id) else {
                 throw NativeNavigatorError.componentNotFound(name: id)
             }
-            return try findStackOrView(component: component)
-        } else if let topRootId = rootStack.last {
-            guard let component = self.component(topRootId) else {
-                throw NativeNavigatorError.illegalState(message: "Top root not found: \(topRootId)")
-            }
-            return try findStackOrView(component: component)
-        } else {
-            throw NativeNavigatorError.illegalState(message: "No current component")
+            return component
         }
+        
+        if let root = try self.currentRoot() {
+            if let stack = root as? UINavigationController {
+                return stack
+            } else if let tabs = root as? UITabBarController {
+                if let selected = tabs.selectedViewController {
+                    return selected
+                }
+            } else {
+                return root
+            }
+        }
+        
+        throw NativeNavigatorError.illegalState(message: "No current stack or view found")
     }
     
     func findStackOrView(component: UIViewController) throws -> UIViewController {
@@ -337,32 +366,19 @@ class NativeNavigation: NSObject {
         throw NativeNavigatorError.illegalState(message: "Non-component found: \(component)")
     }
 
-    private func topViewController() throws -> UIViewController? {
+    private func currentRoot() throws -> UIViewController? {
         guard let window = self.window else {
             throw NativeNavigatorError.illegalState(message: "No window")
         }
         
         var result = window.rootViewController!
         
-        /* Find our root */
         if let root = result.children.last {
             result = root
         }
 
-        var foundMore = true
-        while foundMore {
-            foundMore = false
-
-            while result.presentedViewController != nil {
-                result = result.presentedViewController!
-                foundMore = true
-            }
-            if let tabs = result as? UITabBarController {
-                if let selectedViewController = tabs.selectedViewController {
-                    result = selectedViewController
-                    foundMore = true
-                }
-            }
+        while result.presentedViewController != nil {
+            result = result.presentedViewController!
         }
 
         return result

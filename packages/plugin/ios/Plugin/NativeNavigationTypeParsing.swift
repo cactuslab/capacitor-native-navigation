@@ -346,6 +346,16 @@ extension PopOptions {
     }
 }
 
+extension DismissOptions {
+    
+    static func fromJSObject(_ object: JSObjectLike) throws -> DismissOptions {
+        let id = object.getString("id")
+        let animated = object.getBool("animated", true)
+        return DismissOptions(id: id, animated: animated)
+    }
+    
+}
+
 extension ResetOptions {
     
     static func fromJSObject(_ object: JSObjectLike) throws -> ResetOptions {

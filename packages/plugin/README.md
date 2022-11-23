@@ -136,7 +136,7 @@ Remove all of the native UI and reset back to the root Capacitor webview.
 get(options?: GetOptions | undefined) => any
 ```
 
-Get the spec of a component
+Get the spec and context of a component
 
 | Param         | Type                                              |
 | ------------- | ------------------------------------------------- |
@@ -319,9 +319,19 @@ Options for stack components
 
 #### GetOptions
 
-| Prop     | Type                                                | Description                                                     |
-| -------- | --------------------------------------------------- | --------------------------------------------------------------- |
-| **`id`** | <code><a href="#componentid">ComponentId</a></code> | The component id to get, or undefined to get the top-most root. |
+| Prop     | Type                                                | Description                                                          |
+| -------- | --------------------------------------------------- | -------------------------------------------------------------------- |
+| **`id`** | <code><a href="#componentid">ComponentId</a></code> | The component id to get, or undefined to get the top-most component. |
+
+
+#### GetResult
+
+| Prop            | Type                                                      | Description                                 |
+| --------------- | --------------------------------------------------------- | ------------------------------------------- |
+| **`component`** | <code><a href="#componentspecs">ComponentSpecs</a></code> | The component, if any.                      |
+| **`view`**      | <code><a href="#viewspec">ViewSpec</a></code>             | The view, if the component is a view.       |
+| **`stack`**     | <code><a href="#stackspec">StackSpec</a></code>           | The stack containing the component, if any. |
+| **`tabs`**      | <code><a href="#tabsspec">TabsSpec</a></code>             | The tabs containing the component, if any.  |
 
 
 ### Type Aliases

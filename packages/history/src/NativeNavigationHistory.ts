@@ -8,9 +8,9 @@ import type { NavigationState } from './types'
 import { toLocationDescriptorObject } from './utils'
 
 /**
- * A History implementation that translates navigation requests to Native Navigation.
- * Note that this object does NOT respond sensibly to requests for the current location.
- * In order to render using the current location use 
+ * A History implementation that translates navigation requests to Native Navigation API requests.
+ * Note that this object does NOT respond sensibly to requests for the `location`.
+ * In order to provider a `location` for routing use `FixedHistoryWrapper`.
  */
 export class NativeNavigationHistory implements History {
 

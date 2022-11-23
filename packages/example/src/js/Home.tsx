@@ -1,4 +1,4 @@
-import { NativeNavigation } from '@cactuslab/native-navigation'
+import { NativeNavigation, StackOptions } from '@cactuslab/native-navigation'
 
 import diamond from '../assets/imgs/diamond@2x.png'
 import flags from '../assets/imgs/flag.2.crossed@2x.png'
@@ -11,17 +11,38 @@ export default function Home(): React.ReactElement {
 			<p>This example app demonstrates the capabilities of Capacitor Native Navigation.</p>
 			<p>Choose one of the root options below:</p>
 			<dl>
-				<dd><button style={{fontSize: '2rem'}} onClick={setupStack}>Stack</button></dd>
+				<dd><button style={{fontSize: '2rem'}} onClick={() => setupStack({
+					path: '/stack1',
+					title: 'Stack 1',
+					options: {
+						bar: {
+							background: {
+								color: '#336699',
+							},
+							title: {
+								color: '#f00099',
+								font: {
+									name: 'Arial',
+									size: 26,
+								}
+							},
+							buttons: {
+								color: '#888866',
+							},
+						},
+					}
+				})}>Stack</button></dd>
 				<dd><button style={{fontSize: '2rem'}} onClick={setupTabs}>Tabs</button></dd>
 				<dd><button style={{fontSize: '2rem'}} onClick={setupView}>View</button></dd>
-				<h2>Stacks</h2>
-				<dd><button onClick={setupStackImmediatePush}>Immediate push</button></dd>
+				<h2>Races</h2>
+				<dd><button onClick={() => setupStack({ path: '/race/stack-immediate-push', title: 'Stack Immediate Push' })}>Immediate push</button></dd>
+				<dd><button onClick={() => setupStack({ path: '/race/push-replace/one', title: 'Push Replace' })}>Push replace</button></dd>
 			</dl>
 		</div>
 	)
 }
 
-async function setupStack() {
+async function setupStack(options: { path: string, title: string, options?: StackOptions }) {
 	const stackRoot = await NativeNavigation.present({
 		component: {
 			id: 'rootStack',
@@ -29,29 +50,13 @@ async function setupStack() {
 			stack: [
 				{
 					type: 'view',
-					path: '/stack1',
+					path: options?.path,
 					options: {
-						title: 'Stack 1',
+						title: options?.title,
 					}
 				}
 			],
-			options: {
-				bar: {
-					background: {
-						color: '#336699',
-					},
-					title: {
-						color: '#f00099',
-						font: {
-							name: 'Arial',
-							size: 26,
-						}
-					},
-					buttons: {
-						color: '#888866',
-					},
-				},
-			},
+			options: options.options,
 		},
 		animated: false,
 	})
@@ -117,23 +122,4 @@ async function setupView() {
 		animated: false,
 	})
 	console.log('INIT: created', standaloneViewRoot.id)
-}
-
-async function setupStackImmediatePush() {
-	await NativeNavigation.present({
-		component: {
-			id: 'rootStack',
-			type: 'stack',
-			stack: [
-				{
-					type: 'view',
-					path: '/stack-immediate-push',
-					options: {
-						title: 'Stack Immediate Push',
-					}
-				}
-			],
-		},
-		animated: false,
-	})
 }

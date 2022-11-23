@@ -106,7 +106,7 @@ class NativeNavigation: NSObject {
                 try await updateView(options.component, viewController: replaceViewController)
                 vc = replaceViewController
             } else {
-                vc = try await self.createView(options.component)
+                vc = try await self.createView(options.component, stackId: stack.componentId)
             }
             
             await waitForViewsReady(vc)
@@ -247,7 +247,7 @@ class NativeNavigation: NSObject {
         } else if let tabsSpec = spec as? TabsSpec {
             return try await createTabs(tabsSpec)
         } else if let viewSpec = spec as? ViewSpec {
-            return try await createView(viewSpec)
+            return try await createView(viewSpec, stackId: nil)
         } else {
             throw NativeNavigatorError.illegalState(message: "Unsupported component spec \(spec.type)")
         }
@@ -424,6 +424,7 @@ class NativeNavigation: NSObject {
     @MainActor
     private func createStack(_ options: StackSpec) async throws -> UINavigationController {
         let nc = UINavigationController()
+        let id = try self.storeComponent(nc, options: options)
         
         /* So our webView doesn't disappear under the title bar */
 //        nc.navigationBar.scrollEdgeAppearance = nc.navigationBar.standardAppearance
@@ -434,12 +435,11 @@ class NativeNavigation: NSObject {
         
         var viewControllers = [NativeNavigationViewController]()
         for stackItemCreateOptions in options.stack {
-            let stackItem = try await self.createView(stackItemCreateOptions)
+            let stackItem = try await self.createView(stackItemCreateOptions, stackId: id)
             viewControllers.append(stackItem)
         }
         nc.viewControllers = viewControllers
 
-        _ = try self.storeComponent(nc, options: options)
         return nc
     }
 
@@ -472,8 +472,8 @@ class NativeNavigation: NSObject {
     }
 
     @MainActor
-    private func createView(_ options: ViewSpec) async throws -> NativeNavigationViewController {
-        let viewController = NativeNavigationViewController(path: options.path, state: options.state, plugin: plugin)
+    private func createView(_ options: ViewSpec, stackId: ComponentId?) async throws -> NativeNavigationViewController {
+        let viewController = NativeNavigationViewController(path: options.path, state: options.state, stackId: stackId, plugin: plugin)
         if let componentOptions = options.options {
             try self.configureViewController(viewController, options: componentOptions, animated: false)
         }
@@ -746,10 +746,12 @@ class NativeNavigationViewController: UIViewController {
     var onDeinit: (() -> Void)?
     private var viewReadyContinuations: [CheckedContinuation<Void, Never>] = []
     private var webViewNeedsUpdate = false
+    private let stackId: ComponentId?
 
-    init(path: String, state: JSObject?, plugin: CAPPlugin) {
+    init(path: String, state: JSObject?, stackId: ComponentId?, plugin: CAPPlugin) {
         self.path = path
         self.state = state
+        self.stackId = stackId
         self.plugin = plugin
         super.init(nibName: nil, bundle: nil)
     }
@@ -782,6 +784,9 @@ class NativeNavigationViewController: UIViewController {
             var notificationData: [String : Any] = ["path": self.path, "id": self.componentId!]
             if let state = self.state {
                 notificationData["state"] = state
+            }
+            if let stackId = self.stackId {
+                notificationData["stack"] = stackId
             }
             
             if webView == nil {

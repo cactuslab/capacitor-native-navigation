@@ -13,7 +13,7 @@ export interface NativeNavigationPlugin {
 	dismiss(options?: DismissOptions): Promise<DismissResult>
 
 	/**
-	 * Push a new component onto a stack
+	 * Push a new component onto a stack, or replace an existing component.
 	 * @param options 
 	 */
 	push(options: PushOptions): Promise<PushResult>
@@ -24,6 +24,10 @@ export interface NativeNavigationPlugin {
 	 */
 	pop(options: PopOptions): Promise<PopResult>
 
+	/**
+	 * Set the options for an existing component
+	 * @param options 
+	 */
 	setOptions(options: SetComponentOptions): Promise<void>
 
 	/**
@@ -131,7 +135,7 @@ export interface PushOptions {
 	component: ViewSpec
 
 	/**
-	 * The target component to push to, or undefined to push to the current stack.
+	 * The target component to push to, usually a stack, or undefined to push to the current stack or component.
 	 */
 	target?: ComponentId
 
@@ -309,6 +313,7 @@ export interface CreateViewEventData {
 	id: ComponentId
 	path: string
 	state?: unknown
+	stack?: ComponentId
 }
 
 export type UpdateViewEventData = CreateViewEventData

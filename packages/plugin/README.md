@@ -68,7 +68,7 @@ Dismiss a native UI.
 push(options: PushOptions) => any
 ```
 
-Push a new component onto a stack
+Push a new component onto a stack, or replace an existing component.
 
 | Param         | Type                                                |
 | ------------- | --------------------------------------------------- |
@@ -101,6 +101,8 @@ Pop the top component off a stack
 ```typescript
 setOptions(options: SetComponentOptions) => any
 ```
+
+Set the options for an existing component
 
 | Param         | Type                                                                |
 | ------------- | ------------------------------------------------------------------- |
@@ -209,7 +211,7 @@ Get the spec of a component
 | Prop            | Type                                                | Description                                                                                                                                                                                                      |
 | --------------- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **`component`** | <code><a href="#viewspec">ViewSpec</a></code>       | The options for the view to push onto the stack.                                                                                                                                                                 |
-| **`target`**    | <code><a href="#componentid">ComponentId</a></code> | The target component to push to, or undefined to push to the current stack.                                                                                                                                      |
+| **`target`**    | <code><a href="#componentid">ComponentId</a></code> | The target component to push to, usually a stack, or undefined to push to the current stack or component.                                                                                                        |
 | **`animated`**  | <code>boolean</code>                                | Whether to animate the push. Defaults to `true`                                                                                                                                                                  |
 | **`mode`**      | <code><a href="#pushmode">PushMode</a></code>       | The mode to use for the push. Defaults to `'push'`. push: Push the component onto the stack. replace: Replace the current top-most component in the stack. root: Reset the stack back to just the new component. |
 | **`popCount`**  | <code>number</code>                                 | How many items to pop first                                                                                                                                                                                      |

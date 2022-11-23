@@ -21,7 +21,18 @@ class NativeNavigation: NSObject {
                 // Finally, keep only the key window
                 .first(where: \.isKeyWindow)
         } // TODO the window is nil if we launch the app with slow animations
-    
+
+    /** We need to let some asynchronous operations happen one-at-a-time so we don't get a race condition
+        between creating a component, and then manipultating it.
+
+        An example of such a situation is creating a stack with a view, and then
+        pushing on a view, and then replacing that view, all before the first view has finished creating.
+        That would mean that when we come to push and replace, we might be looking at a stack that hasn't
+        yet appeared, and in fact that might not yet have the pushed view added to it when we come to replace.
+        This is because we wait for a view's creation to complete, and the act of creating a view runs more
+        JavaScript that might interact with the plugin.
+     */
+    private let sync = OneAtATime()
 
     public init(bridge: CAPBridgeProtocol, plugin: CAPPlugin) {
         self.bridge = bridge
@@ -44,24 +55,27 @@ class NativeNavigation: NSObject {
         }
     }
 
-    @MainActor
     func present(_ options: PresentOptions) async throws -> PresentResult {
+        return try await sync.perform { try await _present(options) }
+    }
+
+    @MainActor
+    private func _present(_ options: PresentOptions) async throws -> PresentResult {
         let root = try await self.createViewController(options.component)
-        
         await waitForViewsReady(root)
-        
+
         if !options.animated && options.style == PresentationStyle.fullScreen {
             guard let window = self.window else {
                 throw NativeNavigatorError.illegalState(message: "No window")
             }
-            
+
             let container = window.rootViewController!
-            
+
             /* Remove an existing root, if any */
             for child in container.children {
                 removeRoot(child, animated: options.animated)
             }
-            
+
             /* Add new root */
             container.addChild(root)
             root.view.frame = container.view.bounds
@@ -71,19 +85,23 @@ class NativeNavigation: NSObject {
             guard let top = try self.currentRoot() else {
                 throw NativeNavigatorError.illegalState(message: "Cannot find top")
             }
-            
+
             root.modalPresentationStyle = options.style.toUIModalPresentationStyle()
 
             top.present(root, animated: options.animated)
         }
-        
+
         return PresentResult(id: root.componentId!)
     }
 
-    @MainActor
     func dismiss(_ options: DismissOptions) async throws -> DismissResult {
+        return try await sync.perform { try await _dismiss(options) }
+    }
+
+    @MainActor
+    private func _dismiss(_ options: DismissOptions) async throws -> DismissResult {
         let viewController = try findRoot(id: options.id)
-        
+
         guard let id = viewController.componentId else {
             throw NativeNavigatorError.illegalState(message: "The view controller to dismiss does not have a component id")
         }
@@ -96,10 +114,14 @@ class NativeNavigation: NSObject {
         }
     }
 
-    @MainActor
     func push(_ options: PushOptions) async throws -> PushResult {
+        return try await sync.perform { try await _push(options) }
+    }
+
+    @MainActor
+    private func _push(_ options: PushOptions) async throws -> PushResult {
         let container = try findStackOrView(id: options.target)
-        
+
         if let stack = container as? UINavigationController {
             let vc: NativeNavigationViewController
             if options.mode == PushMode.replace, let replaceViewController = stack.topViewController as? NativeNavigationViewController {
@@ -108,13 +130,13 @@ class NativeNavigation: NSObject {
             } else {
                 vc = try await self.createView(options.component, stackId: stack.componentId)
             }
-            
+
             await waitForViewsReady(vc)
-            
+
             if let popCount = options.popCount, popCount > 0 {
                 _ = try await pop(PopOptions(stack: options.target, count: popCount, animated: false))
             }
-            
+
             /* Push onto a stack */
             if stack.viewControllers.isEmpty {
                 stack.setViewControllers([vc], animated: false)
@@ -137,13 +159,17 @@ class NativeNavigation: NSObject {
             throw NativeNavigatorError.illegalState(message: "Cannot push to component: \(container.componentId ?? "no id")")
         }
     }
+
+    func pop(_ options: PopOptions) async throws -> PopResult {
+        return try await sync.perform { try await _pop(options) }
+    }
     
     @MainActor
-    func pop(_ options: PopOptions) async throws -> PopResult {
+    private func _pop(_ options: PopOptions) async throws -> PopResult {
         guard let stack = try findStackOrView(id: options.stack) as? UINavigationController else {
             throw NativeNavigatorError.illegalState(message: "Can only pop from a stack")
         }
-        
+
         let count = options.count ?? 1
         if count > 1 {
             let viewControllers = stack.viewControllers
@@ -174,28 +200,36 @@ class NativeNavigation: NSObject {
         try self.configureViewController(vc, options: componentOptions, animated: options.animated)
     }
 
-    @MainActor
     func reset(_ options: ResetOptions) async throws {
+        return try await sync.perform { try await _reset(options) }
+    }
+
+    @MainActor
+    private func _reset(_ options: ResetOptions) async throws {
         guard let window = self.window else {
             throw NativeNavigatorError.illegalState(message: "No window")
         }
-        
+
         let container = window.rootViewController!
-        
+
         /* Remove an existing root, if any */
         for child in container.children {
             removeRoot(child, animated: options.animated)
         }
-        
+
         if container.presentedViewController != nil {
             container.dismiss(animated: options.animated)
         }
 
         self.componentsById.removeAll()
     }
+
+    func get(_ options: GetOptions) async throws -> ComponentSpec {
+        return try await sync.perform { try await _get(options) }
+    }
     
     @MainActor
-    func get(_ options: GetOptions) async throws -> ComponentSpec {
+    private func _get(_ options: GetOptions) async throws -> ComponentSpec {
         let vc = try findComponent(id: options.id)
         return try self.options(vc)
     }
@@ -711,4 +745,31 @@ extension UIViewController {
 
 private struct WeakContainer<T> where T: AnyObject {
     weak var value: T?
+}
+
+/** Ensure one-at-a-time invocation of asynchronous operations. The next one starts when the previous one finishes. */
+private actor OneAtATime {
+    private var continuations: [CheckedContinuation<Void, Never>]? = nil
+
+    func perform<T>(_ operation: () async throws -> T) async throws -> T {
+        if continuations != nil {
+            await withCheckedContinuation { continuation in
+                continuations!.append(continuation)
+            }
+        } else {
+            continuations = []
+        }
+
+        defer {
+            if let next = continuations!.first {
+                continuations!.removeFirst()
+                next.resume()
+            } else {
+                continuations = nil
+            }
+        }
+
+        return try await operation()
+    }
+
 }

@@ -42,7 +42,7 @@ export function defaultDecider(location: LocationDescriptorObject<unknown>, acti
 	} else if (state.navigation) {
 		const uri = location.pathname || ''
 		const context = contextForUri(uri)
-		console.log(`CONTEXT FOR ${uri} is ${context}`)
+		// console.debug(`NavigationDecider: context for ${uri} is ${context}`)
 
 		/* Look for where that context ends */
 		let j = history.length - 1
@@ -53,11 +53,11 @@ export function defaultDecider(location: LocationDescriptorObject<unknown>, acti
 
 			if (hcontext.startsWith(context)) {
 				/* We're a super-context or the same context of the historical one so keep looking */
-				console.log('FOUND SAME', huri, hcontext)
+				// console.log(`NavigationDecider: found same context ${huri} in ${hcontext}`)
 				previousIsSuperOrSame = true
 			} else if (context.startsWith(hcontext)) {
 				/* We're a subcontext of the historical one */
-				console.log('SUBCONTEXT', huri, hcontext, previousIsSuperOrSame)
+				// console.log(`NavigationDecider: found subcontext ${huri} in ${hcontext} (previous is super or same = ${previousIsSuperOrSame}`)
 
 				const popCountToIncludeThisOne = history.length - j
 				if (previousIsSuperOrSame) {
@@ -75,7 +75,7 @@ export function defaultDecider(location: LocationDescriptorObject<unknown>, acti
 				}
 			} else {
 				/* We're unrelated to the historical context so keep unwinding */
-				console.log('UNRELATED AT', huri, hcontext)
+				// console.log(`NavigationDecider: found unrelated ${huri} in ${hcontext}`)
 				previousIsSuperOrSame = false
 			}
 		}

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { WebPlugin } from '@capacitor/core'
 
-import type { DismissOptions, NativeNavigationPlugin, PopOptions, PopResult, PresentOptions, PresentResult, PushOptions, PushResult, DismissResult, SetComponentOptions, StackSpec, TabsSpec, ViewSpec, GetResult } from './definitions'
+import type { DismissOptions, NativeNavigationPlugin, PopOptions, PopResult, PresentOptions, PresentResult, PushOptions, PushResult, DismissResult, SetComponentOptions, GetResult } from './definitions'
 
 export class NativeNavigationWeb
 	extends WebPlugin

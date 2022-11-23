@@ -289,3 +289,32 @@ struct ImageObject {
 struct GetOptions {
     var id: ComponentId?
 }
+
+struct GetResult {
+    var component: ComponentSpec?
+    var view: ViewSpec?
+    var stack: StackSpec?
+    var tabs: TabsSpec?
+}
+
+
+extension GetResult {
+
+    func toPluginResult() -> PluginCallResultData {
+        var result = PluginCallResultData()
+        if let component = component {
+            result["component"] = component.toPluginResult()
+        }
+        if let view = view {
+            result["view"] = view.toPluginResult()
+        }
+        if let stack = stack {
+            result["stack"] = stack.toPluginResult()
+        }
+        if let tabs = tabs {
+            result["tabs"] = tabs.toPluginResult()
+        }
+        return result
+    }
+
+}

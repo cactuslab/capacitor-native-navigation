@@ -22,13 +22,15 @@ func componentSpecFromJSObject(_ object: JSObjectLike) throws -> ComponentSpec {
         spec.id = id
         spec.options = componentOptions
 
-        if let initialStack = object.getArray("stack") as? [JSObject] {
-            for initialStackItem in initialStack {
-                if let initialStackItemSpec = try componentSpecFromJSObject(initialStackItem) as? ViewSpec {
-                    spec.stack.append(initialStackItemSpec)
-                } else {
-                    throw NativeNavigatorError.invalidParameter(name: "stack", value: initialStackItem)
-                }
+        guard let initialStack = object.getArray("stack") as? [JSObject] else {
+            throw NativeNavigatorError.missingParameter(name: "stack")
+        }
+        
+        for initialStackItem in initialStack {
+            if let initialStackItemSpec = try componentSpecFromJSObject(initialStackItem) as? ViewSpec {
+                spec.stack.append(initialStackItemSpec)
+            } else {
+                throw NativeNavigatorError.invalidParameter(name: "stack", value: initialStackItem)
             }
         }
 

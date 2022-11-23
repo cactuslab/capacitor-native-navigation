@@ -36,9 +36,9 @@ export interface NativeNavigationPlugin {
 	reset(options?: ResetOptions): Promise<void>
 
 	/**
-	 * Get the spec of a component
+	 * Get the spec and context of a component
 	 */
-	get(options?: GetOptions): Promise<ComponentSpecs>
+	get(options?: GetOptions): Promise<GetResult>
 }
 
 export interface NativeNavigationPluginInternal extends NativeNavigationPlugin {
@@ -72,7 +72,7 @@ type ComponentSpecs = StackSpec | TabsSpec | ViewSpec
 
 export interface StackSpec extends ComponentSpec<StackOptions> {
 	type: 'stack'
-	stack?: ViewSpec[]
+	stack: ViewSpec[]
 }
 
 export interface TabsSpec extends ComponentSpec<TabsOptions> {
@@ -350,7 +350,29 @@ export interface ImageObject {
 
 export interface GetOptions {
 	/**
-	 * The component id to get, or undefined to get the top-most root.
+	 * The component id to get, or undefined to get the top-most component.
 	 */
 	id?: ComponentId
+}
+
+export interface GetResult {
+	/**
+	 * The component, if any.
+	 */
+	component?: ComponentSpecs
+
+	/**
+	 * The view, if the component is a view.
+	 */
+	view?: ViewSpec
+
+	/**
+	 * The stack containing the component, if any.
+	 */
+	stack?: StackSpec
+	
+	/**
+	 * The tabs containing the component, if any.
+	 */
+	tabs?: TabsSpec
 }

@@ -224,14 +224,27 @@ class NativeNavigation: NSObject {
         self.componentsById.removeAll()
     }
 
-    func get(_ options: GetOptions) async throws -> ComponentSpec {
+    func get(_ options: GetOptions) async throws -> GetResult {
         return try await sync.perform { try await _get(options) }
     }
     
     @MainActor
-    private func _get(_ options: GetOptions) async throws -> ComponentSpec {
-        let vc = try findComponent(id: options.id)
-        return try self.options(vc)
+    private func _get(_ options: GetOptions) async throws -> GetResult {
+        let component = try findComponent(id: options.id)
+        
+        var result = GetResult()
+        result.component = try self.options(component)
+        
+        if let view = component as? NativeNavigationViewController {
+            result.view = try self.options(view) as? ViewSpec
+        }
+        if let stack = component.navigationController, stack.componentId != nil {
+            result.stack = try self.options(stack) as? StackSpec
+        }
+        if let tabs = component.tabBarController {
+            result.tabs = try self.options(tabs) as? TabsSpec
+        }
+        return result
     }
     
     @MainActor

@@ -109,10 +109,10 @@ export class NativeNavigationHistory implements History {
 			throw new Error(`Invalid relative pathname for ${action}: ${location.pathname || '<undefined>'}`)
 		}
 
-		const current = await NativeNavigation.get()
+		const current = await NativeNavigation.get() // TODO we need to get the current containing stack
 		let decision: NavigationDecision
-		if (current.type === 'stack') {
-			decision = defaultDecider(location, action, current.stack ? current.stack.map(s => toLocationDescriptorObject(s.path, s.state)) : [])
+		if (current.stack) {
+			decision = defaultDecider(location, action, current.stack ? current.stack.stack.map(s => toLocationDescriptorObject(s.path, s.state)) : [])
 		} else {
 			decision = {
 				action,

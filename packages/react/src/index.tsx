@@ -6,16 +6,11 @@ import ReactDOM from 'react-dom/client'
 
 import { createReactContext, Context } from './context';
 import { initSync, prepareWindowForSync } from './sync'
+import type { NativeNavigationReactRoot, NativeNavigationReactRootProps } from './types'
+import { toNativeNavigationReactRootProps } from './types'
 
 export { useNativeNavigationContext } from './context'
-
-export interface NativeNavigationReactRootProps {
-	id: ComponentId
-	path: string
-	state?: unknown
-}
-
-export type NativeNavigationReactRoot = React.ComponentType<NativeNavigationReactRootProps>
+export { NativeNavigationReactRoot, NativeNavigationReactRootProps } from './types'
 
 interface Options {
 	plugin: NativeNavigationPlugin & Plugin
@@ -57,12 +52,7 @@ export async function initReact(options: Options): Promise<void> {
 			const reactRoot = ReactDOM.createRoot(rootElement)
 			reactRoots[id] = reactRoot
 
-			const props: NativeNavigationReactRootProps = {
-				id: data.id,
-				path: data.path,
-				state: data.state,
-			}
-			render(viewWindow, reactRoot, props)
+			render(viewWindow, reactRoot, toNativeNavigationReactRootProps(data))
 		} else {
 			console.warn(`Attempted to load view "${path}" but could not find root node: #${viewRootId}`)
 		}
@@ -77,18 +67,14 @@ export async function initReact(options: Options): Promise<void> {
 			return
 		}
 
-		const props: NativeNavigationReactRootProps = {
-			id: data.id,
-			path: data.path,
-			state: data.state,
-		}
-		render(viewWindow, reactRoot, props)
+		render(viewWindow, reactRoot, toNativeNavigationReactRootProps(data))
 	}
 
 	function render(viewWindow: Window, reactRoot: ReactDOM.Root, props: NativeNavigationReactRootProps) {
 		const { id } = props
 		const context = createReactContext({
 			componentId: id,
+			stack: props.stack,
 			viewWindow,
 			plugin,
 		})

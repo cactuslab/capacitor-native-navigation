@@ -4,15 +4,17 @@ import React, { useContext } from 'react'
 
 interface ContextInit {
 	componentId: ComponentId
+	stack?: ComponentId
 	plugin: NativeNavigationPlugin & Plugin
 	viewWindow: Window
 }
 
 export function createReactContext(options: ContextInit): CapacitorNativeNavigationContext {
-	const { componentId: id, viewWindow, plugin } = options
+	const { componentId: id, stack, viewWindow, plugin } = options
 
 	const context: CapacitorNativeNavigationContext = {
 		componentId: id,
+		stack,
 		viewWindow,
 
 		setOptions: async function(options) {
@@ -55,12 +57,17 @@ type ClickListenerFunc = (data: ClickEventData) => void
 type RemoveListenerFunction = () => void
 
 interface CapacitorNativeNavigationContext {
-	componentId?: string
+	componentId: string
+
+	/**
+	 * The id of the stack containing this component, if any.
+	 */
+	stack?: string
 
 	/**
 	 * The Window that contains the current view
 	 */
-	viewWindow?: Window
+	viewWindow: Window
 
 	/**
 	 * Set this component's options.

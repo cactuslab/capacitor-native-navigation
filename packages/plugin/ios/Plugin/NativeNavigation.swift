@@ -606,13 +606,12 @@ class NativeNavigation: NSObject {
         }
         
         if let navigationController = viewController as? UINavigationController {
-            if let barOptions = options.bar {
-                let a = UIBarAppearance(barAppearance: navigationController.navigationBar.standardAppearance)
+            func customiseBarAppearance(_ a: UINavigationBarAppearance, options barOptions: ComponentOptions.BarOptions) -> UINavigationBarAppearance {
+                let aa = UINavigationBarAppearance(barAppearance: a)
                 if let color = barOptions.background?.color {
-                    a.backgroundColor = color
+                    aa.backgroundColor = color
                 }
                 
-                let aa = UINavigationBarAppearance(barAppearance: a)
                 if let titleOptions = barOptions.title {
                     if let color = titleOptions.color {
                         aa.titleTextAttributes[.foregroundColor] = color
@@ -636,9 +635,14 @@ class NativeNavigation: NSObject {
                     aa.buttonAppearance = navButtonAppearance
                     aa.doneButtonAppearance = navButtonAppearance
                 }
-                
-                navigationController.navigationBar.scrollEdgeAppearance = aa
-                navigationController.navigationBar.standardAppearance = aa
+                return a
+            }
+            
+            if let barOptions = options.bar {
+                if let scrollEdgeAppearance = navigationController.navigationBar.scrollEdgeAppearance {
+                    navigationController.navigationBar.scrollEdgeAppearance = customiseBarAppearance(scrollEdgeAppearance, options: barOptions)
+                }
+                navigationController.navigationBar.standardAppearance = customiseBarAppearance(navigationController.navigationBar.standardAppearance, options: barOptions)
             }
         }
 

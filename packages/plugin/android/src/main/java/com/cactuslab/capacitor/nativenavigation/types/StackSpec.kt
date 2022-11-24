@@ -3,6 +3,7 @@ package com.cactuslab.capacitor.nativenavigation.types
 import com.cactuslab.capacitor.nativenavigation.exceptions.InvalidParameterException
 import com.cactuslab.capacitor.nativenavigation.exceptions.MissingParameterException
 import com.cactuslab.capacitor.nativenavigation.helpers.jsObjectSequence
+import com.getcapacitor.JSArray
 import com.getcapacitor.JSObject
 import java.util.UUID
 
@@ -10,6 +11,14 @@ class StackSpec(id: String? = null,
                 options: ComponentOptions? = null,
                 var stack: List<ViewSpec>? = null) : ComponentSpec(type = ComponentType.STACK, id = id ?: UUID.randomUUID().toString(), options = options), TabsOptionsTabs
 {
+    override fun toJSObject(): JSObject {
+        val obj = super.toJSObject()
+
+        stack?.let { obj.put("stack", JSArray(it.map { spec -> spec.toJSObject() })) }
+
+        return obj
+    }
+
     companion object {
         fun fromJSObject(jsObject: JSObject): StackSpec {
 

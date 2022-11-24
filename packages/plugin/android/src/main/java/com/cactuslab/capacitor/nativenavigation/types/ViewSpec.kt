@@ -12,6 +12,13 @@ class ViewSpec(id: String? = null,
     ComponentSpec(type = ComponentType.VIEW, id = id ?: UUID.randomUUID().toString(), options = options), TabsOptionsTabs
 {
 
+    override fun toJSObject(): JSObject {
+        val obj = super.toJSObject()
+        obj.put("path", path)
+        state?.let { obj.put("state", it) }
+        return obj
+    }
+
     companion object {
         fun fromJSObject(jsObject: JSObject): ViewSpec {
 

@@ -152,6 +152,40 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         return null
     }
 
+    fun getOptions(options: GetOptions, call: PluginCall) {
+        val target = options.id
+
+        val navContext = if (target.isNullOrBlank()) {
+            try {
+                navContexts.last()
+            } catch (e: kotlin.NoSuchElementException) {
+                call.reject("No such stack to push on to", e)
+                return
+            }
+        } else {
+            val navContextId = findStackComponentIdHosting(target)
+            navContexts.find { it.contextId == navContextId }
+        }
+        if (navContext == null) {
+            call.reject("This target doesn't exist $target")
+            return
+        }
+
+        val rootSpec = components.get(navContext.contextId)
+        val viewSpec = components.get(target)
+
+        val result = GetResult(component = viewSpec)
+        rootSpec?.let {
+            when (it) {
+                is StackSpec -> result.stack = it
+                is TabsSpec -> result.tabs = it
+                is ViewSpec -> result.view = it
+            }
+        }
+
+        call.resolve(result.toJSObject())
+    }
+
     fun setOptions(options: SetComponentOptions) {
         Log.d(TAG, "setOptions -> $options")
         val spec = components.get(options.id)!!
@@ -306,31 +340,6 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
     object nav_arguments {
         const val component_id = "optionsId"
-    }
-
-    private fun createStack(options: StackSpec) {
-
-    }
-
-    private fun createTabs(options: TabsSpec) {
-
-    }
-
-    private fun createView(options: ViewSpec, navContext: NavContext) {
-        insertComponent(options)
-        val webView = makeWebView(options.id)
-        viewModel.postWebView(webView, options.id)
-
-        viewActions[options.id] = {
-
-            val transaction = plugin.activity.supportFragmentManager.beginTransaction()
-            navContext.tryAddToActivity(transaction)
-            transaction.commitNow()
-
-            navContext.runSetup(options.id)
-        }
-
-        notifyCreateView(options.id)
     }
 
     fun present(options: PresentOptions, call: PluginCall) {

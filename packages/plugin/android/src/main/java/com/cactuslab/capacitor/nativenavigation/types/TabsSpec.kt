@@ -8,8 +8,14 @@ import java.util.*
 
 class TabsSpec(id: String? = null,
                options: ComponentOptions? = null,
-               retain: Boolean = false,
-               var tabs: List<TabsOptionsTabs>) : ComponentSpec(type = ComponentType.TABS, id = id ?: UUID.randomUUID().toString(), options = options, retain = retain) {
+               var tabs: List<TabsOptionsTabs>) : ComponentSpec(type = ComponentType.TABS, id = id ?: UUID.randomUUID().toString(), options = options) {
+
+    override fun toJSObject(): JSObject {
+        val obj = super.toJSObject()
+
+
+        return obj
+    }
 
     companion object {
 
@@ -45,8 +51,6 @@ class TabsSpec(id: String? = null,
                 throw InvalidParameterException("type", "Type $type is incorrect for ViewOptions")
             }
 
-            val retain = jsObject.getBoolean("retain", false)!!
-
             if (!jsObject.has("tabs")) throw MissingParameterException("tabs")
             val tabs = jsObject.getJSONArray("tabs")
 
@@ -54,7 +58,6 @@ class TabsSpec(id: String? = null,
 
             return TabsSpec(id = jsObject.getString("id"),
                 options = options,
-                retain = retain,
                 tabs = tabs.jsObjectSequence().map { tabFromJsObject(it) }.toList()
             )
         }

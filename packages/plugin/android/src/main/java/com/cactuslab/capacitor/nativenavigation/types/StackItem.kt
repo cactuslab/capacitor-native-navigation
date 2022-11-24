@@ -5,6 +5,14 @@ import com.getcapacitor.JSObject
 
 class StackItem(var id: String, var title: String, var image: String?) {
 
+    fun toJSObject(): JSObject {
+        val obj = JSObject()
+        obj.put("id", id)
+        obj.put("title", title)
+        image?.let { obj.put("image", it) }
+        return obj
+    }
+
     companion object {
         fun fromJSObject(jsObject: JSObject): StackItem {
             val id = jsObject.getString("id") ?: throw MissingParameterException("id")

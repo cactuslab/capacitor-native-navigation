@@ -6,8 +6,17 @@ import com.getcapacitor.JSObject
 
 sealed class ComponentSpec(val type: ComponentType,
                            var id: String,
-                           var options: ComponentOptions? = null,
-                           val retain: Boolean = false) {
+                           var options: ComponentOptions? = null) {
+
+    open fun toJSObject(): JSObject {
+        val obj = JSObject()
+        obj.put("type", type.id)
+        obj.put("id", id)
+        options?.let {
+            obj.put("options", it.toJSObject())
+        }
+        return obj
+    }
 
     companion object {
 

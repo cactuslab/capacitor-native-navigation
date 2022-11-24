@@ -11,7 +11,7 @@
   "scripts": {
     "cap:local": "CAP_SERVER=http://$(hostname | tr '[:upper:]' '[:lower:]'):5173/ cap sync",
     "start": "vite",
-    "start:host": "vite --host",
+    "start:host": "vite --host $(hostname | tr '[:upper:]' '[:lower:]')",
     "build": "vite build",
     "preview": "vite preview"
   },

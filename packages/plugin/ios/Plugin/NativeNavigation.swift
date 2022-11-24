@@ -123,18 +123,27 @@ class NativeNavigation: NSObject {
         let container = try findStackOrView(id: options.target)
 
         if let stack = container as? UINavigationController {
-            let vc: NativeNavigationViewController
-            if options.mode == PushMode.replace, let replaceViewController = stack.topViewController as? NativeNavigationViewController {
-                try await updateView(options.component, viewController: replaceViewController)
-                vc = replaceViewController
-            } else {
-                vc = try await self.createView(options.component, stackId: stack.componentId)
+            var popped = false
+            if options.mode == PushMode.replace {
+                if let popCount = options.popCount, popCount > 0 {
+                    _ = try _pop(PopOptions(stack: options.target, count: popCount, animated: false))
+                    popped = true
+                }
+                
+                if let replaceViewController = stack.topViewController as? NativeNavigationViewController {
+                    try await updateView(options.component, viewController: replaceViewController)
+                    
+                    await waitForViewsReady(replaceViewController)
+                    return PushResult(id: replaceViewController.componentId!, stack: stack.componentId!)
+                }
             }
-
+            
+            let vc = try await self.createView(options.component, stackId: stack.componentId)
             await waitForViewsReady(vc)
 
-            if let popCount = options.popCount, popCount > 0 {
-                _ = try await pop(PopOptions(stack: options.target, count: popCount, animated: false))
+            if let popCount = options.popCount, popCount > 0, !popped {
+                _ = try _pop(PopOptions(stack: options.target, count: popCount, animated: false))
+                popped = true
             }
 
             /* Push onto a stack */
@@ -165,7 +174,7 @@ class NativeNavigation: NSObject {
     }
     
     @MainActor
-    private func _pop(_ options: PopOptions) async throws -> PopResult {
+    private func _pop(_ options: PopOptions) throws -> PopResult {
         guard let stack = try findStackOrView(id: options.stack) as? UINavigationController else {
             throw NativeNavigatorError.illegalState(message: "Can only pop from a stack")
         }

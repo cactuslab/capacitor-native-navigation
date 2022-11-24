@@ -21,27 +21,6 @@ class NativeNavigationPlugin : Plugin() {
     }
 
     @PluginMethod
-    fun setRoot(call: PluginCall) {
-        try {
-            val options = SetRootOptions.fromJSObject(call.data)
-            activity.runOnUiThread {
-                val chromeClient = capacitorChromeClient()
-                bridge.webView.webChromeClient =
-                    NavigationChromeClient(chromeClient, implementation)
-                bridge.webView.settings.setSupportMultipleWindows(true)
-                implementation.setRoot(
-                    options = options,
-                    context = context,
-                    activity = activity,
-                    call = call
-                )
-            }
-        } catch (e: MissingParameterException) {
-            call.reject(e.localizedMessage)
-        }
-    }
-
-    @PluginMethod
     fun viewReady(call: PluginCall) {
         try {
             val options = ViewReadyOptions.fromJSObject(call.data)
@@ -54,11 +33,17 @@ class NativeNavigationPlugin : Plugin() {
 
     @PluginMethod
     fun present(call: PluginCall) {
-        try {
-            val options = PresentOptions.fromJSObject(call.data)
-            implementation.present(options = options, call = call)
-        } catch (e: MissingParameterException) {
-            call.reject(e.localizedMessage)
+        activity.runOnUiThread {
+            try {
+                val chromeClient = capacitorChromeClient()
+                bridge.webView.webChromeClient = NavigationChromeClient(chromeClient, implementation)
+                bridge.webView.settings.setSupportMultipleWindows(true)
+
+                val options = PresentOptions.fromJSObject(call.data)
+                implementation.present(options = options, call = call)
+            } catch (e: MissingParameterException) {
+                call.reject(e.localizedMessage)
+            }
         }
     }
 
@@ -78,7 +63,9 @@ class NativeNavigationPlugin : Plugin() {
     fun push(call: PluginCall) {
         try {
             val options = PushOptions.fromJSObject(call.data)
-            implementation.push(options = options, call = call)
+            activity.runOnUiThread {
+                implementation.push(options = options, call = call)
+            }
         } catch (e: MissingParameterException) {
             call.reject(e.localizedMessage)
         }
@@ -142,6 +129,19 @@ class NativeNavigationPlugin : Plugin() {
         Log.d(TAG, "Notify Create View [path: $path, id: $id, state: $state]")
 
         notifyListeners("createView", obj, true)
+    }
+
+    fun notifyUpdateView(path: String, id: String, state: JSObject?) {
+        val obj = JSObject()
+        obj.put("path", path)
+        obj.put("id", id)
+        state?.let {
+            obj.put("state", it)
+        }
+
+        Log.d(TAG, "Notify Update View [path: $path, id: $id, state: $state]")
+
+        notifyListeners("updateView", obj, true)
     }
 
     fun notifyDestroyView(id: String) {

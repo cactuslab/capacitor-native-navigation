@@ -118,7 +118,7 @@ class BlankViewFragment : Fragment() {
 
 
         Log.d(TAG, "viewModel setOptions being applied $componentId")
-        if (options == null && stackOptions == null) {
+        if (options == null && stackOptions?.options?.bar == null) {
             toolbar.visibility = View.GONE
         } else {
             toolbar.visibility = View.VISIBLE

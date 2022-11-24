@@ -2,7 +2,7 @@ package com.cactuslab.capacitor.nativenavigation.types
 
 import com.getcapacitor.JSObject
 
-class ComponentOptions(var title: Nullable<String>?, var stack: StackConfig?, var tab: TabConfig?, var modalPresentationStyle: ModalPresentationStyle?, var bar: BarConfig?) {
+class ComponentOptions(var title: Nullable<String>?, var stack: StackConfig?, var tab: TabConfig?, var modalPresentationStyle: PresentationStyle?, var bar: BarConfig?) {
 
     fun mergeOptions(other: ComponentOptions) {
         other.title?.let { this.title = it }
@@ -26,7 +26,7 @@ class ComponentOptions(var title: Nullable<String>?, var stack: StackConfig?, va
 
             val stack = jsObject.getJSObject("stack")?.let { StackConfig.fromJSObject(it) }
             val tab = jsObject.getJSObject("tab")?.let { TabConfig.fromJSObject(it) }
-            val modalPresentationStyle = jsObject.getString("modalPresentationStyle")?.let { ModalPresentationStyle.get(it) }
+            val modalPresentationStyle = jsObject.getString("modalPresentationStyle")?.let { PresentationStyle.get(it) }
             val bar = jsObject.getJSObject("bar")?.let { BarConfig.fromJSObject(it) }
 
             return ComponentOptions(title, stack, tab, modalPresentationStyle, bar)

@@ -7,10 +7,9 @@ import java.util.*
 
 class ViewSpec(id: String? = null,
                options: ComponentOptions? = null,
-               retain: Boolean = false,
                var path: String,
                var state: JSObject?) :
-    ComponentSpec(type = ComponentType.VIEW, id = id ?: UUID.randomUUID().toString(), options = options, retain = retain), TabsOptionsTabs
+    ComponentSpec(type = ComponentType.VIEW, id = id ?: UUID.randomUUID().toString(), options = options), TabsOptionsTabs
 {
 
     companion object {
@@ -26,7 +25,6 @@ class ViewSpec(id: String? = null,
                 throw InvalidParameterException("type", "Type $type is incorrect for ViewOptions")
             }
 
-            val retain = jsObject.getBoolean("retain", false)!!
             val path = jsObject.getString("path") ?: throw MissingParameterException("path")
             val state = jsObject.getJSObject("state")
 
@@ -34,7 +32,6 @@ class ViewSpec(id: String? = null,
 
             return ViewSpec(id = jsObject.getString("id"),
                 options = options,
-                retain = retain,
                 path = path,
                 state = state
                 )

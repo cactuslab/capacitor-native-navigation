@@ -6,19 +6,19 @@ import { Link, useNavigate } from 'react-router-dom'
 let counter = 1
 
 export default function Stack1(): JSX.Element {
-	const { setOptions, addClickListener } = useNativeNavigationContext({})
+	const { setOptions, addClickListener } = useNativeNavigationContext()
 	const navigate = useNavigate()
 
 	const handleChangeTitle = useCallback(function(evt: React.MouseEvent) {
 		evt.preventDefault()
-		setOptions && setOptions({
+		setOptions({
 			title: `Changed title ${counter++}`,
 		})
 	}, [])
 
 	const handleRemoveTitle = useCallback(function(evt: React.MouseEvent) {
 		evt.preventDefault()
-		setOptions && setOptions({
+		setOptions({
 			title: null,
 		})
 	}, [])
@@ -50,7 +50,7 @@ export default function Stack1(): JSX.Element {
 	}, [])
 
 	useEffect(function() {
-		setOptions && setOptions({
+		setOptions({
 			stack: {
 				rightItems: [
 					{
@@ -61,7 +61,7 @@ export default function Stack1(): JSX.Element {
 			}
 		})
 
-		return addClickListener && addClickListener(function(data) {
+		return addClickListener(function(data) {
 			if (data.buttonId === 'reset') {
 				NativeNavigation.reset()
 			}

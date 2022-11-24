@@ -15,10 +15,10 @@ export default function PushReplace(): JSX.Element {
 
 function PushReplace1(): JSX.Element {
 	const navigate = useNavigate()
-	const { setOptions, addClickListener } = useNativeNavigationContext({})
+	const { setOptions, addClickListener } = useNativeNavigationContext()
 
 	useEffect(function() {
-		setOptions && setOptions({
+		setOptions({
 			stack: {
 				rightItems: [
 					{
@@ -30,7 +30,7 @@ function PushReplace1(): JSX.Element {
 		})
 		navigate('/race/push-replace/two')
 
-		return addClickListener && addClickListener(function({ buttonId }) {
+		return addClickListener(function({ buttonId }) {
 			if (buttonId === 'reset') {
 				NativeNavigation.reset()
 			}

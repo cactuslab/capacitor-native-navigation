@@ -4,12 +4,12 @@ import React, { useCallback, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 
 export default function View1(): JSX.Element {
-	const { dismiss } = useNativeNavigationContext({})
+	const { dismiss } = useNativeNavigationContext()
 	const location = useLocation()
 
 	const handleDismiss = useCallback(function(evt: React.MouseEvent) {
 		evt.preventDefault()
-		dismiss && dismiss({})
+		dismiss({})
 	}, [])
 
 	const handleReset = useCallback(function(evt: React.MouseEvent) {

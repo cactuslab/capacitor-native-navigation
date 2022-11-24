@@ -5,10 +5,10 @@ import { useNavigate } from 'react-router-dom'
 
 export default function StackImmediatePush(): JSX.Element {
 	const navigate = useNavigate()
-	const { setOptions, addClickListener } = useNativeNavigationContext({})
+	const { setOptions, addClickListener } = useNativeNavigationContext()
 
 	useEffect(function() {
-		setOptions && setOptions({
+		setOptions({
 			stack: {
 				rightItems: [
 					{
@@ -20,7 +20,7 @@ export default function StackImmediatePush(): JSX.Element {
 		})
 		navigate('/stack2')
 
-		return addClickListener && addClickListener(function({ buttonId }) {
+		return addClickListener(function({ buttonId }) {
 			if (buttonId === 'reset') {
 				NativeNavigation.reset()
 			}

@@ -1,5 +1,14 @@
 # @cactuslab/native-navigation
 
+## 0.0.4
+
+### Patch Changes
+
+- f8ef128: iOS: Fix stack bar styling
+- e66a5a7: iOS: fix stack bar handling re background colours and scrollEdgeAppearance
+- 33377b1: Reworked push and present on Android to match documented behaviour
+- 258b8cc: Added support for Get request on Android
+
 ## 0.0.3
 
 ### Patch Changes

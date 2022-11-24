@@ -1,5 +1,16 @@
 # @cactuslab/native-navigation-react
 
+## 0.0.5
+
+### Patch Changes
+
+- b11eb70: Provide a default context to make it easier to use context
+- Updated dependencies [f8ef128]
+- Updated dependencies [e66a5a7]
+- Updated dependencies [33377b1]
+- Updated dependencies [258b8cc]
+  - @cactuslab/native-navigation@0.0.4
+
 ## 0.0.4
 
 ### Patch Changes

@@ -1,5 +1,15 @@
 # @cactuslab/native-navigation-react17
 
+## 0.0.5
+
+### Patch Changes
+
+- Updated dependencies [f8ef128]
+- Updated dependencies [e66a5a7]
+- Updated dependencies [33377b1]
+- Updated dependencies [258b8cc]
+  - @cactuslab/native-navigation@0.0.4
+
 ## 0.0.4
 
 ### Patch Changes

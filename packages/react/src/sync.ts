@@ -1,12 +1,12 @@
 import type { ComponentId } from '@cactuslab/native-navigation';
 
+let copyNodeId = 1
+
 /**
  * Initialise syncing document.head node changes from `window` into the additional windows we create.
  * @param views the windows we've created; note that this collection is expected to change as new windows are created
  */
 export function initSync(views: Record<ComponentId, Window>): void {
-	let copyNodeId = 1
-
 	/*
 	 * Add a sentinel node to the window's head so we always have a previous sibling with an
 	 * id for future additions so we can put them in the right place.
@@ -17,6 +17,34 @@ export function initSync(views: Record<ComponentId, Window>): void {
 
 	const observer = new MutationObserver(function(mutations) {
 		for (const mutation of mutations) {
+			/* Check for subtree changes */
+			if (mutation.target !== window.document.head) {
+				let node: Node | null = mutation.target
+				while (node && node.parentNode !== window.document.head) {
+					node = node.parentNode
+				}
+
+				if (node && shouldCopyNode(node)) {
+					const nodeId = (node as HTMLElement).dataset['capacitorNativeNavigationId']
+					if (nodeId) {
+						for (const viewId of Object.keys(views)) {
+							const view = views[viewId]
+							const target = view.document.head.querySelector(`[data-capacitor-native-navigation-id="${nodeId}"]`)
+							if (!target) {
+								console.warn(`Update target "${nodeId}" not found in head for view: ${viewId}`)
+								continue
+							}
+
+							target.replaceWith(node.cloneNode(true))
+							console.log('replacing!')
+						}
+					} else {
+						console.warn(`Node to update did not have an id: ${node.nodeName}`)
+					}
+				}
+				continue;
+			}
+
 			if (mutation.type !== 'childList') {
 				return
 			}
@@ -28,7 +56,7 @@ export function initSync(views: Record<ComponentId, Window>): void {
 				mutation.addedNodes.forEach(function(node) {
 					if (shouldCopyNode(node)) {
 						const element = node as HTMLElement
-						element.dataset['capacitorNativeNavigationId'] = `${copyNodeId++}`
+						element.dataset['capacitorNativeNavigationId'] = nextNodeId()
 						add.push(element)
 					}
 				})
@@ -76,6 +104,7 @@ export function initSync(views: Record<ComponentId, Window>): void {
 	try {
 		observer.observe(window.document.head, {
 			childList: true,
+			subtree: true,
 		})
 	} catch (error) {
 		console.warn('Failed to install document head synchronisation', error instanceof Error ? error.message : error)
@@ -83,12 +112,19 @@ export function initSync(views: Record<ComponentId, Window>): void {
 }
 
 export function prepareWindowForSync(viewWindow: Window): void {
-	/* Copy all of the nodes with ids to the new window, this will include the sentinel */
+	/* Copy all of the relevant nodes to the new window, this will include the sentinel */
 	window.document.head.childNodes.forEach(function(node) {
 		if (shouldCopyNode(node)) {
+			if (!(node as HTMLElement).dataset['capacitorNativeNavigationId']) {
+				(node as HTMLElement).dataset['capacitorNativeNavigationId'] = nextNodeId();
+			}
 			viewWindow.document.head.append(node.cloneNode(true))
 		}
 	})
+}
+
+function nextNodeId(): string {
+	return `${copyNodeId++}`
 }
 
 function shouldCopyNode(node: Node): boolean {

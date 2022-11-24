@@ -36,7 +36,6 @@ export function initSync(views: Record<ComponentId, Window>): void {
 							}
 
 							target.replaceWith(node.cloneNode(true))
-							console.log('replacing!')
 						}
 					} else {
 						console.warn(`Node to update did not have an id: ${node.nodeName}`)

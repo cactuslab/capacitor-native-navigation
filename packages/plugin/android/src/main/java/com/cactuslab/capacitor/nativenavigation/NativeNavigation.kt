@@ -313,17 +313,15 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         return navContext
     }
 
-
     fun notifyCreateView(id: String) {
         val component = components[id] as ViewSpec
         nextWindowAction.add(component)
-        plugin.notifyCreateView(component.path, component.id, component.state)
+        plugin.notifyCreateView(component.path, component.id, component.state, findStackComponentIdHosting(id))
     }
 
     fun notifyUpdateView(id: String) {
         val component = components[id] as ViewSpec
-//        nextWindowAction.add(component)
-        plugin.notifyUpdateView(component.path, component.id, component.state)
+        plugin.notifyUpdateView(component.path, component.id, component.state, findStackComponentIdHosting(id))
     }
 
     fun notifyDestroyView(componentId: String) {

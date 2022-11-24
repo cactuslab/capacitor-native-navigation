@@ -635,7 +635,7 @@ class NativeNavigation: NSObject {
                     aa.buttonAppearance = navButtonAppearance
                     aa.doneButtonAppearance = navButtonAppearance
                 }
-                return a
+                return aa
             }
             
             if let barOptions = options.bar {

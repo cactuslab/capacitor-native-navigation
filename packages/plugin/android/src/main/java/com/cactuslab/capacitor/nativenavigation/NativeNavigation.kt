@@ -47,6 +47,7 @@ import kotlin.collections.set
 class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: NativeNavigationViewModel) {
 
     init {
+        Log.d(TAG, "--- NATIVE NAVIGATION CONSTRUCTED ---")
         viewModel.nativeNavigation = this
     }
 
@@ -55,18 +56,18 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         val fragment: HostFragment,
         private val addToActivityBlock: (transaction: FragmentTransaction) -> Unit,
         private val removeFromActivityBlock: (transaction: FragmentTransaction) -> Unit) {
-        var isAddedToActivity: Boolean = fragment.isAdded
+        private var isAddedToActivity: Boolean = fragment.isAdded
+
+        var startRoute : String? = null
+
+        /**
+         * The virtual stack exists to serve as an in-memory model of the expected stack after all operations are completed.
+         * This stack allows us to inspect what a stack will look like before it is presented.
+         */
+        val virtualStack: MutableList<String> = mutableListOf()
 
         fun getBinding(): ActivityNavigationBinding? {
             return fragment.binding
-        }
-
-        fun navHostFragment(): NavHostFragment? {
-            if (!isAddedToActivity) {
-                return null
-            }
-
-            return getBinding()?.navigationHost?.getFragment<NavHostFragment>()
         }
 
         fun navController(): NavController? {
@@ -80,9 +81,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         }
 
         fun tryRemoveFromActivity(transaction: FragmentTransaction) {
-//            if (isAddedToActivity) {
-                removeFromActivityBlock(transaction)
-//            }
+            removeFromActivityBlock(transaction)
         }
 
         fun runSetup(startDestination: String) {
@@ -95,6 +94,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                 }
             }
             host.navController.setGraph(graph = graph, bundleOf(nav_arguments.component_id to startDestination))
+            startRoute = "$contextId/$startDestination"
         }
     }
 
@@ -102,7 +102,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
     private val components : MutableMap<String, ComponentSpec> = mutableMapOf()
 
-    private var nextWindowAction: ComponentSpec? = null
+    private var nextWindowAction = LinkedList<ComponentSpec>()
 
     private val viewActions: MutableMap<String,() -> Unit> = mutableMapOf()
 
@@ -129,6 +129,12 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
     fun findStackComponentIdHosting(componentId: String): String? {
         navContexts.forEach { navContext ->
+            /// Check if this is the host stack id
+            if (navContext.contextId == componentId) {
+                return navContext.contextId
+            }
+
+            /// Check if this id is in the view heirarchy
             navContext.fragment.binding?.navigationHost?.findNavController()?.let { navController ->
                 navController.backQueue.forEach { entry ->
                     if (entry.arguments?.getString(nav_arguments.component_id) == componentId) {
@@ -136,6 +142,11 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                     }
                 }
 
+            }
+
+            /// Check if this exists in our model. This model shows the eventual expected state after all view operations are complete
+            if (navContext.virtualStack.contains(componentId)) {
+                return navContext.contextId
             }
         }
         return null
@@ -155,7 +166,6 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
     }
 
     fun reset() {
-
         Log.d(TAG, "--- RESET STARTED ---")
         viewActions.clear()
 
@@ -167,17 +177,10 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
         navContexts.clear()
 
-//        navController?.setGraph(R.navigation.native_navigation, startDestinationArgs = Bundle())
-//        this.binding = null
-
         onBackPressedCallback?.remove()
         onBackPressedCallback = null
 
-//        navController = null
-        nextWindowAction = null
-//        currentStackId = null
-
-//        components.clear()
+        nextWindowAction.clear()
 
         viewModel.reset()
 
@@ -256,15 +259,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
     private fun pushNavController(id: String, animated: Boolean): NavContext {
 
-        val context = plugin.context
-        val activity = plugin.activity
-        val parent = activity.findViewById<WebView>(com.getcapacitor.android.R.id.webview).parent as ViewGroup
-
         val fragment = HostFragment()
-
-//        activity.supportFragmentManager.beginTransaction().add(com.getcapacitor.android.R.id.webview, fragment).commitNow()
-
-        //val binding = ActivityNavigationBinding.inflate(LayoutInflater.from(context), parent, true)
 
         val navContext = NavContext(id, fragment, addToActivityBlock = { transaction ->
             if (animated) {
@@ -279,14 +274,6 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
             transaction.remove(fragment)
         })
 
-//        Log.d(TAG, "navController - ${navContext.navHostFragment.navController}")
-//        val layoutParams =  ViewGroup.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT)
-
-//        activity.addContentView(binding.root, layoutParams)
-//        navContext.navController.addOnDestinationChangedListener { controller, destination, arguments ->
-//            Log.d(TAG, "Navigated to ${destination.displayName}")
-//        }
-
         navContexts.add(navContext)
 
         return navContext
@@ -295,8 +282,14 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
     fun notifyCreateView(id: String) {
         val component = components[id] as ViewSpec
-        nextWindowAction = component
+        nextWindowAction.add(component)
         plugin.notifyCreateView(component.path, component.id, component.state)
+    }
+
+    fun notifyUpdateView(id: String) {
+        val component = components[id] as ViewSpec
+//        nextWindowAction.add(component)
+        plugin.notifyUpdateView(component.path, component.id, component.state)
     }
 
     fun notifyDestroyView(componentId: String) {
@@ -315,121 +308,112 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         const val component_id = "optionsId"
     }
 
-    fun setRoot(options: SetRootOptions, context: Context, activity: AppCompatActivity, call: PluginCall) {
+    private fun createStack(options: StackSpec) {
 
-        plugin.activity.runOnUiThread {
-            reset()
+    }
 
-            val component = options.component
-            insertComponent(component)
-            Log.d(TAG, "Asked to SetRoot: ${component.id} for createOptions: $component")
+    private fun createTabs(options: TabsSpec) {
 
-            val navContext = pushNavController(component.id, options.animated)
-            setupBackPressedHandler()
+    }
 
-            when (component) {
-                is StackSpec -> {
-                    val screen = component.stack?.last()
+    private fun createView(options: ViewSpec, navContext: NavContext) {
+        insertComponent(options)
+        val webView = makeWebView(options.id)
+        viewModel.postWebView(webView, options.id)
 
-                    screen?.let {
-                        insertComponent(screen)
-                        val webView = makeWebView(screen.id)
-                        viewModel.postWebView(webView, screen.id)
+        viewActions[options.id] = {
 
-                        viewActions[screen.id] = {
+            val transaction = plugin.activity.supportFragmentManager.beginTransaction()
+            navContext.tryAddToActivity(transaction)
+            transaction.commitNow()
 
-                            val transaction = activity.supportFragmentManager.beginTransaction()
-//                            transaction.setCustomAnimations(-1, -1, -1, -1)
-                            navContext.tryAddToActivity(transaction)
-                            transaction.commitNow()
-
-                            navContext.runSetup(screen.id)
-//                            val controller = navContext.fragment.binding?.navigationHost?.findNavController()
-//                            controller!!.navigate(route = "${component.id}/${screen.id}", navOptions {
-//                                popUpTo(component.id) {
-//                                    inclusive = true
-//                                    saveState = false
-//                                }
-//                            })
-
-//                            navController.setGraph(R.navigation.native_navigation, startDestinationArgs = bundleOf(
-//                                OPTIONS_ID to screen.id))
-                        }
-
-                        notifyCreateView(screen.id)
-                    }
-                }
-                is TabsSpec -> {
-
-                }
-                is ViewSpec -> {
-                    val webView = makeWebView(component.id)
-                    viewModel.postWebView(webView, component.id)
-
-                    viewActions[component.id] = {
-
-//                        navContext.navHostFragment.navController.navigate(route = "${component.id}/${component.id}", navOptions {
-//                            popUpTo(component.id) {
-//                                inclusive = true
-//                                saveState = false
-//                            }
-//                        })
-                    //                        navController.setGraph(R.navigation.native_navigation, startDestinationArgs = bundleOf(
-//                            OPTIONS_ID to component.id))
-                    }
-
-                    notifyCreateView(component.id)
-                }
-                else -> {}
-            }
-            call.resolve(SetRootResult(component.id).toJSObject())
+            navContext.runSetup(options.id)
         }
+
+        notifyCreateView(options.id)
     }
 
     fun present(options: PresentOptions, call: PluginCall) {
-        plugin.activity.runOnUiThread {
-            val component = options.component
-            insertComponent(component)
+        val component = options.component
+        insertComponent(component)
 
-            val webView = makeWebView(component.id)
-            viewModel.postWebView(webView, component.id)
-            val navContext = pushNavController(component.id, options.animated)
-//            val navController = navContext.navController
+        Log.d(TAG, "Asked to SetRoot: ${component.id} for createOptions: $component")
 
+        val navContext = pushNavController(component.id, options.animated)
+        setupBackPressedHandler()
 
-//            navContext.navHostFragment.navController = NavController(context = plugin.context)
-            viewActions[component.id] = {
+        when (component) {
+            is ViewSpec -> {
+                val webView = makeWebView(component.id)
+                viewModel.postWebView(webView, component.id)
+                navContext.virtualStack.clear()
+                navContext.virtualStack.add(component.id)
 
-                val transaction = plugin.activity.supportFragmentManager.beginTransaction()
-                navContext.tryAddToActivity(transaction)
-                transaction.commitNow()
+                viewActions[component.id] = {
+                    val transaction = plugin.activity.supportFragmentManager.beginTransaction()
+                    navContext.tryAddToActivity(transaction)
+                    transaction.commitNow()
 
-                navContext.runSetup(component.id)
-//                navContext.navController()!!.navigate(route = "${component.id}/${component.id}", navOptions {
-//                    popUpTo(component.id) {
-//                        inclusive = true
-//                        saveState = false
-//                    }
-//                })
+                    navContext.runSetup(component.id)
+                }
 
-//                navController.navigate(R.id.action_global_nav_screen, bundleOf(OPTIONS_ID to component.id), navOptions {
-//                    launchSingleTop = true
-//                    popUpTo(navController.graph.findStartDestination().id) {
-//                        inclusive = true
-//                        saveState = false
-//                    }
-//                } )
-//                val bottomsheet = ModalBottomSheet().also {
-//                    it.arguments = bundleOf(OPTIONS_ID to component.id)
-//                }
-//                bottomsheet.show(plugin.activity.supportFragmentManager, component.id)
+                notifyCreateView(component.id)
             }
+            is StackSpec -> {
+                val stack = component.stack ?: listOf()
+                navContext.virtualStack.clear()
 
-            notifyCreateView(component.id)
+                stack.forEachIndexed { _, viewSpec ->
+                    insertComponent(viewSpec)
+                    val webView = makeWebView(viewSpec.id)
+                    viewModel.postWebView(webView, viewSpec.id)
+                    navContext.virtualStack.add(viewSpec.id)
+                }
+                val lastViewSpec = stack.last()
+                val firstViewSpec = stack.first()
 
-            val result = PresentResult(component.id)
-            call.resolve(result.toJSObject())
+                viewActions[lastViewSpec.id] = {
+                    val transaction = plugin.activity.supportFragmentManager.beginTransaction()
+                    navContext.tryAddToActivity(transaction)
+                    transaction.commitNow()
+
+                    val navController = navContext.navController()
+                    navContext.runSetup(firstViewSpec.id)
+
+                    stack.forEachIndexed { index, viewSpec ->
+                        if (index != 0) {
+                            navController!!.navigate("${component.id}/${viewSpec.id}") {
+                            }
+                        }
+                    }
+                }
+
+                notifyCreateView(lastViewSpec.id)
+            }
+            is TabsSpec -> {
+
+
+            }
         }
+
+//        viewActions[component.id] = {
+//
+//            val transaction = plugin.activity.supportFragmentManager.beginTransaction()
+//            navContext.tryAddToActivity(transaction)
+//            transaction.commitNow()
+//
+//            navContext.runSetup(component.id)
+//
+////                val bottomsheet = ModalBottomSheet().also {
+////                    it.arguments = bundleOf(OPTIONS_ID to component.id)
+////                }
+////                bottomsheet.show(plugin.activity.supportFragmentManager, component.id)
+//        }
+//
+//        notifyCreateView(component.id)
+
+        val result = PresentResult(component.id)
+        call.resolve(result.toJSObject())
 
     }
 
@@ -461,69 +445,190 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
     fun push(options: PushOptions, call: PluginCall) {
 
-        plugin.activity.runOnUiThread {
-            val component = options.component
-            insertComponent(component)
+        val component = options.component
 
-            val navContext = navContexts.last()
+        val target = options.target
+        val navContext = if (target.isNullOrBlank()) {
+            try {
+                navContexts.last()
+            } catch (e: kotlin.NoSuchElementException) {
+                call.reject("No such stack to push on to", e)
+                return
+            }
+        } else {
+            val navContextId = findStackComponentIdHosting(target)
+            navContexts.find { it.contextId == navContextId }
+        }
+        if (navContext == null) {
+            call.reject("No such stack to push on to. Try presenting first.")
+            return
+        }
 
-            val stackId = navContext.contextId
+        val presentedComponentHost = componentSpecForId(navContext.contextId)!!
 
-            Log.d(TAG, "Asked to push: ${component.id} for createOptions: $component")
+        when (presentedComponentHost.type) {
+            ComponentType.STACK -> {
+                val stackId = navContext.contextId
 
-            val webView = makeWebView(component.id)
-            viewModel.postWebView(webView, component.id)
-            viewActions[component.id] = {
-                val navController = navContext.fragment.binding?.navigationHost?.findNavController()
+                Log.d(TAG, "Asked to push: ${component.id} for createOptions: $component")
 
-                navController!!.navigate("${stackId}/${component.id}") {
-                    anim {
-                        enter = R.anim.slide_in_right
-                        exit = R.anim.slide_out_left
-                        popEnter = R.anim.slide_in_left
-                        popExit = R.anim.slide_out_right
+                when(options.mode) {
+                    PushMode.PUSH -> {
+
+                        insertComponent(component)
+
+                        navContext.virtualStack.add(component.id)
+                        val webView = makeWebView(component.id)
+                        viewModel.postWebView(webView, component.id)
+                        viewActions[component.id] = {
+                            val navController = navContext.fragment.binding?.navigationHost?.findNavController()
+
+                            navController!!.navigate("${stackId}/${component.id}") {
+                                if (options.animated) {
+                                    anim {
+                                        enter = R.anim.slide_in_right
+                                        exit = R.anim.slide_out_left
+                                        popEnter = R.anim.slide_in_left
+                                        popExit = R.anim.slide_out_right
+                                    }
+                                }
+                            }
+                        }
+
+                        notifyCreateView(component.id)
+
+                        val result = PushResult(component.id , stackId)
+                        call.resolve(result.toJSObject())
+                    }
+                    PushMode.REPLACE -> {
+                        val currentId = if (target == navContext.contextId) {
+                            navContext.navController()?.currentBackStackEntry?.arguments?.getString(nav_arguments.component_id)
+                        } else {
+                            target
+                        }
+
+                        if (currentId.isNullOrBlank()) {
+                            call.reject("There is no current view to replace on this stack $stackId")
+                            return
+                        }
+                        component.id = currentId
+                        insertComponent(component)
+
+                        notifyUpdateView(currentId)
+                        val result = PushResult(currentId, stackId)
+                        call.resolve(result.toJSObject())
+                    }
+                    PushMode.ROOT -> {
+                        insertComponent(component)
+
+                        navContext.virtualStack.clear()
+                        navContext.virtualStack.add(component.id)
+                        val webView = makeWebView(component.id)
+                        viewModel.postWebView(webView, component.id)
+                        viewActions[component.id] = {
+                            val navController = navContext.fragment.binding?.navigationHost?.findNavController()
+
+                            navController!!.navigate("${stackId}/${component.id}") {
+                                if (options.animated) {
+                                    anim {
+                                        enter = R.anim.slide_in_right
+                                        exit = R.anim.slide_out_left
+                                        popEnter = R.anim.slide_in_left
+                                        popExit = R.anim.slide_out_right
+                                    }
+                                }
+                                popUpTo(navContext.startRoute!!) {
+                                    inclusive = true
+                                    saveState = false
+                                }
+                            }
+                        }
+
+                        notifyCreateView(component.id)
+
+                        val result = PushResult(component.id , stackId)
+                        call.resolve(result.toJSObject())
                     }
                 }
+
+
             }
+            ComponentType.TABS -> {
+                call.reject("Not implemented TABS replace yet")
+            }
+            ComponentType.VIEW -> {
+                call.reject("Not implemented VIEW replace yet")
+                val stackId = navContext.contextId
 
-            notifyCreateView(component.id)
-//            plugin.activity.lifecycleScope.launch {
-//                delay(400)
-//                val action = NativeNavigationDirections.actionGlobalNavScreen(component.id)
-//                navController.navigate(action)
-//            }
+                val currentId = if (target == navContext.contextId) {
+                    navContext.navController()?.currentBackStackEntry?.arguments?.getString(nav_arguments.component_id)
+                } else {
+                    target
+                }
 
-            val result = PushResult(stackId )
-            call.resolve(result.toJSObject())
+                if (currentId.isNullOrBlank()) {
+                    call.reject("There is no current view to replace on this stack $stackId")
+                    return
+                }
+                component.id = currentId
+                insertComponent(component)
+
+                notifyUpdateView(currentId)
+                val result = PushResult(currentId, stackId)
+                call.resolve(result.toJSObject())
+
+//
+//                Log.d(TAG, "Asked to push: ${component.id} for createOptions: $component")
+//
+//                val webView = makeWebView(component.id)
+//                viewModel.postWebView(webView, component.id)
+//                viewActions[component.id] = {
+//                    val navController = navContext.fragment.binding?.navigationHost?.findNavController()
+//                    val currentEntry = navController!!.currentBackStackEntry!!
+//                    val displayedComponentId = currentEntry.arguments!!.getString(nav_arguments.component_id)!!
+//                    val route = navContext.startRoute!!
+//                    navController!!.navigate("${stackId}/${component.id}") {
+//                        anim {
+//                            enter = R.anim.fade_in
+//                            exit = R.anim.fade_out
+//                            popEnter = -1
+//                            popExit = -1
+//                        }
+//                        popUpTo(route) {
+//                            inclusive = false
+//                            saveState = false
+//                        }
+//                    }
+//                }
+//
+//                notifyCreateView(component.id)
+//
+//                val result = PushResult(stackId )
+//                call.resolve(result.toJSObject())
+            }
         }
+
+
+
     }
 
 
     fun windowOpen(view: WebView?, isDialog: Boolean, isUserGesture: Boolean, resultMsg: Message?): Boolean {
 
-        val component = nextWindowAction ?: return false
-        nextWindowAction = null
+        val component = nextWindowAction.poll() ?: return false
 
         Log.d(TAG, "windowOpen with url ${view!!.url!!}")
 
-
         val webView = webviewsCache.remove(component.id)!!
-
-//        webView.loadDataWithBaseURL()
 
         resultMsg?.let { message ->
             val webViewTransport = message.obj!! as WebView.WebViewTransport
             webViewTransport.webView = webView
             Log.d(TAG, "Frag got signal to window open")
             message.sendToTarget()
-
-//            Log.d(TAG, "Posting window open with a message ${component.id}")
-//            viewModel.postWindowOpen(message = it, id = component.id)
         }
 
         viewModel.setHtml(view.url!!, webView)
-
-
         return true
     }
 
@@ -534,8 +639,6 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
     companion object {
         private const val TAG = "NativeNavigation"
-
-        private const val OPTIONS_ID = "optionsId"
     }
 
 }

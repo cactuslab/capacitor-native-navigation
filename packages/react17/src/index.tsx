@@ -65,6 +65,7 @@ export async function initReact(options: Options): Promise<void> {
 			return
 		}
 
+		ReactDOM.unmountComponentAtNode(rootElement)
 		render(viewWindow, rootElement, toNativeNavigationReactRootProps(data))
 	}
 

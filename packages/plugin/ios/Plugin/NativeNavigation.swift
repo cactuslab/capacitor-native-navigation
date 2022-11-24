@@ -639,10 +639,12 @@ class NativeNavigation: NSObject {
             }
             
             if let barOptions = options.bar {
-                if let scrollEdgeAppearance = navigationController.navigationBar.scrollEdgeAppearance {
-                    navigationController.navigationBar.scrollEdgeAppearance = customiseBarAppearance(scrollEdgeAppearance, options: barOptions)
+                if barOptions.background != nil {
+                    navigationController.navigationBar.scrollEdgeAppearance = customiseBarAppearance(UINavigationBarAppearance(), options: barOptions)
+                } else {
+                    navigationController.navigationBar.scrollEdgeAppearance = nil
                 }
-                navigationController.navigationBar.standardAppearance = customiseBarAppearance(navigationController.navigationBar.standardAppearance, options: barOptions)
+                navigationController.navigationBar.standardAppearance = customiseBarAppearance(UINavigationBarAppearance(), options: barOptions)
             }
         }
 

@@ -47,6 +47,7 @@ import kotlin.collections.set
 class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: NativeNavigationViewModel) {
 
     init {
+        Log.d(TAG, "--- NATIVE NAVIGATION CONSTRUCTED ---")
         viewModel.nativeNavigation = this
     }
 
@@ -58,6 +59,12 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         private var isAddedToActivity: Boolean = fragment.isAdded
 
         var startRoute : String? = null
+
+        /**
+         * The virtual stack exists to serve as an in-memory model of the expected stack after all operations are completed.
+         * This stack allows us to inspect what a stack will look like before it is presented.
+         */
+        val virtualStack: MutableList<String> = mutableListOf()
 
         fun getBinding(): ActivityNavigationBinding? {
             return fragment.binding
@@ -95,7 +102,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
     private val components : MutableMap<String, ComponentSpec> = mutableMapOf()
 
-    private var nextWindowAction: ComponentSpec? = null
+    private var nextWindowAction = LinkedList<ComponentSpec>()
 
     private val viewActions: MutableMap<String,() -> Unit> = mutableMapOf()
 
@@ -122,10 +129,12 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
     fun findStackComponentIdHosting(componentId: String): String? {
         navContexts.forEach { navContext ->
+            /// Check if this is the host stack id
             if (navContext.contextId == componentId) {
                 return navContext.contextId
             }
 
+            /// Check if this id is in the view heirarchy
             navContext.fragment.binding?.navigationHost?.findNavController()?.let { navController ->
                 navController.backQueue.forEach { entry ->
                     if (entry.arguments?.getString(nav_arguments.component_id) == componentId) {
@@ -133,6 +142,11 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                     }
                 }
 
+            }
+
+            /// Check if this exists in our model. This model shows the eventual expected state after all view operations are complete
+            if (navContext.virtualStack.contains(componentId)) {
+                return navContext.contextId
             }
         }
         return null
@@ -166,7 +180,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         onBackPressedCallback?.remove()
         onBackPressedCallback = null
 
-        nextWindowAction = null
+        nextWindowAction.clear()
 
         viewModel.reset()
 
@@ -268,13 +282,13 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
     fun notifyCreateView(id: String) {
         val component = components[id] as ViewSpec
-        nextWindowAction = component
+        nextWindowAction.add(component)
         plugin.notifyCreateView(component.path, component.id, component.state)
     }
 
     fun notifyUpdateView(id: String) {
         val component = components[id] as ViewSpec
-        nextWindowAction = component
+//        nextWindowAction.add(component)
         plugin.notifyUpdateView(component.path, component.id, component.state)
     }
 
@@ -332,6 +346,8 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
             is ViewSpec -> {
                 val webView = makeWebView(component.id)
                 viewModel.postWebView(webView, component.id)
+                navContext.virtualStack.clear()
+                navContext.virtualStack.add(component.id)
 
                 viewActions[component.id] = {
                     val transaction = plugin.activity.supportFragmentManager.beginTransaction()
@@ -345,10 +361,13 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
             }
             is StackSpec -> {
                 val stack = component.stack ?: listOf()
+                navContext.virtualStack.clear()
+
                 stack.forEachIndexed { _, viewSpec ->
                     insertComponent(viewSpec)
                     val webView = makeWebView(viewSpec.id)
                     viewModel.postWebView(webView, viewSpec.id)
+                    navContext.virtualStack.add(viewSpec.id)
                 }
                 val lastViewSpec = stack.last()
                 val firstViewSpec = stack.first()
@@ -458,6 +477,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
                         insertComponent(component)
 
+                        navContext.virtualStack.add(component.id)
                         val webView = makeWebView(component.id)
                         viewModel.postWebView(webView, component.id)
                         viewActions[component.id] = {
@@ -501,6 +521,8 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                     PushMode.ROOT -> {
                         insertComponent(component)
 
+                        navContext.virtualStack.clear()
+                        navContext.virtualStack.add(component.id)
                         val webView = makeWebView(component.id)
                         viewModel.postWebView(webView, component.id)
                         viewActions[component.id] = {
@@ -593,11 +615,9 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
     fun windowOpen(view: WebView?, isDialog: Boolean, isUserGesture: Boolean, resultMsg: Message?): Boolean {
 
-        val component = nextWindowAction ?: return false
-        nextWindowAction = null
+        val component = nextWindowAction.poll() ?: return false
 
         Log.d(TAG, "windowOpen with url ${view!!.url!!}")
-
 
         val webView = webviewsCache.remove(component.id)!!
 

@@ -57,7 +57,10 @@ type ClickListenerFunc = (data: ClickEventData) => void
 type RemoveListenerFunction = () => void
 
 interface CapacitorNativeNavigationContext {
-	componentId: string
+	/**
+	 * The component id. Will be undefined if not in a native context.
+	 */
+	componentId?: string
 
 	/**
 	 * The id of the stack containing this component, if any.
@@ -85,18 +88,23 @@ interface CapacitorNativeNavigationContext {
 	addClickListener: (func: ClickListenerFunc) => RemoveListenerFunction
 }
 
-export const Context = React.createContext<CapacitorNativeNavigationContext | undefined>(undefined)
-
-export function useNativeNavigationContext(): CapacitorNativeNavigationContext | undefined
-export function useNativeNavigationContext(defaultValue: Partial<CapacitorNativeNavigationContext>): Partial<CapacitorNativeNavigationContext>
-
-export function useNativeNavigationContext(defaultValue?: Partial<CapacitorNativeNavigationContext>): CapacitorNativeNavigationContext | Partial<CapacitorNativeNavigationContext> | undefined {
-	const context = useContext(Context)
-	if (context) {
-		return context
-	} else if (defaultValue) {
-		return defaultValue
-	} else {
-		return undefined
+const DEFAULT_CONTEXT: CapacitorNativeNavigationContext = {
+	viewWindow: window,
+	setOptions: async function() {
+		return
+	},
+	dismiss: async function() {
+		throw new Error('Not in a native context')
+	},
+	addClickListener: function() {
+		return function() {
+			/* noop */
+		}
 	}
+}
+
+export const Context = React.createContext<CapacitorNativeNavigationContext>(DEFAULT_CONTEXT)
+
+export function useNativeNavigationContext(): CapacitorNativeNavigationContext {
+	return useContext(Context)
 }

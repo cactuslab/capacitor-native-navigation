@@ -180,7 +180,7 @@ class NativeNavigationPlugin : Plugin() {
         obj.put("componentId", componentId)
 
         notifyListeners("click:$componentId",  obj, true)
-//        notifyListeners("click", obj, true)
+        notifyListeners("click", obj, true)
     }
 
     companion object {

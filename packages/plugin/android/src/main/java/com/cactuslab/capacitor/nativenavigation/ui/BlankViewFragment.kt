@@ -1,30 +1,53 @@
 package com.cactuslab.capacitor.nativenavigation.ui
 
 import android.annotation.SuppressLint
+import android.graphics.Color
+import android.graphics.Typeface
+import android.graphics.drawable.Drawable
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.text.Html
+import android.text.Spannable
 import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.AbsoluteSizeSpan
 import android.text.style.ForegroundColorSpan
+import android.text.style.TypefaceSpan
 import android.util.Log
 import android.view.*
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.toColorInt
+import androidx.core.text.buildSpannedString
+import androidx.core.text.toSpannable
 import androidx.core.view.MenuProvider
+import androidx.core.view.WindowCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 import com.cactuslab.capacitor.nativenavigation.NativeNavigationViewModel
 import com.cactuslab.capacitor.nativenavigation.databinding.FragmentBlankBinding
 import com.cactuslab.capacitor.nativenavigation.databinding.FragmentScreenBinding
+import com.cactuslab.capacitor.nativenavigation.helpers.CustomTypefaceSpan
+import com.cactuslab.capacitor.nativenavigation.helpers.FontManager
+import com.cactuslab.capacitor.nativenavigation.helpers.isColorDark
+import com.cactuslab.capacitor.nativenavigation.helpers.spToPx
 import com.cactuslab.capacitor.nativenavigation.types.ComponentOptions
 import com.google.android.material.appbar.AppBarLayout
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.net.URI
 import kotlin.math.sign
 
 class BlankViewFragment : Fragment() {
@@ -122,16 +145,30 @@ class BlankViewFragment : Fragment() {
             toolbar.visibility = View.GONE
         } else {
             toolbar.visibility = View.VISIBLE
-            toolbar.title = options?.title?.value()
+            val titleSpan = options?.title?.value()?.toSpannable()
 
             stackOptions?.options?.bar?.let { bar ->
                 bar.background?.color?.let { color ->
-                    toolbar.setBackgroundColor(color.toColorInt())
+                    val colorInt = color.toColorInt()
+
+                    toolbar.setBackgroundColor(colorInt)
+                    requireActivity().window.statusBarColor = colorInt
+
+                    WindowCompat.getInsetsController(requireActivity().window, requireActivity().window.decorView).isAppearanceLightStatusBars = !colorInt.isColorDark()
                 }
 
                 bar.title?.let { labelOptions ->
                     labelOptions.color?.let { color ->
                         toolbar.setTitleTextColor(color.toColorInt())
+                    }
+                    labelOptions.font?.let { fontOptions ->
+                        fontOptions.name?.let { fontName ->
+                            val typeface = FontManager.getTypeface(requireContext(), fontName, Typeface.NORMAL, requireContext().assets)
+                            titleSpan?.setSpan(CustomTypefaceSpan(typeface), 0, titleSpan.length, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
+                        }
+                        fontOptions.size?.let { fontSize ->
+                            titleSpan?.setSpan(AbsoluteSizeSpan(fontSize.spToPx(requireContext())), 0, titleSpan.length, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
+                        }
                     }
                 }
 
@@ -141,6 +178,8 @@ class BlankViewFragment : Fragment() {
                     }
                 }
             }
+
+            toolbar.title = titleSpan
 
             options?.bar?.let { bar ->
                 bar.background?.color?.let { color ->
@@ -173,13 +212,61 @@ class BlankViewFragment : Fragment() {
                 if (options != null) {
                     options.stack?.rightItems?.forEach { item ->
                         val spanString = SpannableString(item.title)
+                        var tintColor: Int? = null
+
                         stackOptions?.options?.bar?.buttons?.let { labelOptions ->
                             labelOptions.color?.let { color ->
+                                tintColor = color.toColorInt()
                                 spanString.setSpan(ForegroundColorSpan(color.toColorInt()), 0, spanString.length, 0)
+                            }
+                            labelOptions.font?.let { fontOptions ->
+                                fontOptions.name?.let { fontName ->
+                                    val typeface = FontManager.getTypeface(requireContext(), fontName, Typeface.NORMAL, requireContext().assets)
+                                    spanString.setSpan(CustomTypefaceSpan(typeface), 0, spanString.length, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
+                                }
+                                fontOptions.size?.let { fontSize ->
+                                    spanString.setSpan(AbsoluteSizeSpan(fontSize.spToPx(requireContext())), 0, spanString.length, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
+                                }
                             }
                         }
 
                         val menuItem = menu.add(0, item.id.hashCode(), 0, spanString)
+
+                        item.image?.let { path ->
+                            val uri = Uri.parse(viewModel.baseUrl).buildUpon()
+                                .path(path)
+                                .build()
+
+                            Glide.with(this@BlankViewFragment).load(uri).listener(object: RequestListener<Drawable> {
+                                override fun onLoadFailed(
+                                    e: GlideException?,
+                                    model: Any?,
+                                    target: Target<Drawable>?,
+                                    isFirstResource: Boolean
+                                ): Boolean {
+                                    Log.d(TAG, "Failed to fetch icon: $e")
+                                    return true
+                                }
+
+                                override fun onResourceReady(
+                                    resource: Drawable?,
+                                    model: Any?,
+                                    target: Target<Drawable>?,
+                                    dataSource: DataSource?,
+                                    isFirstResource: Boolean
+                                ): Boolean {
+                                    viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+                                        tintColor?.let {
+                                            resource?.setTint(it)
+                                        }
+                                        menuItem.icon = resource
+                                    }
+                                    return true
+                                }
+
+                            }).submit()
+                        }
+
                         menuItem.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM)
                     }
                 }

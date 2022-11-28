@@ -263,8 +263,8 @@ export interface LabelOptions {
 }
 
 export interface FontOptions {
-	name: string
-	size: number
+	name?: string
+	size?: number
 }
 
 /**

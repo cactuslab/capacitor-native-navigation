@@ -20,14 +20,17 @@ export default function Home(): React.ReactElement {
 								color: '#336699',
 							},
 							title: {
-								color: '#f00099',
+								color: '#DFEFEF',
 								font: {
-									name: 'Arial',
+									name: 'Solway',
 									size: 26,
 								}
 							},
 							buttons: {
-								color: '#888866',
+								color: '#DDEEFF',
+								font: {
+									name: 'Solway',
+								}
 							},
 						},
 					}

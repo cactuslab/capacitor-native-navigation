@@ -296,9 +296,7 @@ func parseFont(_ object: JSObjectLike) throws -> UIFont {
     guard let name = object.getString("name") else {
         throw NativeNavigatorError.missingParameter(name: "font.name")
     }
-    guard let size = object.getFloat("size") else {
-        throw NativeNavigatorError.missingParameter(name: "font.size")
-    }
+    let size = object.getFloat("size") ?? Float(UIFont.systemFontSize)
     
     guard let font = UIFont(name: name, size: CGFloat(size)) else {
         throw NativeNavigatorError.invalidParameter(name: "font", value: name)

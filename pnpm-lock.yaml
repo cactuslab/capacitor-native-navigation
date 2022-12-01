@@ -10,9 +10,9 @@ importers:
 
   packages/example:
     specifiers:
-      '@cactuslab/native-navigation': ^0.0.5
-      '@cactuslab/native-navigation-react': ^0.0.6
-      '@cactuslab/native-navigation-react-router': ^0.0.5
+      '@cactuslab/native-navigation': ^0.0.6
+      '@cactuslab/native-navigation-react': ^0.0.7
+      '@cactuslab/native-navigation-react-router': ^0.0.6
       '@capacitor/android': ^4.3.0
       '@capacitor/camera': latest
       '@capacitor/cli': ^4.3.0
@@ -47,7 +47,7 @@ importers:
 
   packages/history:
     specifiers:
-      '@cactuslab/native-navigation': ^0.0.5
+      '@cactuslab/native-navigation': ^0.0.6
       '@capacitor/core': ^4.0.0
       '@ionic/eslint-config': ^0.3.0
       '@ionic/prettier-config': ^1.0.1
@@ -114,7 +114,7 @@ importers:
 
   packages/react:
     specifiers:
-      '@cactuslab/native-navigation': ^0.0.5
+      '@cactuslab/native-navigation': ^0.0.6
       '@capacitor/core': ^4.0.0
       '@ionic/eslint-config': ^0.3.0
       '@ionic/prettier-config': ^1.0.1
@@ -140,7 +140,7 @@ importers:
 
   packages/react-router:
     specifiers:
-      '@cactuslab/native-navigation': ^0.0.5
+      '@cactuslab/native-navigation': ^0.0.6
       '@capacitor/core': ^4.0.0
       '@ionic/eslint-config': ^0.3.0
       '@ionic/prettier-config': ^1.0.1
@@ -168,7 +168,7 @@ importers:
 
   packages/react17:
     specifiers:
-      '@cactuslab/native-navigation': ^0.0.5
+      '@cactuslab/native-navigation': ^0.0.6
       '@capacitor/core': ^4.0.0
       '@ionic/eslint-config': ^0.3.0
       '@ionic/prettier-config': ^1.0.1

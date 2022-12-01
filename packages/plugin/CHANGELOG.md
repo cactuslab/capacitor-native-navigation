@@ -1,5 +1,12 @@
 # @cactuslab/native-navigation
 
+## 0.0.6
+
+### Patch Changes
+
+- d45530c: Add isNativeNavigationAvailable
+- e1abe83: iOS: fix flashing of bar items during a replace
+
 ## 0.0.5
 
 ### Patch Changes

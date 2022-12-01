@@ -1,5 +1,15 @@
 # capacitor-app
 
+## 1.0.6
+
+### Patch Changes
+
+- Updated dependencies [d45530c]
+- Updated dependencies [e1abe83]
+  - @cactuslab/native-navigation@0.0.6
+  - @cactuslab/native-navigation-react@0.0.7
+  - @cactuslab/native-navigation-react-router@0.0.6
+
 ## 1.0.5
 
 ### Patch Changes

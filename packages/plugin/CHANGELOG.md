@@ -1,5 +1,12 @@
 # @cactuslab/native-navigation
 
+## 0.0.5
+
+### Patch Changes
+
+- 51ca1de: Added support for custom fonts and icons in the toolbar
+- fb4fec9: added target and dismiss to navigation state
+
 ## 0.0.4
 
 ### Patch Changes

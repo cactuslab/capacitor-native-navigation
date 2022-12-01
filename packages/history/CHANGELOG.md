@@ -1,5 +1,14 @@
 # @cactuslab/native-navigation-history
 
+## 0.0.5
+
+### Patch Changes
+
+- 97c7913: Fix root push / replace
+- Updated dependencies [51ca1de]
+- Updated dependencies [fb4fec9]
+  - @cactuslab/native-navigation@0.0.5
+
 ## 0.0.4
 
 ### Patch Changes

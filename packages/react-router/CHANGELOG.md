@@ -1,5 +1,14 @@
 # @cactuslab/native-navigation-react-router
 
+## 0.0.5
+
+### Patch Changes
+
+- fb4fec9: added target and dismiss to navigation state
+- Updated dependencies [51ca1de]
+- Updated dependencies [fb4fec9]
+  - @cactuslab/native-navigation@0.0.5
+
 ## 0.0.4
 
 ### Patch Changes

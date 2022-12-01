@@ -156,6 +156,7 @@ export class NavigationHistoryWrapper implements History {
 						this.wrapped.push(location) // TODO we could push our state to the browser state so we can reconstruct it when the page is reloaded
 						break
 					case 'replace':
+					case 'root':
 						this.wrapped.replace(location) // TODO we could push our state to the browser state so we can reconstruct it when the page is reloaded
 						break
 				}
@@ -169,6 +170,7 @@ export class NavigationHistoryWrapper implements History {
 					this.wrapped.push(location) // TODO we could push our state to the browser state so we can reconstruct it when the page is reloaded
 					break
 				case 'replace':
+				case 'root':
 					this.wrapped.replace(location) // TODO we could push our state to the browser state so we can reconstruct it when the page is reloaded
 					break
 			}

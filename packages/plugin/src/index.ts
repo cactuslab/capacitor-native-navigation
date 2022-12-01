@@ -24,6 +24,10 @@ NativeNavigation.removeAllListeners().catch(function(reason) {
 	console.warn(`NativeNavigation failed to remove listeners: ${reason}`)
 })
 
+function isNativeNavigationAvailable(): boolean {
+	return Capacitor.isNativePlatform()
+}
+
 export * from './definitions'
 export * from './views'
-export { NativeNavigation }
+export { NativeNavigation, isNativeNavigationAvailable }

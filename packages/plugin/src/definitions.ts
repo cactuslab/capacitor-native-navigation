@@ -80,7 +80,7 @@ export interface TabsSpec extends ComponentSpec<TabsOptions> {
 	tabs: (StackSpec | ViewSpec)[]
 }
 
-export type ViewState = Record<string, string | number | boolean | null>
+export type ViewState = Record<string, string | number | boolean | null | undefined>
 export interface ViewSpec extends ComponentSpec<ViewOptions> {
 	type: 'view'
 

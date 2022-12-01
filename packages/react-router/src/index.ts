@@ -8,6 +8,13 @@ interface Options {
 	stack?: ComponentId
 }
 
+interface ViewStateSpecials extends ViewState {
+	root?: boolean
+	navigation?: boolean
+	target?: string
+	dismiss?: string | boolean
+}
+
 /**
  * A Navigator implementation to provide to react-router that handles navigation requests
  * using Capacitor Native Navigation.
@@ -56,6 +63,14 @@ export function createNavigator(options: Options): Navigator {
 			}
 
 			const viewState = toViewState(state, opts?.state)
+			if (typeof viewState?.dismiss === 'string') {
+				await plugin.dismiss({
+					id: viewState.dismiss,
+				})
+			} else if (typeof viewState?.dismiss === 'boolean') {
+				await plugin.dismiss()
+			}
+
 			const path = navigator.createHref(to)
 			try {
 				await plugin.push({
@@ -65,7 +80,7 @@ export function createNavigator(options: Options): Navigator {
 						state: viewState,
 					},
 					mode: viewState?.root ? 'root' : undefined,
-					target: stack || componentId,
+					target: viewState?.target || stack || componentId,
 				})
 			} catch (error) {
 				console.log(`Failed to push ${error}`)
@@ -74,6 +89,14 @@ export function createNavigator(options: Options): Navigator {
 
 		replace: async function (to: To, state?: any, opts?: NavigateOptions | undefined): Promise<void> {
 			const viewState = toViewState(state, opts?.state)
+			if (typeof viewState?.dismiss === 'string') {
+				await plugin.dismiss({
+					id: viewState.dismiss,
+				})
+			} else if (typeof viewState?.dismiss === 'boolean') {
+				await plugin.dismiss()
+			}
+
 			const path = navigator.createHref(to)
 			try {
 				await plugin.push({
@@ -84,7 +107,7 @@ export function createNavigator(options: Options): Navigator {
 					},
 					animated: false,
 					mode: viewState?.root ? 'root' : 'replace',
-					target: stack || componentId,
+					target: viewState?.target || stack || componentId,
 				})
 			} catch (error) {
 				console.log(`Failed to replace ${error}`)
@@ -94,7 +117,7 @@ export function createNavigator(options: Options): Navigator {
 	return navigator
 }
 
-function toViewState(...args: unknown[]): ViewState | undefined {
+function toViewState(...args: unknown[]): ViewStateSpecials | undefined {
 	for (const arg of args) {
 		if (arg) {
 			if (typeof arg === 'object') {

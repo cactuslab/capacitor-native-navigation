@@ -344,7 +344,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         val component = options.component
         insertComponent(component)
 
-        Log.d(TAG, "Asked to SetRoot: ${component.id} for createOptions: $component")
+        Log.d(TAG, "Asked to Present: ${component.id} for createOptions: $component")
 
         val navContext = pushNavController(component.id, options.animated)
         setupBackPressedHandler()
@@ -451,6 +451,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
     }
 
     fun push(options: PushOptions, call: PluginCall) {
+        Log.d(TAG, "Push Started")
 
         val component = options.component
 
@@ -459,6 +460,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
             try {
                 navContexts.last()
             } catch (e: kotlin.NoSuchElementException) {
+                Log.d(TAG, "No such stack to push on to. Try presenting first. $e")
                 call.reject("No such stack to push on to", e)
                 return
             }
@@ -467,6 +469,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
             navContexts.find { it.contextId == navContextId }
         }
         if (navContext == null) {
+            Log.d(TAG, "No such stack to push on to. Try presenting first.")
             call.reject("No such stack to push on to. Try presenting first.")
             return
         }
@@ -515,7 +518,8 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                         }
 
                         if (currentId.isNullOrBlank()) {
-                            call.reject("There is no current view to replace on this stack $stackId")
+                            Log.d(TAG, "There is no current view to replace on this stack \"$stackId\"")
+                            call.reject("There is no current view to replace on this stack \"$stackId\"")
                             return
                         }
                         component.id = currentId
@@ -564,7 +568,8 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                 call.reject("Not implemented TABS replace yet")
             }
             ComponentType.VIEW -> {
-                call.reject("Not implemented VIEW replace yet")
+
+//                call.reject("Not implemented VIEW replace yet")
                 val stackId = navContext.contextId
 
                 val currentId = if (target == navContext.contextId) {
@@ -574,6 +579,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                 }
 
                 if (currentId.isNullOrBlank()) {
+                    Log.d(TAG, "There is no current view to replace on this stack \"$stackId\"")
                     call.reject("There is no current view to replace on this stack $stackId")
                     return
                 }

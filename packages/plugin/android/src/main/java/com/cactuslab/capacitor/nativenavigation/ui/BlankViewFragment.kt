@@ -1,6 +1,8 @@
 package com.cactuslab.capacitor.nativenavigation.ui
 
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.Drawable
@@ -14,6 +16,7 @@ import android.text.Spanned
 import android.text.style.AbsoluteSizeSpan
 import android.text.style.ForegroundColorSpan
 import android.text.style.TypefaceSpan
+import android.util.Base64
 import android.util.Log
 import android.view.*
 import android.webkit.WebResourceRequest
@@ -233,38 +236,75 @@ class BlankViewFragment : Fragment() {
                         val menuItem = menu.add(0, item.id.hashCode(), 0, spanString)
 
                         item.image?.let { path ->
-                            val uri = Uri.parse(viewModel.baseUrl).buildUpon()
-                                .path(path)
-                                .build()
 
-                            Glide.with(this@BlankViewFragment).load(uri).listener(object: RequestListener<Drawable> {
-                                override fun onLoadFailed(
-                                    e: GlideException?,
-                                    model: Any?,
-                                    target: Target<Drawable>?,
-                                    isFirstResource: Boolean
-                                ): Boolean {
-                                    Log.d(TAG, "Failed to fetch icon: $e")
-                                    return true
-                                }
-
-                                override fun onResourceReady(
-                                    resource: Drawable?,
-                                    model: Any?,
-                                    target: Target<Drawable>?,
-                                    dataSource: DataSource?,
-                                    isFirstResource: Boolean
-                                ): Boolean {
-                                    viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
-                                        tintColor?.let {
-                                            resource?.setTint(it)
-                                        }
-                                        menuItem.icon = resource
+                            if (path.startsWith("data:")) {
+                                val decodedBytes = Base64.decode(path.substringAfter("base64,"),Base64.DEFAULT)
+                                val bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+                                Glide.with(this@BlankViewFragment).load(bitmap).listener(object: RequestListener<Drawable> {
+                                    override fun onLoadFailed(
+                                        e: GlideException?,
+                                        model: Any?,
+                                        target: Target<Drawable>?,
+                                        isFirstResource: Boolean
+                                    ): Boolean {
+                                        Log.d(TAG, "Failed to fetch icon: $e")
+                                        return true
                                     }
-                                    return true
-                                }
 
-                            }).submit()
+                                    override fun onResourceReady(
+                                        resource: Drawable?,
+                                        model: Any?,
+                                        target: Target<Drawable>?,
+                                        dataSource: DataSource?,
+                                        isFirstResource: Boolean
+                                    ): Boolean {
+                                        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+                                            tintColor?.let {
+                                                resource?.setTint(it)
+                                            }
+                                            menuItem.icon = resource
+                                        }
+                                        return true
+                                    }
+
+                                }).submit()
+
+                            } else {
+                                val uri = Uri.parse(viewModel.baseUrl).buildUpon()
+                                    .path(path)
+                                    .build()
+
+                                Glide.with(this@BlankViewFragment).load(uri).listener(object: RequestListener<Drawable> {
+                                    override fun onLoadFailed(
+                                        e: GlideException?,
+                                        model: Any?,
+                                        target: Target<Drawable>?,
+                                        isFirstResource: Boolean
+                                    ): Boolean {
+                                        Log.d(TAG, "Failed to fetch icon: $e")
+                                        return true
+                                    }
+
+                                    override fun onResourceReady(
+                                        resource: Drawable?,
+                                        model: Any?,
+                                        target: Target<Drawable>?,
+                                        dataSource: DataSource?,
+                                        isFirstResource: Boolean
+                                    ): Boolean {
+                                        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+                                            tintColor?.let {
+                                                resource?.setTint(it)
+                                            }
+                                            menuItem.icon = resource
+                                        }
+                                        return true
+                                    }
+
+                                }).submit()
+                            }
+
+
                         }
 
                         menuItem.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM)

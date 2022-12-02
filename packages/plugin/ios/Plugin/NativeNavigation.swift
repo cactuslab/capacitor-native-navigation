@@ -51,7 +51,11 @@ class NativeNavigation: NSObject {
         }
 
         Task {
-            try await self.loadPageContent()
+            do {
+                try await self.loadPageContent()
+            } catch {
+                fatalError("Failed to load page content: \(error)")
+            }
         }
     }
 
@@ -723,12 +727,34 @@ class NativeNavigation: NSObject {
     /**
      Load the HTML page content that we'll use for our webviews.
      */
+    @MainActor
     private func loadPageContent() async throws {
         guard let webView = self.bridge.webView else {
             throw NativeNavigatorError.illegalState(message: "Cannot find webView")
         }
 
-        let content = try await String(contentsOf: webView.url!)
+        guard let url = webView.url else {
+            throw NativeNavigatorError.illegalState(message: "webView doesn't have a url")
+        }
+        
+        var content: String?
+        if let scheme = url.scheme {
+            if let schemeHandler = self.bridge.webView?.configuration.urlSchemeHandler(forURLScheme: scheme) {
+                let myTask = CaptureDataURLSchemeTask(url: url)
+                content = try await withCheckedThrowingContinuation { continuation in
+                    myTask.continuation = continuation
+                    schemeHandler.webView(self.bridge.webView!, start: myTask)
+                }
+            }
+        }
+        
+        if content == nil {
+            content = try String(contentsOf: url)
+        }
+        
+        guard let content = content else {
+            throw NativeNavigatorError.illegalState(message: "cannot load webView html")
+        }
 
         /* Disable any JavaScript on the page, as we don't want to run any JavaScript on these
            pages... we just want to inject DOM nodes.
@@ -737,6 +763,7 @@ class NativeNavigation: NSObject {
             .replacingOccurrences(of: "</script>", with: " -->")
         self.html = sanitizedContent
     }
+    
     private func removeRoot(_ root: UIViewController, animated: Bool) {
         if root.componentId != nil {
             if root.presentedViewController != nil {
@@ -814,4 +841,46 @@ private actor OneAtATime {
         return try await operation()
     }
 
+}
+
+class CaptureDataURLSchemeTask: NSObject, WKURLSchemeTask {
+    var request: URLRequest
+    private var data = Data()
+    private var encoding: String.Encoding?
+    var continuation: CheckedContinuation<String, Error>?
+    
+    init(url: URL) {
+        self.request = URLRequest(url: url)
+    }
+    
+    func didReceive(_ response: URLResponse) {
+        if let textEncodingName = response.textEncodingName {
+            self.encoding = String.Encoding(rawValue: CFStringConvertEncodingToNSStringEncoding(CFStringConvertIANACharSetNameToEncoding(textEncodingName as CFString)));
+        }
+    }
+    
+    func didReceive(_ data: Data) {
+        self.data.append(data)
+    }
+    
+    func didFinish() {
+        if let encoding = self.encoding {
+            if let string = String(data: data, encoding: encoding) {
+                continuation?.resume(returning: string)
+            } else {
+                continuation?.resume(throwing: NativeNavigatorError.illegalState(message: "Cannot parse data"))
+            }
+        } else {
+            if let string = String(data: data, encoding: .utf8) {
+                continuation?.resume(returning: string)
+            } else {
+                continuation?.resume(throwing: NativeNavigatorError.illegalState(message: "Cannot parse data"))
+            }
+        }
+    }
+    
+    func didFailWithError(_ error: Error) {
+        continuation?.resume(throwing: error)
+    }
+    
 }

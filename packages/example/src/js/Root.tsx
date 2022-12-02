@@ -11,6 +11,7 @@ import PushReplace from './race/PushReplace'
 import Tab1 from './Tab1'
 import View1 from './View1'
 import StackImmediateReplace from './race/StackImmediateReplace'
+import Examples from './examples'
 
 export default function Root(props: NativeNavigationReactRootProps): JSX.Element {
 	const { path, state, id, stack } = props
@@ -35,6 +36,7 @@ export default function Root(props: NativeNavigationReactRootProps): JSX.Element
 					<Route path="stack-immediate-push" element={<StackImmediatePush />} />
 					<Route path="stack-immediate-replace" element={<StackImmediateReplace />} />
 				</Route>
+				<Route path="examples/*" element={<Examples />} />
 			</Routes>
 		</Router>
 	)

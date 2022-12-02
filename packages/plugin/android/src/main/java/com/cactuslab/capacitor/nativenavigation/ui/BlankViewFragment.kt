@@ -47,6 +47,7 @@ import com.cactuslab.capacitor.nativenavigation.helpers.FontManager
 import com.cactuslab.capacitor.nativenavigation.helpers.isColorDark
 import com.cactuslab.capacitor.nativenavigation.helpers.spToPx
 import com.cactuslab.capacitor.nativenavigation.types.ComponentOptions
+import com.cactuslab.capacitor.nativenavigation.types.ComponentType
 import com.google.android.material.appbar.AppBarLayout
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -142,9 +143,10 @@ class BlankViewFragment : Fragment() {
             viewModel.nativeNavigation?.componentSpecForId(it)
         }
 
+        val isStack = stackOptions?.type == ComponentType.STACK
 
         Log.d(TAG, "viewModel setOptions being applied $componentId")
-        if (options == null && stackOptions?.options?.bar == null) {
+        if (options == null && stackOptions?.options?.bar == null || !isStack) {
             toolbar.visibility = View.GONE
         } else {
             toolbar.visibility = View.VISIBLE

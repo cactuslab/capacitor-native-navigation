@@ -10,7 +10,7 @@ buildscript {
         coroutines = project.hasProperty('coroutines') ? rootProject.ext.coroutines : '1.6.4'
         navigationVersion = project.hasProperty('navigationVersion') ? rootProject.ext.navigationVersion : '2.5.3'
         androidxLifecyleVersion = project.hasProperty('androidxLifecycleVersion') ? rootProject.ext.androidxLifecycleVersion : '2.5.1'
-        glideVersion = project.hasProperty('glideVersion') ? rootProject.ext.glideVersion : '4.14.2'
+        coilVersion = project.hasProperty('coilVersion') ? rootProject.ext.coilVersion : '2.2.2'
     }
 
     repositories {
@@ -80,8 +80,7 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$androidxLifecyleVersion"
     implementation 'org.jsoup:jsoup:1.15.3'
     implementation 'androidx.webkit:webkit:1.5.0'
-    implementation "com.github.bumptech.glide:glide:$glideVersion"
-    annotationProcessor "com.github.bumptech.glide:compiler:$glideVersion"
+    implementation "io.coil-kt:coil:$coilVersion"
 
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"

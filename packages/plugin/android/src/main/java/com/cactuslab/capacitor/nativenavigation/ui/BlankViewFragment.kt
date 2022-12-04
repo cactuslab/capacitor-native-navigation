@@ -34,11 +34,8 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.target.Target
+import coil.imageLoader
+import coil.request.ImageRequest
 import com.cactuslab.capacitor.nativenavigation.NativeNavigationViewModel
 import com.cactuslab.capacitor.nativenavigation.databinding.FragmentBlankBinding
 import com.cactuslab.capacitor.nativenavigation.databinding.FragmentScreenBinding
@@ -51,6 +48,9 @@ import com.cactuslab.capacitor.nativenavigation.types.ComponentType
 import com.google.android.material.appbar.AppBarLayout
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.io.BufferedInputStream
+import java.io.BufferedReader
+import java.io.ByteArrayOutputStream
 import java.net.URI
 import kotlin.math.sign
 
@@ -242,71 +242,72 @@ class BlankViewFragment : Fragment() {
                             if (path.startsWith("data:")) {
                                 val decodedBytes = Base64.decode(path.substringAfter("base64,"),Base64.DEFAULT)
                                 val bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
-                                Glide.with(this@BlankViewFragment).load(bitmap).listener(object: RequestListener<Drawable> {
-                                    override fun onLoadFailed(
-                                        e: GlideException?,
-                                        model: Any?,
-                                        target: Target<Drawable>?,
-                                        isFirstResource: Boolean
-                                    ): Boolean {
-                                        Log.d(TAG, "Failed to fetch icon: $e")
-                                        return true
-                                    }
 
-                                    override fun onResourceReady(
-                                        resource: Drawable?,
-                                        model: Any?,
-                                        target: Target<Drawable>?,
-                                        dataSource: DataSource?,
-                                        isFirstResource: Boolean
-                                    ): Boolean {
-                                        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
-                                            tintColor?.let {
-                                                resource?.setTint(it)
-                                            }
-                                            menuItem.icon = resource
+                                ImageRequest.Builder(requireContext())
+                                    .data(bitmap)
+                                    .target { resource ->
+                                        tintColor?.let {
+                                            resource.setTint(it)
                                         }
-                                        return true
+                                        menuItem.icon = resource
                                     }
-
-                                }).submit()
+                                    .build().also {
+                                        requireContext().imageLoader.enqueue(it)
+                                    }
 
                             } else {
                                 val uri = Uri.parse(viewModel.baseUrl).buildUpon()
                                     .path(path)
                                     .build()
+                                val plugin = viewModel.nativeNavigation?.plugin
+                                when (uri.host) {
+                                    plugin?.bridge?.host -> {
+                                        val response = plugin!!.bridge.localServer.shouldInterceptRequest(object: WebResourceRequest {
+                                            override fun getUrl(): Uri = uri
+                                            override fun isForMainFrame(): Boolean = true
+                                            override fun isRedirect(): Boolean = false
+                                            override fun hasGesture(): Boolean = true
+                                            override fun getMethod(): String = "GET"
+                                            override fun getRequestHeaders(): MutableMap<String, String> = mutableMapOf()
+                                        })
+                                        if (response != null && response.statusCode == 200) {
 
-                                Glide.with(this@BlankViewFragment).load(uri).listener(object: RequestListener<Drawable> {
-                                    override fun onLoadFailed(
-                                        e: GlideException?,
-                                        model: Any?,
-                                        target: Target<Drawable>?,
-                                        isFirstResource: Boolean
-                                    ): Boolean {
-                                        Log.d(TAG, "Failed to fetch icon: $e")
-                                        return true
-                                    }
-
-                                    override fun onResourceReady(
-                                        resource: Drawable?,
-                                        model: Any?,
-                                        target: Target<Drawable>?,
-                                        dataSource: DataSource?,
-                                        isFirstResource: Boolean
-                                    ): Boolean {
-                                        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
-                                            tintColor?.let {
-                                                resource?.setTint(it)
+                                            val outputStream = ByteArrayOutputStream()
+                                            response.data.use { input ->
+                                                outputStream.use { output ->
+                                                    input.copyTo(output)
+                                                }
                                             }
-                                            menuItem.icon = resource
-                                        }
-                                        return true
+                                            val byteArray = outputStream.toByteArray()
+
+                                            ImageRequest.Builder(requireContext())
+                                                .data(byteArray)
+                                                .target { resource ->
+                                                    tintColor?.let {
+                                                        resource.setTint(it)
+                                                    }
+                                                    menuItem.icon = resource
+                                                }
+                                                .build().also {
+                                                    requireContext().imageLoader.enqueue(it)
+                                                }
+                                        } else {}
                                     }
-
-                                }).submit()
+                                    else -> {
+                                        ImageRequest.Builder(requireContext())
+                                            .data(uri)
+                                            .target { resource ->
+                                                tintColor?.let {
+                                                    resource.setTint(it)
+                                                }
+                                                menuItem.icon = resource
+                                            }
+                                            .build().also {
+                                                requireContext().imageLoader.enqueue(it)
+                                            }
+                                    }
+                                }
                             }
-
-
                         }
 
                         menuItem.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM)

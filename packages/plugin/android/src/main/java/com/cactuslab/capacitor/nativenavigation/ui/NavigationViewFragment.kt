@@ -207,11 +207,11 @@ class NavigationViewFragment: Fragment() {
         lifecycleScope.launch(Dispatchers.Main) {
             val binding = binding ?: return@launch
 
-            viewModel.htmlLiveData.observe(viewLifecycleOwner) { htmlString ->
-                Log.d(TAG, "Loading HTML into webview to get it started on $this")
-                binding.webView.loadDataWithBaseURL(viewModel.baseUrl, htmlString, "text/html", "utf-8", null)
-                viewModel.htmlLiveData.removeObservers(viewLifecycleOwner)
-            }
+//            viewModel.htmlLiveData.observe(viewLifecycleOwner) { htmlString ->
+//                Log.d(TAG, "Loading HTML into webview to get it started on $this")
+//                binding.webView.loadDataWithBaseURL(viewModel.baseUrl, htmlString, "text/html", "utf-8", null)
+//                viewModel.htmlLiveData.removeObservers(viewLifecycleOwner)
+//            }
         }
     }
 

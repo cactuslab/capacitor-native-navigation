@@ -641,7 +641,9 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
             message.sendToTarget()
         }
 
-        viewModel.setHtml(view.url!!, webView)
+
+
+        viewModel.setHtml(view.url!!, webView, plugin)
         return true
     }
 

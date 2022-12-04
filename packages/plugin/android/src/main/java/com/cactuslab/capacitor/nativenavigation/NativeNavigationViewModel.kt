@@ -1,6 +1,9 @@
 package com.cactuslab.capacitor.nativenavigation
 
+import android.net.Uri
 import android.os.Message
+import android.util.Log
+import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import androidx.lifecycle.*
 import com.cactuslab.capacitor.nativenavigation.types.ComponentOptions
@@ -11,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
+import java.io.BufferedReader
 
 class NativeNavigationViewModel: ViewModel() {
 
@@ -53,18 +57,60 @@ class NativeNavigationViewModel: ViewModel() {
         signal.postValue(Signal.SetOptions(options))
     }
 
-    fun setHtml(url: String, webView: WebView) {
+
+    private val htmlStateFlow = MutableStateFlow<String?>(null)
+
+    fun setHtml(url: String, webView: WebView, plugin: NativeNavigationPlugin) {
         baseUrl = url
-        viewModelScope.launch {
-            withContext(Dispatchers.Default) {
-                val string = Jsoup.connect(url).header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8").get().toString()
-                val sanitised = string.replace("<script", "<!-- ").replace("</script>", " -->")
-//                mHtmlLiveData.postValue(sanitised)
 
-                withContext(Dispatchers.Main) {
-                    webView.loadDataWithBaseURL(url, sanitised,"text/html", "utf-8", null)
+        val html = htmlStateFlow.value
+        if (html != null) {
+            viewModelScope.launch(Dispatchers.Main) {
+                webView.loadDataWithBaseURL(url, html,"text/html", "utf-8", null)
+            }
+            return
+        }
+
+        val uri = Uri.parse(url)
+
+        when (uri.host) {
+            plugin.bridge.host -> {
+
+                val response = plugin.bridge.localServer.shouldInterceptRequest(object: WebResourceRequest {
+                    override fun getUrl(): Uri = uri
+                    override fun isForMainFrame(): Boolean = true
+                    override fun isRedirect(): Boolean = false
+                    override fun hasGesture(): Boolean = true
+                    override fun getMethod(): String = "GET"
+                    override fun getRequestHeaders(): MutableMap<String, String> = mutableMapOf()
+                })
+
+                if (response != null && response.statusCode == 200) {
+                    viewModelScope.launch(Dispatchers.Default) {
+                        val string = response.data.bufferedReader().use(BufferedReader::readText)
+                        val sanitised = string.replace("<script", "<!-- ").replace("</script>", " -->")
+                        htmlStateFlow.value = sanitised
+                        withContext(Dispatchers.Main) {
+                            webView.loadDataWithBaseURL(url, sanitised,"text/html", "utf-8", null)
+                        }
+                    }
+
+                    Log.d(TAG, "Go a response $response")
+                } else {
+                    Log.d(TAG, "Got Nothing from localServer")
                 }
-
+            }
+            else -> {
+                viewModelScope.launch {
+                    withContext(Dispatchers.Default) {
+                        val string = Jsoup.connect(url).header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8").get().toString()
+                        val sanitised = string.replace("<script", "<!-- ").replace("</script>", " -->")
+                        htmlStateFlow.value = sanitised
+                        withContext(Dispatchers.Main) {
+                            webView.loadDataWithBaseURL(url, sanitised,"text/html", "utf-8", null)
+                        }
+                    }
+                }
             }
         }
     }
@@ -76,7 +122,11 @@ class NativeNavigationViewModel: ViewModel() {
 
     lateinit var baseUrl: String
 
-    private val mHtmlLiveData = MutableLiveData<String>()
-    val htmlLiveData: LiveData<String> = mHtmlLiveData
+//    private val mHtmlLiveData = MutableLiveData<String>()
+//    val htmlLiveData: LiveData<String> = mHtmlLiveData
 
+
+    companion object {
+        private const val TAG = "ViewModel"
+    }
 }

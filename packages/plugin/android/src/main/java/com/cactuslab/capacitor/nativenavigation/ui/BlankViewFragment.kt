@@ -1,58 +1,40 @@
 package com.cactuslab.capacitor.nativenavigation.ui
 
 import android.annotation.SuppressLint
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Color
 import android.graphics.Typeface
-import android.graphics.drawable.Drawable
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.text.Html
-import android.text.Spannable
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.AbsoluteSizeSpan
 import android.text.style.ForegroundColorSpan
-import android.text.style.TypefaceSpan
 import android.util.Base64
 import android.util.Log
 import android.view.*
 import android.webkit.WebResourceRequest
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.toColorInt
-import androidx.core.text.buildSpannedString
 import androidx.core.text.toSpannable
 import androidx.core.view.MenuProvider
 import androidx.core.view.WindowCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import coil.imageLoader
 import coil.request.ImageRequest
 import com.cactuslab.capacitor.nativenavigation.NativeNavigationViewModel
 import com.cactuslab.capacitor.nativenavigation.databinding.FragmentBlankBinding
-import com.cactuslab.capacitor.nativenavigation.databinding.FragmentScreenBinding
 import com.cactuslab.capacitor.nativenavigation.helpers.CustomTypefaceSpan
 import com.cactuslab.capacitor.nativenavigation.helpers.FontManager
 import com.cactuslab.capacitor.nativenavigation.helpers.isColorDark
 import com.cactuslab.capacitor.nativenavigation.helpers.spToPx
 import com.cactuslab.capacitor.nativenavigation.types.ComponentOptions
 import com.cactuslab.capacitor.nativenavigation.types.ComponentType
+import com.getcapacitor.JSObject
 import com.google.android.material.appbar.AppBarLayout
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import java.io.BufferedInputStream
-import java.io.BufferedReader
 import java.io.ByteArrayOutputStream
-import java.net.URI
-import kotlin.math.sign
 
 class BlankViewFragment : Fragment() {
     private var binding: FragmentBlankBinding? = null
@@ -116,6 +98,7 @@ class BlankViewFragment : Fragment() {
             webview.layoutParams = layoutParams
 
             binding.root.addView(webview, 0)
+
         }
 
         viewModel.signalForId(optionsId).observe(viewLifecycleOwner) { signal ->
@@ -238,8 +221,13 @@ class BlankViewFragment : Fragment() {
                         val menuItem = menu.add(0, item.id.hashCode(), 0, spanString)
 
                         item.image?.let { path ->
-
-                            if (path.startsWith("data:")) {
+                            var url = path
+                            if (path.startsWith("{")) {
+                                /** This is a JSON object, let's convert and see what we find */
+                                val json = JSObject(path)
+                                url = json.getString("uri") ?: return@let
+                            }
+                            if (url.startsWith("data:")) {
                                 val decodedBytes = Base64.decode(path.substringAfter("base64,"),Base64.DEFAULT)
                                 val bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
 
@@ -257,7 +245,7 @@ class BlankViewFragment : Fragment() {
 
                             } else {
                                 val uri = Uri.parse(viewModel.baseUrl).buildUpon()
-                                    .path(path)
+                                    .path(url)
                                     .build()
                                 val plugin = viewModel.nativeNavigation?.plugin
                                 when (uri.host) {

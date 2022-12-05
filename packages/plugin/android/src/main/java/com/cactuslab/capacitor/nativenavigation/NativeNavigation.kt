@@ -30,9 +30,11 @@ import com.cactuslab.capacitor.nativenavigation.ui.BlankViewFragment
 import com.cactuslab.capacitor.nativenavigation.ui.HostFragment
 import com.cactuslab.capacitor.nativenavigation.ui.ModalBottomSheet
 import com.cactuslab.capacitor.nativenavigation.ui.NavigationViewFragment
+import com.getcapacitor.BridgeWebChromeClient
 import com.getcapacitor.BridgeWebViewClient
 import com.getcapacitor.JSObject
 import com.getcapacitor.PluginCall
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.*
@@ -184,12 +186,18 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
             components.get(target)
         }
 
-        val result = GetResult(component = viewSpec)
+        val result = GetResult(component = rootSpec)
         rootSpec?.let {
             when (it) {
-                is StackSpec -> result.stack = it
-                is TabsSpec -> result.tabs = it
-                is ViewSpec -> result.view = it
+                is StackSpec -> {
+                    val componentSpecs =
+                        navContext.virtualStack.mapNotNull { componentSpecForId(it) }
+                    result.stack = StackSpec(id = rootSpec.id, options = rootSpec.options, stack = componentSpecs as List<ViewSpec>)
+                }
+                is TabsSpec -> TODO("Tabs Not implemented yet")
+                is ViewSpec -> {
+                    result.view = viewSpec as ViewSpec
+                }
             }
         }
 

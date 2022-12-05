@@ -159,7 +159,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
             try {
                 navContexts.last()
             } catch (e: kotlin.NoSuchElementException) {
-                call.reject("No such stack to push on to", e)
+                call.reject("No content has been presented", e)
                 return
             }
         } else {

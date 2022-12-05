@@ -520,7 +520,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                         call.resolve(result.toJSObject())
                     }
                     PushMode.REPLACE -> {
-                        val currentId = if (target == navContext.contextId) {
+                        val currentId = if (target.isNullOrBlank()) {
                             navContext.virtualStack.lastOrNull()
                         } else {
                             target

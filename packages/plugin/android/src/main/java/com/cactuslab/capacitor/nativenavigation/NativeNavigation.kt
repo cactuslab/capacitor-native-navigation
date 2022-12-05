@@ -651,9 +651,14 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
             message.sendToTarget()
         }
 
+        val url = view.url!!
+        plugin.activity.lifecycleScope.launch(Dispatchers.Default) {
+//            delay(1)
+            launch(Dispatchers.Main) {
+                viewModel.setHtml(url, webView, plugin)
+            }
 
-
-        viewModel.setHtml(view.url!!, webView, plugin)
+        }
         return true
     }
 

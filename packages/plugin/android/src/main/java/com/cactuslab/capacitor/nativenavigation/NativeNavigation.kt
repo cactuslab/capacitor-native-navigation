@@ -1,50 +1,29 @@
 package com.cactuslab.capacitor.nativenavigation
 
 import android.annotation.SuppressLint
-import android.content.Context
-import android.os.Bundle
+import android.net.Uri
 import android.os.Message
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.webkit.WebResourceRequest
 import android.webkit.WebView
-import android.webkit.WebViewClient
-import android.widget.LinearLayout
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
-import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.*
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.fragment
-import androidx.navigation.ui.AppBarConfiguration
 import com.cactuslab.capacitor.nativenavigation.databinding.ActivityNavigationBinding
 import com.cactuslab.capacitor.nativenavigation.types.*
 import com.cactuslab.capacitor.nativenavigation.ui.BlankViewFragment
 import com.cactuslab.capacitor.nativenavigation.ui.HostFragment
-import com.cactuslab.capacitor.nativenavigation.ui.ModalBottomSheet
-import com.cactuslab.capacitor.nativenavigation.ui.NavigationViewFragment
-import com.getcapacitor.BridgeWebChromeClient
 import com.getcapacitor.BridgeWebViewClient
-import com.getcapacitor.JSObject
 import com.getcapacitor.PluginCall
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.*
-import kotlin.NoSuchElementException
-import kotlin.collections.MutableMap
-import kotlin.collections.forEach
-import kotlin.collections.last
-import kotlin.collections.mutableMapOf
 import kotlin.collections.set
-
 
 
 class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: NativeNavigationViewModel) {
@@ -153,6 +132,35 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
             }
         }
         return null
+    }
+
+    fun shouldOverrideLoad(url: Uri?): Boolean {
+        if (url == null) {
+            return false
+        }
+
+        if (url.pathSegments.size != 1) {
+            return false
+        }
+        val identifier = url.lastPathSegment
+        if (identifier.isNullOrBlank()) {
+            return false
+        }
+
+        val spec = componentSpecForId(identifier)
+        if (spec != null) {
+
+            val webView = webviewsCache.remove(identifier)!!
+
+            plugin.activity.lifecycleScope.launch(Dispatchers.Main) {
+                Log.d(TAG, "Setting HTML on Webivew for component ${identifier}")
+                viewModel.setHtml(url.toString(), webView, plugin)
+            }
+
+            return true
+        }
+
+        return false
     }
 
     fun getOptions(options: GetOptions, call: PluginCall) {
@@ -293,6 +301,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         settings.javaScriptCanOpenWindowsAutomatically = true
 
         webView.webViewClient = BridgeWebViewClient(plugin.bridge)
+//        webView.webChromeClient = NavigationChromeClient(BridgeWebChromeClient(plugin.bridge), this)
 
         id?.let {
             webviewsCache.put(id, webView)
@@ -636,13 +645,14 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
     }
 
 
+
     fun windowOpen(view: WebView?, isDialog: Boolean, isUserGesture: Boolean, resultMsg: Message?): Boolean {
 
         val component = nextWindowAction.poll() ?: return false
 
         Log.d(TAG, "windowOpen with url ${view!!.url!!}")
 
-        val webView = webviewsCache.remove(component.id)!!
+        val webView = webviewsCache.get(component.id)!!
 
         resultMsg?.let { message ->
             val webViewTransport = message.obj!! as WebView.WebViewTransport
@@ -651,14 +661,6 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
             message.sendToTarget()
         }
 
-        val url = view.url!!
-        plugin.activity.lifecycleScope.launch(Dispatchers.Default) {
-//            delay(1)
-            launch(Dispatchers.Main) {
-                viewModel.setHtml(url, webView, plugin)
-            }
-
-        }
         return true
     }
 

@@ -1,5 +1,6 @@
 package com.cactuslab.capacitor.nativenavigation
 
+import android.net.Uri
 import android.util.Log
 import android.webkit.WebChromeClient
 import androidx.lifecycle.ViewModelProvider
@@ -15,9 +16,21 @@ class NativeNavigationPlugin : Plugin() {
     private lateinit var implementation: NativeNavigation
     private lateinit var model: NativeNavigationViewModel
 
+    private var isLoaded = false
+
     override fun load() {
         model = ViewModelProvider(activity)[NativeNavigationViewModel::class.java]
         implementation = NativeNavigation(this, model)
+        isLoaded = true
+    }
+
+    override fun shouldOverrideLoad(url: Uri?): Boolean {
+        if (!isLoaded) {
+            return false
+        }
+        val result = implementation.shouldOverrideLoad(url)
+        Log.d(TAG, "ShouldOverrideLoad of url $url returning $result")
+        return result
     }
 
     @PluginMethod

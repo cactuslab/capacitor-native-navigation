@@ -499,7 +499,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
             ComponentType.STACK -> {
                 val stackId = navContext.contextId
 
-                Log.d(TAG, "Asked to push: ${component.id} for createOptions: $component")
+                Log.d(TAG, "Asked to push: ${component.id} into STACK for createOptions: $component")
 
                 when(options.mode) {
                     PushMode.PUSH -> {
@@ -530,7 +530,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                         call.resolve(result.toJSObject())
                     }
                     PushMode.REPLACE -> {
-                        val currentId = if (target.isNullOrBlank()) {
+                        val currentId = if (target.isNullOrBlank() || target == navContext.contextId) { //
                             navContext.virtualStack.lastOrNull()
                         } else {
                             target
@@ -639,12 +639,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 //                call.resolve(result.toJSObject())
             }
         }
-
-
-
     }
-
-
 
     fun windowOpen(view: WebView?, isDialog: Boolean, isUserGesture: Boolean, resultMsg: Message?): Boolean {
 

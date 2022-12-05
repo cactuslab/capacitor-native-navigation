@@ -30,6 +30,7 @@ import com.cactuslab.capacitor.nativenavigation.ui.BlankViewFragment
 import com.cactuslab.capacitor.nativenavigation.ui.HostFragment
 import com.cactuslab.capacitor.nativenavigation.ui.ModalBottomSheet
 import com.cactuslab.capacitor.nativenavigation.ui.NavigationViewFragment
+import com.getcapacitor.BridgeWebViewClient
 import com.getcapacitor.JSObject
 import com.getcapacitor.PluginCall
 import kotlinx.coroutines.delay
@@ -283,15 +284,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         settings.databaseEnabled = true
         settings.javaScriptCanOpenWindowsAutomatically = true
 
-        webView.webViewClient = object : WebViewClient() {
-            override fun shouldOverrideUrlLoading(
-                view: WebView?,
-                request: WebResourceRequest?
-            ): Boolean {
-                Log.d("CustomWebView", "Web view loading request ${request?.url} MainFrame:${request?.isForMainFrame}")
-                return true
-            }
-        }
+        webView.webViewClient = BridgeWebViewClient(plugin.bridge)
 
         id?.let {
             webviewsCache.put(id, webView)

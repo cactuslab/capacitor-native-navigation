@@ -503,8 +503,14 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
                 when(options.mode) {
                     PushMode.PUSH -> {
-
                         insertComponent(component)
+
+                        var lastRemovedId: String? = null
+                        if (options.popCount > 0) {
+                            for (i in 1..options.popCount) {
+                                lastRemovedId = navContext.virtualStack.removeLast()
+                            }
+                        }
 
                         navContext.virtualStack.add(component.id)
                         val webView = makeWebView(component.id)
@@ -521,6 +527,12 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                                         popExit = R.anim.slide_out_right
                                     }
                                 }
+                                if (lastRemovedId != null) {
+                                    popUpTo("${stackId}/${lastRemovedId}") {
+                                        inclusive = true
+                                        saveState = false
+                                    }
+                                }
                             }
                         }
 
@@ -530,6 +542,18 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                         call.resolve(result.toJSObject())
                     }
                     PushMode.REPLACE -> {
+
+                        var lastRemovedId: String? = null
+
+                        var backStackEntry: NavBackStackEntry? = null
+                        if (options.popCount > 0) {
+                            for (i in 1..options.popCount) {
+                                lastRemovedId = navContext.virtualStack.removeLast()
+                            }
+                            val navController = navContext.fragment.binding?.navigationHost?.findNavController()
+                            backStackEntry = navController!!.backQueue[navController.backQueue.size - options.popCount]
+                        }
+
                         val currentId = if (target.isNullOrBlank() || target == navContext.contextId) { //
                             navContext.virtualStack.lastOrNull()
                         } else {
@@ -541,8 +565,14 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                             call.reject("There is no current view to replace on this stack \"$stackId\"")
                             return
                         }
+
                         component.id = currentId
                         insertComponent(component)
+
+                        if (backStackEntry != null) {
+                            val navController = navContext.fragment.binding?.navigationHost?.findNavController()
+                            navController!!.popBackStack(backStackEntry.destination.id, inclusive = true, saveState = false)
+                        }
 
                         notifyUpdateView(currentId)
                         val result = PushResult(currentId, stackId)

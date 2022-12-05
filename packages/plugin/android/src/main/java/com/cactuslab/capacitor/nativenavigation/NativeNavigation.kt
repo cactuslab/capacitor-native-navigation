@@ -194,7 +194,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
             components.get(target)
         }
 
-        val result = GetResult(component = rootSpec)
+        val result = GetResult(component = viewSpec)
         rootSpec?.let {
             when (it) {
                 is StackSpec -> {

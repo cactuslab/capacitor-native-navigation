@@ -172,7 +172,16 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         }
 
         val rootSpec = components.get(navContext.contextId)
-        val viewSpec = components.get(target)
+        val viewSpec = if (target.isNullOrBlank()) {
+            try {
+                components.get(navContext.virtualStack.last())
+            } catch (e: kotlin.NoSuchElementException) {
+                call.reject("No viewspec in the current component", e)
+                return
+            }
+        } else {
+            components.get(target)
+        }
 
         val result = GetResult(component = viewSpec)
         rootSpec?.let {

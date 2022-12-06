@@ -28,7 +28,7 @@ export async function initViewHandler(options: Options): Promise<void> {
 	await plugin.addListener(NativeNavigationEvents.CreateView, async function(data: CreateViewEventData) {
 		const { id } = data
 
-		const view = window.open(id)
+		const view = window.open(`/capacitor-native-navigation/${id}`)
 		if (view) {
 			attemptLoad(view, data)
 		}

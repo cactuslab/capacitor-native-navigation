@@ -30,6 +30,18 @@ class NativeNavigationPlugin : Plugin() {
         }
         val result = implementation.shouldOverrideLoad(url)
         Log.d(TAG, "ShouldOverrideLoad of url $url returning $result")
+
+        if (!result) {
+            Log.d(TAG, "Resetting Navigation because this load is something we couldn't handle")
+            /**
+             * Whenever there is navigation or a page load in Capacitor's webview we must reset the UI that this plugin has created
+             * otherwise whatever happens in Capacitor's webview will not be visible as our UI will cover it.
+             */
+            activity.runOnUiThread {
+                cleanUp()
+            }
+        }
+
         return result
     }
 
@@ -135,14 +147,19 @@ class NativeNavigationPlugin : Plugin() {
         BridgeWebChromeClient(bridge)
     }
 
+
+    private fun cleanUp() {
+        val client = capacitorChromeClient()
+        bridge.webView.webChromeClient = client
+
+        implementation.reset()
+    }
+
     @PluginMethod
     fun reset(call: PluginCall) {
         // This is a tear down method. Reset the UI to the capacitor state.
         activity.runOnUiThread {
-            val client = capacitorChromeClient()
-            bridge.webView.webChromeClient = client
-
-            implementation.reset()
+            cleanUp()
             call.resolve()
         }
     }

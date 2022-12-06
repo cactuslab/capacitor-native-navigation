@@ -41,7 +41,7 @@ public class NativeNavigationPlugin: CAPPlugin {
                     let result = try await implementation.present(options)
                     call.resolve(result.toPluginResult())
                 } catch {
-                    call.reject("Failed to present: \(error)")
+                    call.reject("Failed to present: \(error.localizedDescription)")
                 }
             }
         } catch {
@@ -58,7 +58,7 @@ public class NativeNavigationPlugin: CAPPlugin {
                     let result = try await implementation.dismiss(options)
                     call.resolve(result.toPluginResult())
                 } catch {
-                    call.reject("Failed to dismiss: \(error)")
+                    call.reject("Failed to dismiss: \(error.localizedDescription)")
                 }
             }
         } catch {
@@ -75,7 +75,7 @@ public class NativeNavigationPlugin: CAPPlugin {
                     let result = try await implementation.push(options)
                     call.resolve(result.toPluginResult())
                 } catch {
-                    call.reject("Failed to push: \(error)")
+                    call.reject("Failed to push: \(error.localizedDescription)")
                 }
             }
         } catch {
@@ -92,7 +92,7 @@ public class NativeNavigationPlugin: CAPPlugin {
                     let result = try await implementation.pop(options)
                     call.resolve(result.toPluginResult())
                 } catch {
-                    call.reject("Failed to pop: \(error)")
+                    call.reject("Failed to pop: \(error.localizedDescription)")
                 }
             }
         } catch {
@@ -108,7 +108,7 @@ public class NativeNavigationPlugin: CAPPlugin {
                     try await implementation.setOptions(options)
                     call.resolve()
                 } catch {
-                    call.reject("Failed to set options: \(error)")
+                    call.reject("Failed to set options: \(error.localizedDescription)")
                 }
             }
         } catch {
@@ -125,7 +125,7 @@ public class NativeNavigationPlugin: CAPPlugin {
                     try await implementation.reset(options)
                     call.resolve()
                 } catch {
-                    call.reject("Failed to reset: \(error)")
+                    call.reject("Failed to reset: \(error.localizedDescription)")
                 }
             }
         } catch {
@@ -141,7 +141,7 @@ public class NativeNavigationPlugin: CAPPlugin {
                     let result = try await implementation.get(options)
                     call.resolve(result.toPluginResult())
                 } catch {
-                    call.reject("Failed to get: \(error)")
+                    call.reject("Failed to get: \(error.localizedDescription)")
                 }
             }
         } catch {
@@ -158,7 +158,7 @@ public class NativeNavigationPlugin: CAPPlugin {
                     try await implementation.viewReady(options)
                     call.resolve()
                 } catch {
-                    call.reject("Failed to handle view ready: \(error)")
+                    call.reject("Failed to handle view ready: \(error.localizedDescription)")
                 }
             }
         } catch {

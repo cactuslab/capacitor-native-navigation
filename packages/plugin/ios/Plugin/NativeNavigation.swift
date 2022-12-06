@@ -171,7 +171,7 @@ class NativeNavigation: NSObject {
             afterReady()
             return PushResult(id: vc.componentId!)
         } else {
-            throw NativeNavigatorError.illegalState(message: "Cannot push to component: \(container.componentId ?? "no id")")
+            throw NativeNavigatorError.illegalState(message: "Cannot push to component: \(container.componentId ?? "no id (\(container)")")
         }
     }
 
@@ -403,8 +403,10 @@ class NativeNavigation: NSObject {
                 if let selected = tabs.selectedViewController {
                     return selected
                 }
+            } else if let view = root as? NativeNavigationViewController {
+                return view
             } else {
-                return root
+                throw NativeNavigatorError.illegalState(message: "No native navigation root presented")
             }
         }
         

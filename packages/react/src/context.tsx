@@ -37,14 +37,14 @@ export function createReactContext(options: ContextInit): CapacitorNativeNavigat
 			plugin.addListener(`click:${id}`, func).then(result => {
 				handle = result
 			}).catch(reason => {
-				console.warn(`Failed to add listener for ${id}: ${reason}`)
+				console.warn(`NativeNavigation: Failed to add click listener for ${id}, this may cause some navigation buttons to fail: ${reason}`)
 			})
 
 			return function() {
 				if (handle) {
 					handle.remove()
 				} else {
-					console.warn(`Failed to remove listener for ${id}. This may cause a memory leak.`)
+					console.warn(`NativeNavigation: Failed to remove listener for ${id}. This may cause a memory leak.`)
 				}
 			}
 		},

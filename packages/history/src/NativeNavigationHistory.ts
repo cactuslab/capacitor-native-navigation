@@ -1,11 +1,29 @@
 import { NativeNavigation } from '@cactuslab/native-navigation'
-import type { ViewSpec, ViewState } from '@cactuslab/native-navigation'
+import type { GetResult, ViewSpec, ViewState } from '@cactuslab/native-navigation'
 import type { Action, History, Location, LocationDescriptor, LocationDescriptorObject, UnregisterCallback } from 'history'
 
 import { defaultDecider } from './NavigationDecider'
 import type { DefaultNavigationDeciderOptions, NavigationDecision } from './NavigationDecider'
 import type { NavigationState } from './types'
 import { toLocationDescriptorObject } from './utils'
+
+interface NativeNavigationHistoryOptions extends DefaultNavigationDeciderOptions {
+
+	/**
+	 * An optional error handler to receive unexpected errors from the NativeNavigation plugin
+	 * @param source the source of the error
+	 * @param error an Error or a stringable message
+	 */
+	errorHandler?: (source: string, error: unknown) => boolean
+
+}
+
+/**
+ * An error handler implementation that presents an alert with details of the error.
+ */
+export function alertErrorHandler(source: string, error: unknown): void {
+	alert(`Navigation failed (${source}): ${error instanceof Error ? error.message : error}`)
+}
 
 /**
  * A History implementation that translates navigation requests to Native Navigation API requests.
@@ -14,10 +32,10 @@ import { toLocationDescriptorObject } from './utils'
  */
 export class NativeNavigationHistory implements History {
 
-	private navigationDeciderOptions: DefaultNavigationDeciderOptions
+	private options: NativeNavigationHistoryOptions
 
-	public constructor(options: DefaultNavigationDeciderOptions) {
-		this.navigationDeciderOptions = options
+	public constructor(options: NativeNavigationHistoryOptions) {
+		this.options = options
 		
 		/* Bind all member functions so callers can pass our member functions as bare functions */
 		const proto = Object.getPrototypeOf(this)
@@ -48,36 +66,42 @@ export class NativeNavigationHistory implements History {
 
 	public push(location: LocationDescriptor<unknown>, state?: unknown): void {
 		location = toLocationDescriptorObject(location, state)
-		// console.log('NativeNavigationHistory push', location)
 
 		this.pushOrReplace(location, 'push').catch(function(reason) {
-			console.error('NativeNavigationHistory failed to push', reason)
+			console.error('NativeNavigationHistory: failed to push', reason)
 		})
 	}
 
 	public replace(location: LocationDescriptor<unknown>, state?: unknown): void {
 		location = toLocationDescriptorObject(location, state)
-		// console.log('NativeNavigationHistory replace', location)
 		
 		this.pushOrReplace(location, 'replace').catch(function(reason) {
-			console.error('NativeNavigationHistory failed to replace', reason)
+			console.error('NativeNavigationHistory: failed to replace', reason)
 		})
 	}
 
 	public go(n: number): void {
 		if (n < 0) {
-			// console.log('NativeNavigationHistory go', n)
-			NativeNavigation.pop({
-				count: -n,
-			})
+			try {
+				NativeNavigation.pop({
+					count: -n,
+				})
+			} catch (error) {
+				this.reportError('pop', error)
+				throw error
+			}
 		} else if (n > 0) {
 			throw new Error('NativeNavigationHistory.go forward not implemented')
 		}
 	}
 
 	public goBack(): void {
-		// console.log('NativeNavigationHistory goBack')
-		NativeNavigation.pop({})
+		try {
+			NativeNavigation.pop({})
+		} catch (error) {
+			this.reportError('pop', error)
+			throw error
+		}
 	}
 
 	public goForward(): void {
@@ -113,10 +137,17 @@ export class NativeNavigationHistory implements History {
 			throw new Error(`Invalid relative pathname for ${action}: ${location.pathname || '<undefined>'}`)
 		}
 
-		const current = await NativeNavigation.get() // TODO we need to get the current containing stack
+		let current: GetResult
+		try {
+			current = await NativeNavigation.get()
+		} catch (error) {
+			this.reportError('get', error)
+			throw error
+		}
+
 		let decision: NavigationDecision
 		if (current.stack) {
-			decision = defaultDecider(location, action, current.stack ? current.stack.stack.map(s => toLocationDescriptorObject(s.path, s.state)) : [], this.navigationDeciderOptions)
+			decision = defaultDecider(location, action, current.stack ? current.stack.stack.map(s => toLocationDescriptorObject(s.path, s.state)) : [], this.options)
 		} else {
 			decision = {
 				action,
@@ -132,26 +163,51 @@ export class NativeNavigationHistory implements History {
 		}
 		
 		if (navigationState.root || decision.action === 'root') {
-			await NativeNavigation.push({
-				component,
-				mode: 'root',
-				animated: false,
-			})
+			try {
+				await NativeNavigation.push({
+					component,
+					mode: 'root',
+					animated: false,
+				})
+			} catch (error) {
+				this.reportError('root push', error)
+				throw error
+			}
 		} else if (decision.action === 'push') {
-			await NativeNavigation.push({
-				component,
-				popCount: decision.popCount,
-			})
+			try {
+				await NativeNavigation.push({
+					component,
+					popCount: decision.popCount,
+				})
+			} catch (error) {
+				this.reportError('push', error)
+				throw error
+			}
 		} else if (decision.action === 'replace') {
-			await NativeNavigation.push({
-				component,
-				mode: 'replace',
-				animated: false,
-				popCount: decision.popCount,
-			})
+			try {
+				await NativeNavigation.push({
+					component,
+					mode: 'replace',
+					animated: false,
+					popCount: decision.popCount,
+				})
+			} catch (error) {
+				this.reportError('replace', error)
+				throw error
+			}
 		} else {
 			throw new Error(`Unsupported navigation action: ${decision.action}`)
 		}
+	}
+
+	private reportError(source: string, error: unknown) {
+		if (error instanceof Error) {
+			console.error(`NativeNavigation Navigator: ${source}`, error)
+		} else {
+			console.warn(`NativeNavigation Navigator (${source}): ${error}`)
+		}
+
+		this.options.errorHandler?.(source, error)
 	}
 
 }

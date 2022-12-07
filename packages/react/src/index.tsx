@@ -20,6 +20,18 @@ interface Options {
 	 * The element id to use for the root in new windows.
 	 */
 	viewRootId?: string
+
+	/**
+	 * An optional error handler to receive unexpected errors from the NativeNavigation plugin
+	 */
+	errorHandler?: (source: string, error: unknown) => void
+}
+
+/**
+ * An error handler implementation that presents an alert with details of the error.
+ */
+export function alertErrorHandler(source: string, error: unknown): void {
+	alert(`Native navigation integration failed (${source}): ${error instanceof Error ? error.message : error}`)
 }
 
 export async function initReact(options: Options): Promise<void> {
@@ -41,6 +53,16 @@ export async function initReact(options: Options): Promise<void> {
 		}
 	})
 
+	function reportError(source: string, error: unknown) {
+		if (error instanceof Error) {
+			console.error(`NativeNavigation React: ${source}`, error)
+		} else {
+			console.warn(`NativeNavigation React (${source}): ${error}`)
+		}
+
+		options.errorHandler?.(source, error)
+	}
+
 	function createView(viewWindow: Window, data: CreateViewEventData) {
 		const { path, id } = data
 	
@@ -54,7 +76,7 @@ export async function initReact(options: Options): Promise<void> {
 
 			render(viewWindow, reactRoot, toNativeNavigationReactRootProps(data))
 		} else {
-			console.warn(`Attempted to load view "${path}" but could not find root node: #${viewRootId}`)
+			reportError('createView', `Attempted to load view "${path}" but could not find root node: #${viewRootId}`)
 		}
 	}
 
@@ -63,7 +85,7 @@ export async function initReact(options: Options): Promise<void> {
 
 		const reactRoot = reactRoots[id]
 		if (!reactRoot) {
-			console.warn(`Attempted to update a React root that doesn't exist: ${id}`)
+			reportError('updateView', `Attempted to update a React root that doesn't exist: ${id}`)
 			return
 		}
 
@@ -89,9 +111,13 @@ export async function initReact(options: Options): Promise<void> {
 
 		/* Wait a moment to allow the webview to render the DOM... it would be nice to find a signal we could use instead of just waiting */
 		setTimeout(function() {
-			internalPlugin.viewReady({
-				id,
-			})
+			try {
+				internalPlugin.viewReady({
+					id,
+				})
+			} catch (error) {
+				reportError('viewReady', error)
+			}
 		}, 20)
 	}
 

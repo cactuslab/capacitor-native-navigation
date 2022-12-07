@@ -13,7 +13,7 @@ class NativeNavigationWebViewDelegate : NSObject, WKUIDelegate {
     }
 
     func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
-        guard let path = navigationAction.request.url?.path else { // TODO better recognition of our things
+        guard let path = navigationAction.request.url?.path, path.starts(with: "/capacitor-native-navigation/") else {
             return self.wrapped?.webView?(webView, createWebViewWith: configuration, for: navigationAction, windowFeatures: windowFeatures)
         }
         
@@ -22,7 +22,7 @@ class NativeNavigationWebViewDelegate : NSObject, WKUIDelegate {
         do {
             return try implementation.webView(forComponent: String(viewId), configuration: configuration)
         } catch {
-            CAPLog.print("🤬 Cannot open new webview: \(error)")
+            CAPLog.print("🤖 Cannot open new webview: \(error)")
             return nil
         }
     }

@@ -139,9 +139,13 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
             return false
         }
 
-        if (url.pathSegments.size != 1) {
+        if (url.pathSegments.size == 0) {
             return false
         }
+        if (url.pathSegments.get(0) != "capacitor-native-navigation") {
+            return false
+        }
+
         val identifier = url.lastPathSegment
         if (identifier.isNullOrBlank()) {
             return false

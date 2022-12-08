@@ -12,30 +12,6 @@ public class NativeNavigationPlugin: CAPPlugin {
     @objc override public func load() {
         self.implementation = NativeNavigation(bridge: self.bridge!, plugin: self)
     }
-    
-    @objc override public func shouldOverrideLoad(_ navigationAction: WKNavigationAction) -> NSNumber? {
-        if navigationAction.targetFrame?.isMainFrame ?? false {
-            /* Whenever there is navigation or a page load in Capacitor's webview we must reset the UI that this plugin has created
-             otherwise whatever happens in Capacitor's webview will not be visible as our UI will cover it.
-             
-             We ignore non-mainframe loads
-             */
-            CAPLog.print("🤖 NativeNavigation: resetting plugin for navigation to \(navigationAction)")
-            
-            Task {
-                do {
-                    /* Remove all listeners */
-                    self.eventListeners?.removeAllObjects()
-                    
-                    /* Reset the UI */
-                    try await implementation.reset(ResetOptions(animated: false))
-                } catch {
-                    CAPLog.print("🤖 NativeNavigation: failed to reset plugin on page load: \(error.localizedDescription)")
-                }
-            }
-        }
-        return nil
-    }
 
     @objc func present(_ call: CAPPluginCall) {
         do {

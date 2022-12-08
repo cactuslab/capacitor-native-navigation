@@ -41,8 +41,9 @@ class NativeNavigation: NSObject {
         super.init()
         
         if let webView = self.bridge.webView {
-            self.webViewDelegate = NativeNavigationWebViewDelegate(wrapped: webView.uiDelegate, implementation: self)
+            self.webViewDelegate = NativeNavigationWebViewDelegate(mainWebView: webView, implementation: self)
             webView.uiDelegate = self.webViewDelegate
+            webView.navigationDelegate = self.webViewDelegate
 
             /* Allow window.open to be used without a click event */
             webView.configuration.preferences.javaScriptCanOpenWindowsAutomatically = true
@@ -331,6 +332,8 @@ class NativeNavigation: NSObject {
         }
 
         let newWebView = WKWebView(frame: .zero, configuration: configuration)
+        newWebView.uiDelegate = self.webViewDelegate
+        newWebView.navigationDelegate = self.webViewDelegate
         _ = newWebView.loadHTMLString(html, baseURL: webView.url!)
         viewController.webView = newWebView
         

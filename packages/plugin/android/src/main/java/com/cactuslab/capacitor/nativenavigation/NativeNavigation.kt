@@ -134,16 +134,16 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         return null
     }
 
-    fun shouldOverrideLoad(url: Uri?): Boolean {
+    fun shouldOverrideLoad(url: Uri?): Boolean? {
         if (url == null) {
-            return false
+            return null
         }
 
         if (url.pathSegments.size == 0) {
-            return false
+            return null
         }
         if (url.pathSegments.get(0) != "capacitor-native-navigation") {
-            return false
+            return null
         }
 
         val identifier = url.lastPathSegment

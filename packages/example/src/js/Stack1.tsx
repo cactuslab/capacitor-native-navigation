@@ -49,10 +49,6 @@ export default function Stack1(): JSX.Element {
 		})
 	}, [])
 
-	const handleChangeLocation = useCallback(function(evt: React.MouseEvent) {
-		window.location = 'https://cactuslab.com'
-	}, [])
-
 	useEffect(function() {
 		setOptions({
 			stack: {
@@ -84,11 +80,6 @@ export default function Stack1(): JSX.Element {
 			<p><Link to="/stack2">Push New</Link> <Link to="/stack1">Push Same</Link> <Link to="/state" state={{fromLink: true}}>Push With State</Link></p>
 			
 			<p><button onClick={() => navigate(-1)}>Go Back</button></p>
-			<p><a href="mailto:test@example.com">Send email</a></p>
-			<p><a href="tel:1">Phone a friend</a></p>
-			<p><a href="https://www.google.com">Open google</a></p>
-			<p><a href="https://cactuslab.com">Open cactuslab</a></p>
-			<p><button onClick={handleChangeLocation}>Change Location</button></p>
 		</div>
 	)
 }

@@ -12,6 +12,7 @@ const config: CapacitorConfig = {
 	server: {
 		/* Set the CAP_SERVER environment variable when running cap copy or cap sync; see the cap:local npm script */
 		url: process.env.CAP_SERVER || undefined,
+		allowNavigation: ["cactuslab.com"]
 	},
 	plugins: {
 		SplashScreen: {

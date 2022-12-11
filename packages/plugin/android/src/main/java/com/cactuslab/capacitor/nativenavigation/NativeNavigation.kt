@@ -20,7 +20,6 @@ import com.cactuslab.capacitor.nativenavigation.ui.HostFragment
 import com.getcapacitor.BridgeWebViewClient
 import com.getcapacitor.PluginCall
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.*
 import kotlin.collections.set

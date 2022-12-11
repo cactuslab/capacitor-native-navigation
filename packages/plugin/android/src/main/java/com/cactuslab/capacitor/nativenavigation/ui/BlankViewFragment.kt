@@ -2,6 +2,7 @@ package com.cactuslab.capacitor.nativenavigation.ui
 
 import android.annotation.SuppressLint
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.graphics.Typeface
 import android.net.Uri
 import android.os.Bundle
@@ -13,8 +14,8 @@ import android.util.Base64
 import android.util.Log
 import android.view.*
 import android.webkit.WebResourceRequest
+import android.webkit.WebView
 import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.core.graphics.toColorInt
 import androidx.core.text.toSpannable
 import androidx.core.view.MenuProvider
 import androidx.core.view.WindowCompat
@@ -26,10 +27,7 @@ import coil.imageLoader
 import coil.request.ImageRequest
 import com.cactuslab.capacitor.nativenavigation.NativeNavigationViewModel
 import com.cactuslab.capacitor.nativenavigation.databinding.FragmentBlankBinding
-import com.cactuslab.capacitor.nativenavigation.helpers.CustomTypefaceSpan
-import com.cactuslab.capacitor.nativenavigation.helpers.FontManager
-import com.cactuslab.capacitor.nativenavigation.helpers.isColorDark
-import com.cactuslab.capacitor.nativenavigation.helpers.spToPx
+import com.cactuslab.capacitor.nativenavigation.helpers.*
 import com.cactuslab.capacitor.nativenavigation.types.ComponentOptions
 import com.cactuslab.capacitor.nativenavigation.types.ComponentType
 import com.getcapacitor.JSObject
@@ -42,6 +40,8 @@ class BlankViewFragment : Fragment() {
     private val viewModel : NativeNavigationViewModel by activityViewModels()
     private val webviewViewModel: WebviewViewModel by viewModels()
     private var componentId: String? = null
+
+    private var webView: WebView? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -98,7 +98,7 @@ class BlankViewFragment : Fragment() {
             webview.layoutParams = layoutParams
 
             binding.root.addView(webview, 0)
-
+            this.webView = webview
         }
 
         viewModel.signalForId(optionsId).observe(viewLifecycleOwner) { signal ->
@@ -120,6 +120,7 @@ class BlankViewFragment : Fragment() {
 
     private fun updateToolbar(options: ComponentOptions?) {
         val toolbar = binding?.toolbar ?: return
+        val appBarLayout = binding?.appBarLayout ?: return
         val componentId = componentId ?: return
 
         val stackOptions = viewModel.nativeNavigation?.findStackComponentIdHosting(componentId)?.let {
@@ -137,17 +138,40 @@ class BlankViewFragment : Fragment() {
 
             stackOptions?.options?.bar?.let { bar ->
                 bar.background?.color?.let { color ->
-                    val colorInt = color.toColorInt()
+                    val colorInt = color.parseRGBAColor()
 
                     toolbar.setBackgroundColor(colorInt)
                     requireActivity().window.statusBarColor = colorInt
+                    appBarLayout.setBackgroundColor(colorInt)
+
+                    val alpha = Color.alpha(colorInt)
+                    val isTransparent = alpha < 255
+
+                    if (isTransparent) {
+                        val layoutParams = CoordinatorLayout.LayoutParams(CoordinatorLayout.LayoutParams.MATCH_PARENT, CoordinatorLayout.LayoutParams.MATCH_PARENT)
+                        this.webView?.layoutParams = layoutParams
+
+                        toolbar.onMeasuredSize { width, height ->
+                            this.webView?.injectCSS("""
+                                :root { --native-navigation-inset-top: ${height.pxToDp(requireContext())}px; }
+                            """.trimIndent(), id = "cool")
+                        }
+
+                    } else {
+                        val layoutParams = CoordinatorLayout.LayoutParams(CoordinatorLayout.LayoutParams.MATCH_PARENT, CoordinatorLayout.LayoutParams.MATCH_PARENT)
+                        layoutParams.behavior = AppBarLayout.ScrollingViewBehavior()
+                        this.webView?.layoutParams = layoutParams
+                        this.webView?.injectCSS("""
+                                :root { --native-navigation-inset-top: ${0}px; }
+                            """.trimIndent(), id = "cool")
+                    }
 
                     WindowCompat.getInsetsController(requireActivity().window, requireActivity().window.decorView).isAppearanceLightStatusBars = !colorInt.isColorDark()
                 }
 
                 bar.title?.let { labelOptions ->
                     labelOptions.color?.let { color ->
-                        toolbar.setTitleTextColor(color.toColorInt())
+                        toolbar.setTitleTextColor(color.parseRGBAColor())
                     }
                     labelOptions.font?.let { fontOptions ->
                         fontOptions.name?.let { fontName ->
@@ -162,7 +186,7 @@ class BlankViewFragment : Fragment() {
 
                 bar.buttons?.let { labelOptions ->
                     labelOptions.color?.let { color ->
-                        toolbar.setNavigationIconTint(color.toColorInt())
+                        toolbar.setNavigationIconTint(color.parseRGBAColor())
                     }
                 }
             }
@@ -171,7 +195,7 @@ class BlankViewFragment : Fragment() {
 
             options?.bar?.let { bar ->
                 bar.background?.color?.let { color ->
-                    toolbar.setBackgroundColor(color.toColorInt())
+                    toolbar.setBackgroundColor(color.parseRGBAColor())
                 }
             }
 
@@ -204,8 +228,8 @@ class BlankViewFragment : Fragment() {
 
                         stackOptions?.options?.bar?.buttons?.let { labelOptions ->
                             labelOptions.color?.let { color ->
-                                tintColor = color.toColorInt()
-                                spanString.setSpan(ForegroundColorSpan(color.toColorInt()), 0, spanString.length, 0)
+                                tintColor = color.parseRGBAColor()
+                                spanString.setSpan(ForegroundColorSpan(color.parseRGBAColor()), 0, spanString.length, 0)
                             }
                             labelOptions.font?.let { fontOptions ->
                                 fontOptions.name?.let { fontName ->

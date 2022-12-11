@@ -5,5 +5,7 @@ body {
 }
 
 body {
-  padding-top: env(safe-area-inset-top, 0);
+  /* padding-top: env(safe-area-inset-top, 0);
+  */
+  padding-top: var(--native-navigation-inset-top, env(safe-area-inset-top, 0));
 }

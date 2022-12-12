@@ -199,20 +199,21 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         }
 
         val result = GetResult(component = viewSpec)
-        rootSpec?.let {
-            when (it) {
-                is StackSpec -> {
-                    val componentSpecs =
-                        navContext.virtualStack.mapNotNull { componentSpecForId(it) }
-                    result.stack = StackSpec(id = rootSpec.id, options = rootSpec.options, stack = componentSpecs as List<ViewSpec>)
-                }
-                is TabsSpec -> TODO("Tabs Not implemented yet")
-                is ViewSpec -> {
-                    result.view = viewSpec as ViewSpec
+        if (navContext.contextId != options.id) {
+            rootSpec?.let {
+                when (it) {
+                    is StackSpec -> {
+                        val componentSpecs =
+                            navContext.virtualStack.mapNotNull { componentSpecForId(it) }
+                        result.stack = StackSpec(id = rootSpec.id, options = rootSpec.options, stack = componentSpecs as List<ViewSpec>)
+                    }
+                    is TabsSpec -> TODO("Tabs Not implemented yet")
+                    is ViewSpec -> {
+                        TODO("View Not implemented as a container")
+                    }
                 }
             }
         }
-
         Log.d(TAG, "GET result: ${result.toJSObject()}")
 
         call.resolve(result.toJSObject())

@@ -10,9 +10,9 @@ importers:
 
   packages/example:
     specifiers:
-      '@cactuslab/native-navigation': ^0.0.6
-      '@cactuslab/native-navigation-react': ^0.0.7
-      '@cactuslab/native-navigation-react-router': ^0.0.6
+      '@cactuslab/native-navigation': ^0.0.7
+      '@cactuslab/native-navigation-react': ^0.0.8
+      '@cactuslab/native-navigation-react-router': ^0.0.7
       '@capacitor/android': ^4.3.0
       '@capacitor/camera': latest
       '@capacitor/cli': ^4.3.0
@@ -30,11 +30,11 @@ importers:
       '@cactuslab/native-navigation': link:../plugin
       '@cactuslab/native-navigation-react': link:../react
       '@cactuslab/native-navigation-react-router': link:../react-router
-      '@capacitor/android': 4.4.0_@capacitor+core@4.5.0
-      '@capacitor/camera': 4.1.4_@capacitor+core@4.5.0
-      '@capacitor/core': 4.5.0
-      '@capacitor/ios': 4.4.0_@capacitor+core@4.5.0
-      '@capacitor/splash-screen': 4.1.2_@capacitor+core@4.5.0
+      '@capacitor/android': 4.4.0_@capacitor+core@4.6.1
+      '@capacitor/camera': 4.1.4_@capacitor+core@4.6.1
+      '@capacitor/core': 4.6.1
+      '@capacitor/ios': 4.4.0_@capacitor+core@4.6.1
+      '@capacitor/splash-screen': 4.1.2_@capacitor+core@4.6.1
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
       react-router-dom: 6.4.3_biqbaboplfbrettd7655fr4n2y
@@ -47,7 +47,7 @@ importers:
 
   packages/history:
     specifiers:
-      '@cactuslab/native-navigation': ^0.0.6
+      '@cactuslab/native-navigation': ^0.0.7
       '@capacitor/core': ^4.0.0
       '@ionic/eslint-config': ^0.3.0
       '@ionic/prettier-config': ^1.0.1
@@ -114,7 +114,7 @@ importers:
 
   packages/react:
     specifiers:
-      '@cactuslab/native-navigation': ^0.0.6
+      '@cactuslab/native-navigation': ^0.0.7
       '@capacitor/core': ^4.0.0
       '@ionic/eslint-config': ^0.3.0
       '@ionic/prettier-config': ^1.0.1
@@ -140,7 +140,7 @@ importers:
 
   packages/react-router:
     specifiers:
-      '@cactuslab/native-navigation': ^0.0.6
+      '@cactuslab/native-navigation': ^0.0.7
       '@capacitor/core': ^4.0.0
       '@ionic/eslint-config': ^0.3.0
       '@ionic/prettier-config': ^1.0.1
@@ -168,7 +168,7 @@ importers:
 
   packages/react17:
     specifiers:
-      '@cactuslab/native-navigation': ^0.0.6
+      '@cactuslab/native-navigation': ^0.0.7
       '@capacitor/core': ^4.0.0
       '@ionic/eslint-config': ^0.3.0
       '@ionic/prettier-config': ^1.0.1
@@ -484,20 +484,20 @@ packages:
       '@capacitor/core': 4.4.0
     dev: true
 
-  /@capacitor/android/4.4.0_@capacitor+core@4.5.0:
+  /@capacitor/android/4.4.0_@capacitor+core@4.6.1:
     resolution: {integrity: sha512-vPoUcoJ1CZ5pxjceN/HVnq5FuNo+V1/kBj/NH48nAiMzBbZPEDmplguGC8Dj2qbKjhkJ+LMSL26VTfnsyHMJbA==}
     peerDependencies:
       '@capacitor/core': ^4.3.0
     dependencies:
-      '@capacitor/core': 4.5.0
+      '@capacitor/core': 4.6.1
     dev: false
 
-  /@capacitor/camera/4.1.4_@capacitor+core@4.5.0:
+  /@capacitor/camera/4.1.4_@capacitor+core@4.6.1:
     resolution: {integrity: sha512-7f4n7PlnstYsdGyxc0Kc4hIyS6csFLOjXvffm7pJsuy9pSo+kfdOPdYgGg360QwbUAmA+Yv+J1ZW1eFIwgvWrQ==}
     peerDependencies:
       '@capacitor/core': ^4.0.0
     dependencies:
-      '@capacitor/core': 4.5.0
+      '@capacitor/core': 4.6.1
     dev: false
 
   /@capacitor/cli/4.4.0:
@@ -532,8 +532,8 @@ packages:
       tslib: 2.4.1
     dev: true
 
-  /@capacitor/core/4.5.0:
-    resolution: {integrity: sha512-afx+hvQIrPcHbTdsBIryE96JlfSt1Rw8cWhb1J34v6Exje6zQZQa3fQZ6gcgkON+zkDIK8u3yRcIps0xMUdsMQ==}
+  /@capacitor/core/4.6.1:
+    resolution: {integrity: sha512-7A2IV9E8umgu9u0fChUTjQJq+Jp25GJZMmWxoQN/nVx/1rcpFJ4m1xo3NPBoIRs+aV7FR+BM17mPrnkKlA8N2g==}
     dependencies:
       tslib: 2.4.1
     dev: false
@@ -558,20 +558,20 @@ packages:
       '@capacitor/core': 4.4.0
     dev: true
 
-  /@capacitor/ios/4.4.0_@capacitor+core@4.5.0:
+  /@capacitor/ios/4.4.0_@capacitor+core@4.6.1:
     resolution: {integrity: sha512-x1i9WgaeUANBgXmCHcXoMrqZC49Ef0eu+kaRmcQ0/UkI2r31/PMGr3BVTlHRJLeBsodzwR4TiEeKRK044WX+Hw==}
     peerDependencies:
       '@capacitor/core': ^4.3.0
     dependencies:
-      '@capacitor/core': 4.5.0
+      '@capacitor/core': 4.6.1
     dev: false
 
-  /@capacitor/splash-screen/4.1.2_@capacitor+core@4.5.0:
+  /@capacitor/splash-screen/4.1.2_@capacitor+core@4.6.1:
     resolution: {integrity: sha512-uw37mfFtpXH6lBG0Lz6/ZRvbnn1XZ0lVOL7UHylvW4C/BUJRKHqPloCXNMeSBGuBkf5WdW7sdmKdGdp4J5fU9g==}
     peerDependencies:
       '@capacitor/core': ^4.0.0
     dependencies:
-      '@capacitor/core': 4.5.0
+      '@capacitor/core': 4.6.1
     dev: false
 
   /@changesets/apply-release-plan/6.1.2:

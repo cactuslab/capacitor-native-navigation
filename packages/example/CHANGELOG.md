@@ -1,5 +1,30 @@
 # capacitor-app
 
+## 1.0.7
+
+### Patch Changes
+
+- da0bb70: android: support for handling of external links
+- 304ab7a: android: Added support for transparent title bars. Introduces new variable --native-navigation-inset-top to allow the application to inject insets.
+- Updated dependencies [1056118]
+- Updated dependencies [8a817cd]
+- Updated dependencies [fa55c7a]
+- Updated dependencies [da0bb70]
+- Updated dependencies [fade427]
+- Updated dependencies [edc92bf]
+- Updated dependencies [477dbd8]
+- Updated dependencies [4f61d1c]
+- Updated dependencies [1b2463c]
+- Updated dependencies [304ab7a]
+- Updated dependencies [2cef744]
+- Updated dependencies [5959ada]
+- Updated dependencies [718edfe]
+- Updated dependencies [99b56d7]
+- Updated dependencies [35fd1ce]
+  - @cactuslab/native-navigation@0.0.7
+  - @cactuslab/native-navigation-react@0.0.8
+  - @cactuslab/native-navigation-react-router@0.0.7
+
 ## 1.0.6
 
 ### Patch Changes

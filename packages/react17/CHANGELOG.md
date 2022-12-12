@@ -1,5 +1,26 @@
 # @cactuslab/native-navigation-react17
 
+## 0.0.8
+
+### Patch Changes
+
+- 477dbd8: Improve error reporting
+- 1b2463c: setOptions gets specific component id support
+- Updated dependencies [1056118]
+- Updated dependencies [8a817cd]
+- Updated dependencies [fa55c7a]
+- Updated dependencies [da0bb70]
+- Updated dependencies [fade427]
+- Updated dependencies [edc92bf]
+- Updated dependencies [4f61d1c]
+- Updated dependencies [304ab7a]
+- Updated dependencies [2cef744]
+- Updated dependencies [5959ada]
+- Updated dependencies [718edfe]
+- Updated dependencies [99b56d7]
+- Updated dependencies [35fd1ce]
+  - @cactuslab/native-navigation@0.0.7
+
 ## 0.0.7
 
 ### Patch Changes

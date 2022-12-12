@@ -1,5 +1,23 @@
 # @cactuslab/native-navigation
 
+## 0.0.7
+
+### Patch Changes
+
+- 1056118: iOS: fix resetting of the plugin for iframe loads
+- 8a817cd: iOS: include logging and error reporting
+- fa55c7a: iOS: Fix handling of tel and mailto links in our views and improve reset behaviour
+- da0bb70: android: support for handling of external links
+- fade427: android: Fixed opening urls from capacitor host
+- edc92bf: iOS: use new namespacing of window.open to better identify our URL requests
+- 4f61d1c: Remove view key from GetResult
+- 304ab7a: android: Added support for transparent title bars. Introduces new variable --native-navigation-inset-top to allow the application to inject insets.
+- 2cef744: Move plugin reset to native to solve resetting our UI if the app navigates to a new URL in the Capacitor webview
+- 5959ada: iOS: fix loading of HTML in production
+- 718edfe: android: Fixed toolbar back button to invoke the expected back action
+- 99b56d7: android: Support for the capacitor specific namespaced urls
+- 35fd1ce: Namespace window.open paths
+
 ## 0.0.6
 
 ### Patch Changes

@@ -362,11 +362,6 @@ export interface GetResult {
 	component?: ComponentSpecs
 
 	/**
-	 * The view, if the component is a view.
-	 */
-	view?: ViewSpec
-
-	/**
 	 * The stack containing the component, if any.
 	 */
 	stack?: StackSpec

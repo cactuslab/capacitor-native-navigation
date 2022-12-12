@@ -251,9 +251,6 @@ class NativeNavigation: NSObject {
         var result = GetResult()
         result.component = try self.options(component)
         
-        if let view = component as? NativeNavigationViewController {
-            result.view = try self.options(view) as? ViewSpec
-        }
         if let stack = component.navigationController, stack.componentId != nil {
             result.stack = try self.options(stack) as? StackSpec
         }

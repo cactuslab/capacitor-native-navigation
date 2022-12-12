@@ -329,7 +329,6 @@ Options for stack components
 | Prop            | Type                                                      | Description                                 |
 | --------------- | --------------------------------------------------------- | ------------------------------------------- |
 | **`component`** | <code><a href="#componentspecs">ComponentSpecs</a></code> | The component, if any.                      |
-| **`view`**      | <code><a href="#viewspec">ViewSpec</a></code>             | The view, if the component is a view.       |
 | **`stack`**     | <code><a href="#stackspec">StackSpec</a></code>           | The stack containing the component, if any. |
 | **`tabs`**      | <code><a href="#tabsspec">TabsSpec</a></code>             | The tabs containing the component, if any.  |
 

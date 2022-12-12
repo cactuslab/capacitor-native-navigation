@@ -169,6 +169,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
     fun getOptions(options: GetOptions, call: PluginCall) {
         val target = options.id
 
+        Log.d(TAG, "getOptions -> id: ${options.id}")
         val navContext = if (target.isNullOrBlank()) {
             try {
                 navContexts.last()
@@ -211,6 +212,8 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                 }
             }
         }
+
+        Log.d(TAG, "GET result: ${result.toJSObject()}")
 
         call.resolve(result.toJSObject())
     }
@@ -508,13 +511,16 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                     PushMode.PUSH -> {
                         insertComponent(component)
 
+                        Log.d(TAG, "PUSH -> Inserted component ${component.id}")
                         var lastRemovedId: String? = null
                         if (options.popCount > 0) {
+                            Log.d(TAG, "Popping ${options.popCount} views first")
                             for (i in 1..options.popCount) {
                                 lastRemovedId = navContext.virtualStack.removeLast()
                             }
                         }
 
+                        Log.d(TAG, "LastRemoveId is ${lastRemovedId}")
                         navContext.virtualStack.add(component.id)
                         val webView = makeWebView(component.id)
                         viewModel.postWebView(webView, component.id)
@@ -548,6 +554,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
                         var lastRemovedId: String? = null
 
+                        Log.d(TAG, "REPLACE with a popCount of ${options.popCount}")
                         var backStackEntry: NavBackStackEntry? = null
                         if (options.popCount > 0) {
                             for (i in 1..options.popCount) {

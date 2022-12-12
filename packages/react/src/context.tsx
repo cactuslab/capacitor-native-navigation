@@ -19,7 +19,7 @@ export function createReactContext(options: ContextInit): CapacitorNativeNavigat
 
 		setOptions: async function(options) {
 			return plugin.setOptions({
-				id,
+				id: options.id || id,
 				animated: options.animated,
 				options,
 			})
@@ -75,7 +75,7 @@ interface CapacitorNativeNavigationContext {
 	/**
 	 * Set this component's options.
 	 */
-	setOptions: (options: AllComponentOptions & { animated?: boolean }) => Promise<void>
+	setOptions: (options: AllComponentOptions & { id?: string; animated?: boolean }) => Promise<void>
 
 	/**
 	 * Dismiss this component, if it was presented.

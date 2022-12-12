@@ -291,6 +291,8 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                     } else {
                         activity.finish()
                     }
+                } else {
+                    navContext.virtualStack.removeLast()
                 }
             }
         }.also { activity.onBackPressedDispatcher.addCallback(it) }

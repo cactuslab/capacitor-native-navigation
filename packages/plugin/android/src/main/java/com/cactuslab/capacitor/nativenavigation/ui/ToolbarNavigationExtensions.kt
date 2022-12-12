@@ -30,7 +30,7 @@ fun Fragment.setupToolbar(toolbar: Toolbar, drawerLayout: DrawerLayout? = null) 
     val wrapper = ToolbarWrapper(toolbar)
     val appBarConfiguration = AppBarConfiguration(navController.graph, drawerLayout)
     val currentDestination: NavDestination? = navController.lastDestination(this::class.java)
-    toolbar.setNavigationOnClickListener { navController.navigateUp(appBarConfiguration) }
+    toolbar.setNavigationOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
     setupIcon(wrapper, currentDestination, appBarConfiguration, drawerLayout)
     setupTitle(wrapper, currentDestination, arguments)
 }
@@ -44,7 +44,7 @@ fun Fragment.setupToolbar(
     val wrapper = CollapsingToolbarLayoutWrapper(collapsingToolbarLayout, toolbar)
     val appBarConfiguration = AppBarConfiguration(navController.graph, drawerLayout)
     val currentDestination: NavDestination? = navController.lastDestination(this::class.java)
-    toolbar.setNavigationOnClickListener { navController.navigateUp(appBarConfiguration) }
+    toolbar.setNavigationOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
     setupIcon(wrapper, currentDestination, appBarConfiguration, drawerLayout)
     setupTitle(wrapper, currentDestination, arguments)
 }

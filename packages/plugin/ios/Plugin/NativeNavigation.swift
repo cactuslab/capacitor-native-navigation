@@ -10,17 +10,8 @@ class NativeNavigation: NSObject {
     private var idCounter = 1
     private var html: String? = nil
     private var window: UIWindow? {
-            // Get connected scenes
-            return UIApplication.shared.connectedScenes
-                // Keep only active scenes, onscreen and visible to the user
-                .filter { $0.activationState == .foregroundActive }
-                // Keep only the first `UIWindowScene`
-                .first(where: { $0 is UIWindowScene })
-                // Get its associated windows
-                .flatMap({ $0 as? UIWindowScene })?.windows
-                // Finally, keep only the key window
-                .first(where: \.isKeyWindow)
-        } // TODO the window is nil if we launch the app with slow animations
+        return self.bridge.webView?.window
+    }
 
     /** We need to let some asynchronous operations happen one-at-a-time so we don't get a race condition
         between creating a component, and then manipultating it.

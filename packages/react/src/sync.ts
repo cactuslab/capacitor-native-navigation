@@ -98,6 +98,8 @@ export function initSync(views: Record<ComponentId, Window>): void {
 				})
 			}
 		}
+
+		monitorStylesheets()
 	})
 	
 	try {
@@ -108,6 +110,111 @@ export function initSync(views: Record<ComponentId, Window>): void {
 	} catch (error) {
 		console.warn('Failed to install document head synchronisation', error instanceof Error ? error.message : error)
 	}
+
+	/**
+	 * Monitor stylesheets on the main window so any rules added using insertRule are copied
+	 * to other windows.
+	 * <p>
+	 * Emotion uses insertRule in production / speed mode rather than modifying the DOM.
+	 */
+	function monitorStylesheets() {
+		// eslint-disable-next-line @typescript-eslint/prefer-for-of
+		for (let i = 0; i < window.document.styleSheets.length; i++) {
+			const styleSheet = window.document.styleSheets[i]
+			if ((styleSheet as any).nativeNavigationMonitored) {
+				continue
+			}
+			(styleSheet as any).nativeNavigationMonitored = true
+	
+			/* Override insertRule so each time it is used we copy the new rule to the corresponding stylesheet in other windows */
+			const originalInsertRule = styleSheet.insertRule
+			styleSheet.insertRule = function(rule, index) {
+				const nodeId = (styleSheet.ownerNode as HTMLElement).dataset['capacitorNativeNavigationId']
+				if (nodeId) {
+					for (const viewId of Object.keys(views)) {
+						const view = views[viewId]
+
+						const targetStyleSheet = findMatchingStyleSheet(styleSheet, view)
+						if (targetStyleSheet) {
+							try {
+								targetStyleSheet.insertRule(rule, index)
+							} catch (error) {
+								console.warn(`Failed to sync cssRule to ${viewId}: ${error instanceof Error ? error.message : error}: @${index} ${rule}`)
+							}
+						}
+					}
+				}
+
+				return originalInsertRule.bind(styleSheet)(rule, index)
+			}
+	
+			/* Copy the initial set of rules to other windows */
+			for (const viewId of Object.keys(views)) {
+				const view = views[viewId]
+
+				copyInitialCssRules(styleSheet, view)
+			}
+		}
+	}
+}
+
+/**
+ * 
+ * @param styleSheet the source stylesheet
+ * @param view the native navigation window to find a matching stylesheet in to copy to
+ */
+function copyInitialCssRules(styleSheet: CSSStyleSheet, view: Window) {
+	const targetStyleSheet = findMatchingStyleSheet(styleSheet, view)
+	if (targetStyleSheet) {
+		for (let k = 0; k < styleSheet.cssRules.length; k++) {
+			const cssText = styleSheet.cssRules[k].cssText
+			targetStyleSheet.insertRule(cssText, k)
+		}
+	}
+}
+
+/**
+ * Find a style sheet in a native navigation window to match the given one in the main window.
+ * @param source the source stylesheet in the main window
+ * @param view the window to search in
+ * @returns a style sheet or undefined if not found
+ */
+function findMatchingStyleSheet(source: CSSStyleSheet, view: Window): CSSStyleSheet | undefined {
+	const nodeId = (source.ownerNode as HTMLElement).dataset['capacitorNativeNavigationId']
+	if (!nodeId) {
+		return undefined
+	}
+
+	// eslint-disable-next-line @typescript-eslint/prefer-for-of
+	for (let j = 0; j < view.document.styleSheets.length; j++) {
+		const targetStyleSheet = view.document.styleSheets[j]
+		if ((targetStyleSheet.ownerNode as HTMLElement).dataset['capacitorNativeNavigationId'] === nodeId) {
+			return targetStyleSheet
+		}
+	}
+
+	return undefined
+}
+
+/**
+ * Find the CSSStyleSheet corresponding to the given node, if any
+ * @param node a DOM node
+ * @returns 
+ */
+function findStyleSheetForNode(node: Node): CSSStyleSheet | undefined {
+	const doc = node.ownerDocument
+	if (!doc) {
+		return undefined
+	}
+
+	// eslint-disable-next-line @typescript-eslint/prefer-for-of
+	for (let i = 0; i < doc.styleSheets.length; i++) {
+		const styleSheet = doc.styleSheets[i]
+		if (styleSheet.ownerNode === node) {
+			return styleSheet
+		}
+	}
+	return undefined
 }
 
 export function prepareWindowForSync(viewWindow: Window): void {
@@ -118,6 +225,12 @@ export function prepareWindowForSync(viewWindow: Window): void {
 				(node as HTMLElement).dataset['capacitorNativeNavigationId'] = nextNodeId();
 			}
 			viewWindow.document.head.append(node.cloneNode(true))
+
+			/* Sync CSS rules */
+			const styleSheet = findStyleSheetForNode(node)
+			if (styleSheet) {
+				copyInitialCssRules(styleSheet, viewWindow)
+			}
 		}
 	})
 }

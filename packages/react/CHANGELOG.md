@@ -1,5 +1,14 @@
 # @cactuslab/native-navigation-react
 
+## 0.0.9
+
+### Patch Changes
+
+- da2dc51: Support copying CSSStyleSheet.insertRule actions between native windows to support Emotion in production
+- Updated dependencies [65565e2]
+- Updated dependencies [740123c]
+  - @cactuslab/native-navigation@0.0.8
+
 ## 0.0.8
 
 ### Patch Changes

@@ -298,7 +298,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                     navContext.virtualStack.removeLast()
                 }
             }
-        }.also { activity.onBackPressedDispatcher.addCallback(it) }
+        }.also { activity.onBackPressedDispatcher.addCallback(activity, it) }
     }
 
     @SuppressLint("SetJavaScriptEnabled")

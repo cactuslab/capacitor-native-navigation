@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.net.Uri
 import android.os.Message
 import android.util.Log
+import android.view.View
 import android.webkit.WebView
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
@@ -17,7 +18,6 @@ import com.cactuslab.capacitor.nativenavigation.databinding.ActivityNavigationBi
 import com.cactuslab.capacitor.nativenavigation.types.*
 import com.cactuslab.capacitor.nativenavigation.ui.BlankViewFragment
 import com.cactuslab.capacitor.nativenavigation.ui.HostFragment
-import com.getcapacitor.BridgeWebViewClient
 import com.getcapacitor.PluginCall
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -153,10 +153,11 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         val spec = componentSpecForId(identifier)
         if (spec != null) {
 
+            Log.d(TAG, "shouldOverrideLoad: Removing Webview in Cache for id: ${identifier}")
             val webView = webviewsCache.remove(identifier)!!
 
             plugin.activity.lifecycleScope.launch(Dispatchers.Main) {
-                Log.d(TAG, "Setting HTML on Webivew for component ${identifier}")
+                Log.d(TAG, "shouldOverrideLoad: Setting HTML on Webivew for component ${identifier}")
                 viewModel.setHtml(url.toString(), webView, plugin)
             }
 
@@ -169,7 +170,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
     fun getOptions(options: GetOptions, call: PluginCall) {
         val target = options.id
 
-        Log.d(TAG, "getOptions -> id: ${options.id}")
+        Log.d(TAG, "getOptions: -> id: ${options.id}")
         val navContext = if (target.isNullOrBlank()) {
             try {
                 navContexts.last()
@@ -214,13 +215,13 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                 }
             }
         }
-        Log.d(TAG, "GET result: ${result.toJSObject()}")
+        Log.d(TAG, "getOptions: GET result: ${result.toJSObject()}")
 
         call.resolve(result.toJSObject())
     }
 
     fun setOptions(options: SetComponentOptions) {
-        Log.d(TAG, "setOptions -> $options")
+        Log.d(TAG, "setOptions: -> $options")
         val spec = components.get(options.id)!!
         val specOptions = spec.options
         if (specOptions != null) {
@@ -255,6 +256,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
     }
 
     private fun removeNavContext(navContext: NavContext) {
+        Log.d(TAG, "removeNavContext: Removing context for id ${navContext.contextId}")
         val transaction = plugin.activity.supportFragmentManager.beginTransaction()
         navContext.tryRemoveFromActivity(transaction)
         transaction.commitNowAllowingStateLoss()
@@ -270,9 +272,9 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
     }
 
     private fun setupBackPressedHandler() {
+        Log.d(TAG, "setupBackPressedHandler: STARTED SETUP FOR BACK ---")
         val activity = plugin.activity
         onBackPressedCallback?.remove()
-        onBackPressedCallback = null
         onBackPressedCallback = object: OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 Log.d(TAG, "Back pressed callback")
@@ -301,6 +303,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun makeWebView(id: String? = null): WebView {
+        Log.d(TAG, "makeWebView: Started for id:${id}")
         val webView = WebView(plugin.context)
         val settings = webView.settings
         settings.javaScriptEnabled = true
@@ -309,10 +312,10 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         settings.databaseEnabled = true
         settings.javaScriptCanOpenWindowsAutomatically = true
 
-        webView.webViewClient = BridgeWebViewClient(plugin.bridge)
-//        webView.webChromeClient = NavigationChromeClient(BridgeWebChromeClient(plugin.bridge), this)
+        webView.webViewClient = NativeNavigationWebViewClient(plugin.bridge)
 
         id?.let {
+            Log.d(TAG, "makeWebView: Putting webview in cache for id:${id}")
             webviewsCache.put(id, webView)
         }
 
@@ -327,8 +330,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
             if (animated) {
                 transaction.setCustomAnimations(R.anim.slide_up_in, 0)
             }
-            transaction.add(com.getcapacitor.android.R.id.webview, fragment)
-
+            transaction.add(android.R.id.content, fragment)
         }, removeFromActivityBlock = { transaction ->
             if (animated) {
                 transaction.setCustomAnimations(0, R.anim.slide_down_out)
@@ -342,22 +344,24 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
     }
 
     fun notifyCreateView(id: String) {
+        Log.d(TAG, "notifyCreateView: started for id: ${id}")
         val component = components[id] as ViewSpec
         nextWindowAction.add(component)
         plugin.notifyCreateView(component.path, component.id, component.state, findStackComponentIdHosting(id))
     }
 
     fun notifyUpdateView(id: String) {
+        Log.d(TAG, "notifyUpdateView: started for id: ${id}")
         val component = components[id] as ViewSpec
         plugin.notifyUpdateView(component.path, component.id, component.state, findStackComponentIdHosting(id))
     }
 
     fun notifyDestroyView(componentId: String) {
-        Log.d(TAG, "notifyDestroyView Started for $componentId")
+        Log.d(TAG, "notifyDestroyView: Started for $componentId")
         plugin.notifyDestroyView(componentId)
         viewModel.cleanUpComponentWithId(componentId)
         viewActions.remove(componentId)
-        Log.d(TAG, "notifyDestroyView Completed for $componentId")
+        Log.d(TAG, "notifyDestroyView: Completed for $componentId")
     }
 
     fun notifyClick(buttonId: String, componentId: String) {
@@ -372,7 +376,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         val component = options.component
         insertComponent(component)
 
-        Log.d(TAG, "Asked to Present: ${component.id} for createOptions: $component")
+        Log.d(TAG, "present: ${component.id} for createOptions: $component")
 
         val navContext = pushNavController(component.id, options.animated)
         setupBackPressedHandler()
@@ -386,6 +390,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
                 viewActions[component.id] = {
                     val transaction = plugin.activity.supportFragmentManager.beginTransaction()
+
                     navContext.tryAddToActivity(transaction)
                     transaction.commitNow()
 
@@ -453,11 +458,13 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
     }
 
     fun pop(call: PluginCall, activity: AppCompatActivity) {
+        Log.d(TAG, "pop: Processing pop")
         activity.onBackPressedDispatcher.onBackPressed()
         call.resolve()
     }
 
     fun dismiss(options: DismissOptions, call: PluginCall) {
+        Log.d(TAG, "dismiss: ${options.componentId}")
         if (options.componentId.isNullOrBlank() && navContexts.isNotEmpty()) {
             val navContext = navContexts.last()
             popNavContext()
@@ -479,7 +486,10 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
     }
 
     fun push(options: PushOptions, call: PluginCall) {
-        Log.d(TAG, "Push Started")
+        Log.d(TAG, "push: Started for id ${options.component.id}")
+
+        /* Other plugins can clear out the back pressed handlers. We need to constantly force our handler into the activity */
+        setupBackPressedHandler()
 
         val component = options.component
 
@@ -488,7 +498,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
             try {
                 navContexts.last()
             } catch (e: kotlin.NoSuchElementException) {
-                Log.d(TAG, "No such stack to push on to. Try presenting first. $e")
+                Log.d(TAG, "push: No such stack to push on to. Try presenting first. $e")
                 call.reject("No such stack to push on to", e)
                 return
             }
@@ -497,7 +507,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
             navContexts.find { it.contextId == navContextId }
         }
         if (navContext == null) {
-            Log.d(TAG, "No such stack to push on to. Try presenting first.")
+            Log.d(TAG, "push: No such stack to push on to. Try presenting first.")
             call.reject("No such stack to push on to. Try presenting first.")
             return
         }
@@ -508,13 +518,13 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
             ComponentType.STACK -> {
                 val stackId = navContext.contextId
 
-                Log.d(TAG, "Asked to push: ${component.id} into STACK for createOptions: $component")
+                Log.d(TAG, "push: ${component.id} into STACK for createOptions: $component")
 
                 when(options.mode) {
                     PushMode.PUSH -> {
                         insertComponent(component)
 
-                        Log.d(TAG, "PUSH -> Inserted component ${component.id}")
+                        Log.d(TAG, "push: PUSH -> Inserted component ${component.id}")
                         var lastRemovedId: String? = null
                         if (options.popCount > 0) {
                             Log.d(TAG, "Popping ${options.popCount} views first")
@@ -523,7 +533,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                             }
                         }
 
-                        Log.d(TAG, "LastRemoveId is ${lastRemovedId}")
+                        Log.d(TAG, "push: LastRemoveId is ${lastRemovedId}")
                         navContext.virtualStack.add(component.id)
                         val webView = makeWebView(component.id)
                         viewModel.postWebView(webView, component.id)
@@ -557,7 +567,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
                         var lastRemovedId: String? = null
 
-                        Log.d(TAG, "REPLACE with a popCount of ${options.popCount}")
+                        Log.d(TAG, "push: REPLACE with a popCount of ${options.popCount}")
                         var backStackEntry: NavBackStackEntry? = null
                         if (options.popCount > 0) {
                             for (i in 1..options.popCount) {
@@ -574,7 +584,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                         }
 
                         if (currentId.isNullOrBlank()) {
-                            Log.d(TAG, "There is no current view to replace on this stack \"$stackId\"")
+                            Log.d(TAG, "push: There is no current view to replace on this stack \"$stackId\"")
                             call.reject("There is no current view to replace on this stack \"$stackId\"")
                             return
                         }
@@ -641,7 +651,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                 }
 
                 if (currentId.isNullOrBlank()) {
-                    Log.d(TAG, "There is no current view to replace on this stack \"$stackId\"")
+                    Log.d(TAG, "push: There is no current view to replace on this stack \"$stackId\"")
                     call.reject("There is no current view to replace on this stack $stackId")
                     return
                 }
@@ -685,10 +695,10 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
     }
 
     fun windowOpen(view: WebView?, isDialog: Boolean, isUserGesture: Boolean, resultMsg: Message?): Boolean {
-
+        Log.d(TAG, "windowOpen: started")
         val component = nextWindowAction.poll() ?: return false
 
-        Log.d(TAG, "windowOpen with url ${view!!.url!!}")
+        Log.d(TAG, "windowOpen: with url ${view!!.url!!} for componentId ${component.id}")
 
         val webView = webviewsCache.get(component.id)!!
 
@@ -703,6 +713,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
     }
 
     fun viewReady(options: ViewReadyOptions) {
+        Log.d(TAG, "viewReady: processing viewAction for ${options.id}")
         val action = viewActions.remove(options.id)
         plugin.activity.runOnUiThread(action)
     }

@@ -1,16 +1,12 @@
 package com.cactuslab.capacitor.nativenavigation
 
-import android.annotation.SuppressLint
-import android.app.Dialog
 import android.net.Uri
 import android.os.Message
 import android.util.Log
 import android.view.View
 import android.webkit.*
-import androidx.core.app.DialogCompat
-import com.getcapacitor.BridgeWebChromeClient
 
-class NavigationChromeClient(val bridgeChromeClient: WebChromeClient, val nativeNavigation: NativeNavigation) : WebChromeClient() {
+class NativeNavigationChromeClient(val bridgeChromeClient: WebChromeClient, val nativeNavigation: NativeNavigation) : WebChromeClient() {
 
     override fun onShowCustomView(view: View?, callback: CustomViewCallback?) {
         bridgeChromeClient.onShowCustomView(view, callback)

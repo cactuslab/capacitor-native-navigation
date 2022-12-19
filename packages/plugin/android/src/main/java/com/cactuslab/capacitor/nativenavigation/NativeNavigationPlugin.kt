@@ -73,7 +73,7 @@ class NativeNavigationPlugin : Plugin() {
         activity.runOnUiThread {
             try {
                 val chromeClient = capacitorChromeClient()
-                bridge.webView.webChromeClient = NavigationChromeClient(chromeClient, implementation)
+                bridge.webView.webChromeClient = NativeNavigationChromeClient(chromeClient, implementation)
                 bridge.webView.settings.setSupportMultipleWindows(true)
 
                 val options = PresentOptions.fromJSObject(call.data)
@@ -150,7 +150,7 @@ class NativeNavigationPlugin : Plugin() {
             is BridgeWebChromeClient -> {
                 client
             }
-            is NavigationChromeClient -> {
+            is NativeNavigationChromeClient -> {
                 client.bridgeChromeClient
             }
             else -> client ?: throw Exception("Unexpected web client")

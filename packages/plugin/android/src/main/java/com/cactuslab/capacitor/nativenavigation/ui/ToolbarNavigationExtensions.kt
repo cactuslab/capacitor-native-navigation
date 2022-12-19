@@ -28,10 +28,10 @@ import java.util.regex.Pattern
 fun Fragment.setupToolbar(toolbar: Toolbar, drawerLayout: DrawerLayout? = null) {
     val navController = findNavController()
     val wrapper = ToolbarWrapper(toolbar)
-    val appBarConfiguration = AppBarConfiguration(navController.graph, drawerLayout)
+//    val appBarConfiguration = AppBarConfiguration(navController.graph, drawerLayout)
     val currentDestination: NavDestination? = navController.lastDestination(this::class.java)
     toolbar.setNavigationOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
-    setupIcon(wrapper, currentDestination, appBarConfiguration, drawerLayout)
+//    setupIcon(wrapper, currentDestination, appBarConfiguration, drawerLayout)
     setupTitle(wrapper, currentDestination, arguments)
 }
 
@@ -50,6 +50,7 @@ fun Fragment.setupToolbar(
 }
 
 private fun NavController.lastDestination(clazz: Class<out Fragment>): NavDestination? {
+    return null
     val isCurrent = currentDestination?.let { checkDestination(it, clazz) } ?: false
     return if (isCurrent) {
         currentDestination

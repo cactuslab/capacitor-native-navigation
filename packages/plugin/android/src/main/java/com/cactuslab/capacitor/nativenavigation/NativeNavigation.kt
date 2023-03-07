@@ -38,6 +38,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         private val addToActivityBlock: (transaction: FragmentTransaction) -> Unit,
         private val removeFromActivityBlock: (transaction: FragmentTransaction) -> Unit) {
         private var isAddedToActivity: Boolean = fragment.isAdded
+        var presentOptions: PresentOptions? = null
 
         var startRoute : String? = null
 
@@ -288,11 +289,20 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                 } ?: false
 
                 if (!didNavigate) {
-
-                    if (navContexts.size > 1) {
+                    if (navContext.presentOptions?.cancellable == false) {
+                        /**
+                         * This presentation is not cancellable so the best option is to jump the
+                         * user out of the app as if they hit the home button instead
+                         */
+                        activity.moveTaskToBack(true)
+                    } else if (navContexts.size > 1) {
                         popNavContext()
                     } else {
-                        activity.finish()
+                        /**
+                         * Move the task to back when we have nothing else to go back to as if the
+                         * user hit the home button
+                         */
+                        activity.moveTaskToBack(true)
                     }
                 } else {
                     navContext.virtualStack.removeLast()
@@ -379,6 +389,8 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         Log.d(TAG, "present: ${component.id} for createOptions: $component")
 
         val navContext = pushNavController(component.id, options.animated)
+        navContext.presentOptions = options
+
         setupBackPressedHandler()
 
         when (component) {

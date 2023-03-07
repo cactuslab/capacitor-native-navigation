@@ -1,6 +1,31 @@
 import Foundation
 import Capacitor
 
+class NativeNavigationPresentationDelegate: NSObject, UIAdaptivePresentationControllerDelegate {
+    
+    private let cancellable: Bool
+    private var onClean: ((_ delegate: NativeNavigationPresentationDelegate)->Void)?
+    
+    init(options: PresentOptions, onClean: @escaping (_ delegate: NativeNavigationPresentationDelegate)->Void) {
+        self.cancellable = options.cancellable
+        self.onClean = onClean
+        super.init()
+    }
+    
+    func presentationControllerShouldDismiss(_ presentationController: UIPresentationController) -> Bool {
+        return cancellable
+    }
+    
+    func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+        cleanup()
+    }
+    
+    func cleanup() {
+        onClean?(self)
+        onClean = nil
+    }
+}
+
 class NativeNavigation: NSObject {
 
     private let bridge: CAPBridgeProtocol
@@ -12,6 +37,8 @@ class NativeNavigation: NSObject {
     private var window: UIWindow? {
         return self.bridge.webView?.window
     }
+    
+    private var presentationDelegates: [NativeNavigationPresentationDelegate] = []
 
     /** We need to let some asynchronous operations happen one-at-a-time so we don't get a race condition
         between creating a component, and then manipultating it.
@@ -83,7 +110,17 @@ class NativeNavigation: NSObject {
             }
 
             root.modalPresentationStyle = options.style.toUIModalPresentationStyle()
-
+            
+            let presentationDelegate = NativeNavigationPresentationDelegate(options: options, onClean: { [weak self] delegate in
+                if let index = self?.presentationDelegates.firstIndex(of: delegate) {
+                    self?.presentationDelegates.remove(at: index)
+                }
+            })
+            
+            presentationDelegates.append(presentationDelegate)
+            
+            root.presentationController?.delegate = presentationDelegate
+            
             top.present(root, animated: options.animated)
         }
 
@@ -103,7 +140,10 @@ class NativeNavigation: NSObject {
         }
 
         if let presentingViewController = viewController.presentingViewController {
-            presentingViewController.dismiss(animated: options.animated)
+            let delegate = viewController.presentationController?.delegate as? NativeNavigationPresentationDelegate
+            presentingViewController.dismiss(animated: options.animated) {
+                delegate?.cleanup()
+            }
             return DismissResult(id: id)
         } else {
             throw NativeNavigatorError.notPresented(name: id)
@@ -229,6 +269,7 @@ class NativeNavigation: NSObject {
         }
 
         self.componentsById.removeAll()
+        self.presentationDelegates.removeAll()
     }
 
     func get(_ options: GetOptions) async throws -> GetResult {

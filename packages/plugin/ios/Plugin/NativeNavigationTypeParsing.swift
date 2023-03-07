@@ -86,8 +86,9 @@ extension PresentOptions {
         let component = try componentSpecFromJSObject(componentValue)
         let style = try toPresentationStyle(object, key: "style")
         let animated = object.getBool("animated", true)
+        let cancellable = object.getBool("cancellable", true)
 
-        return PresentOptions(component: component, style: style, animated: animated)
+        return PresentOptions(component: component, style: style, animated: animated, cancellable: cancellable)
     }
     
 }

@@ -107,6 +107,14 @@ export interface PresentOptions {
 	style?: PresentationStyle
 
 	/**
+	 * Whether to allow the user to use system gestures or the back button
+	 * to unwind the presentation.
+	 * Useful to prevent the accidental dismissal of a form.
+	 * Defaults to `true`
+	 */
+	cancellable?: boolean 
+
+	/**
 	 * Whether to animate the presenting.
 	 * Defaults to `true`
 	 */

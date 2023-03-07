@@ -99,6 +99,7 @@ struct PresentOptions {
     var component: ComponentSpec
     var style: PresentationStyle
     var animated: Bool
+    var cancellable: Bool
 }
 
 struct PresentResult {

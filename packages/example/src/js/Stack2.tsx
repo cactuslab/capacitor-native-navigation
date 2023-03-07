@@ -18,6 +18,7 @@ export default function Stack2(): JSX.Element {
 			},
 			style: 'pageSheet',
 			animated: true,
+			cancellable: false,
 		})
 	}, [])
 

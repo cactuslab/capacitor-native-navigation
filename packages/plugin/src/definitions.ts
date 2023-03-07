@@ -250,6 +250,7 @@ export interface StackOptions extends ComponentOptions {
 		background?: FillOptions
 		title?: LabelOptions
 		buttons?: LabelOptions
+		visible?: boolean
 	}
 }
 

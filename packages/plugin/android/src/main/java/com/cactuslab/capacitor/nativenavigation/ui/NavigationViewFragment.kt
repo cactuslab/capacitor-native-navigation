@@ -87,10 +87,12 @@ class NavigationViewFragment: Fragment() {
         }
 
         webviewViewModel.componentOptionsLiveData.observe(viewLifecycleOwner) { options ->
+            Log.d(TAG, "Updating Options ${options}")
             if (options == null) {
                 binding.toolbar.visibility = View.GONE
             } else {
-                binding.toolbar.visibility = View.VISIBLE
+                val isVisible = options.bar?.visible ?: true
+                binding.toolbar.visibility = if (isVisible) View.VISIBLE else View.GONE
                 binding.toolbar.title = options.title?.value()
             }
 

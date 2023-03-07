@@ -658,6 +658,10 @@ class NativeNavigation: NSObject {
                 navigationController.navigationBar.standardAppearance = customiseBarAppearance(UINavigationBarAppearance(), options: barOptions)
             }
         }
+        
+        if let barOptions = options.bar {
+            viewController.navigationController?.isNavigationBarHidden = barOptions.visible == false
+        }
 
         if let tabOptions = options.tab {
             if let badgeValue = tabOptions.badgeValue {

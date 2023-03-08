@@ -660,7 +660,7 @@ class NativeNavigation: NSObject {
         }
         
         if let barOptions = options.bar {
-            viewController.navigationController?.isNavigationBarHidden = barOptions.visible == false
+            viewController.navigationController?.setNavigationBarHidden(barOptions.visible == false, animated: animated)
         }
 
         if let tabOptions = options.tab {

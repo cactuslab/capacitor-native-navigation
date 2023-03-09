@@ -1,4 +1,5 @@
-import type { ComponentId, ViewState } from '@cactuslab/native-navigation';
+import type { ComponentId, PresentOptions, ViewState } from '@cactuslab/native-navigation';
+import type { NativeNavigationContext } from '@cactuslab/native-navigation-react';
 import type { NativeNavigationPlugin } from '@cactuslab/native-navigation/src/definitions';
 import type { NavigateOptions, Navigator, To } from 'react-router-dom'
 
@@ -6,11 +7,22 @@ interface Options {
 	plugin: NativeNavigationPlugin
 	componentId: ComponentId
 	stack?: ComponentId
+	modals?: Modals
+	context: NativeNavigationContext
 
 	/**
 	 * An optional error handler to receive unexpected errors from the NativeNavigation plugin
 	 */
 	errorHandler?: (source: string, error: unknown) => void
+}
+
+interface Modals {
+	paths: ModalPath[]
+}
+
+interface ModalPath {
+	pathPattern: string
+	options: PresentOptions
 }
 
 interface ViewStateSpecials extends ViewState {
@@ -32,7 +44,11 @@ export function alertErrorHandler(source: string, error: unknown): void {
  * using Capacitor Native Navigation.
  */
 export function createNavigator(options: Options): Navigator {
-	const { plugin, componentId, stack } = options
+	const { plugin, componentId, stack, context } = options
+
+	context.addMessageListener('navigateForMe', function(data) {
+		console.log('i got a native navigation event', data)
+	})
 
 	function reportError(source: string, error: unknown) {
 		if (error instanceof Error) {
@@ -108,6 +124,20 @@ export function createNavigator(options: Options): Navigator {
 				}
 			}
 
+
+			// uh oh we need to dismiss
+			// await plugin.dismiss({
+			// 	id: stack || componentId
+			// })
+			await plugin.message({
+				type: 'navigateForMe',
+				value: {
+					to,
+					state,
+				}
+			})
+			
+
 			const path = navigator.createHref(to)
 			try {
 				await plugin.push({
@@ -119,6 +149,7 @@ export function createNavigator(options: Options): Navigator {
 					mode: viewState?.root ? 'root' : undefined,
 					target: viewState?.target || stack || componentId,
 				})
+
 			} catch (error) {
 				reportError('push', error)
 				throw error

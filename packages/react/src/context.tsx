@@ -1,6 +1,8 @@
-import type { AllComponentOptions, ClickEventData, ComponentId, DismissOptions, DismissResult, NativeNavigationPlugin } from '@cactuslab/native-navigation'
+import type { AllComponentOptions, ClickEventData, ComponentId, DismissOptions, DismissResult, MessageEventData, NativeNavigationPlugin } from '@cactuslab/native-navigation'
 import type { Plugin, PluginListenerHandle } from '@capacitor/core'
 import React, { useContext } from 'react'
+
+import type { MessageListener } from './types'
 
 interface ContextInit {
 	componentId: ComponentId
@@ -9,10 +11,10 @@ interface ContextInit {
 	viewWindow: Window
 }
 
-export function createReactContext(options: ContextInit): CapacitorNativeNavigationContext {
+export function createReactContext(options: ContextInit): NativeNavigationContext {
 	const { componentId: id, stack, viewWindow, plugin } = options
 
-	const context: CapacitorNativeNavigationContext = {
+	const context: NativeNavigationContext = {
 		componentId: id,
 		stack,
 		viewWindow,
@@ -48,15 +50,45 @@ export function createReactContext(options: ContextInit): CapacitorNativeNavigat
 				}
 			}
 		},
+
+		addMessageListener(type, listener: MessageListenerWithAdapter) {
+			if (!listener.nativeNavigationAdapters) {
+				listener.nativeNavigationAdapters = {}
+			}
+			const adapter = listener.nativeNavigationAdapters[type] = listener.nativeNavigationAdapters[type] || function(event: Event) {
+				const customEvent = event as CustomEvent
+				const data: MessageEventData = customEvent.detail.data
+				if (!type || data.type === type) {
+					listener(customEvent.detail.data)
+				}
+			}
+			viewWindow.addEventListener('nativenavigationmessage', adapter)
+		},
+
+		removeMessageListener(type, listener: MessageListenerWithAdapter) {
+			if (listener.nativeNavigationAdapters) {
+				const adapter = listener.nativeNavigationAdapters[type]
+				if (adapter) {
+					viewWindow.removeEventListener('nativenavigationmessage', adapter)
+					delete listener.nativeNavigationAdapters[type]
+				}
+			}
+		},
 	}
 	return context
+}
+
+interface MessageListenerWithAdapter extends MessageListener {
+	nativeNavigationAdapters?: {
+		[type: string]: ((event: Event) => void) | undefined
+	}
 }
 
 
 type ClickListenerFunc = (data: ClickEventData) => void
 type RemoveListenerFunction = () => void
 
-interface CapacitorNativeNavigationContext {
+export interface NativeNavigationContext {
 	/**
 	 * The component id. Will be undefined if not in a native context.
 	 */
@@ -86,9 +118,12 @@ interface CapacitorNativeNavigationContext {
 	 * Add a listener for native clicks in this component.
 	 */
 	addClickListener: (func: ClickListenerFunc) => RemoveListenerFunction
+
+	addMessageListener: (type: string, listener: MessageListener) => void
+	removeMessageListener: (type: string, listener: MessageListener) => void
 }
 
-const DEFAULT_CONTEXT: CapacitorNativeNavigationContext = {
+const DEFAULT_CONTEXT: NativeNavigationContext = {
 	viewWindow: window,
 	setOptions: async function() {
 		return
@@ -100,11 +135,17 @@ const DEFAULT_CONTEXT: CapacitorNativeNavigationContext = {
 		return function() {
 			/* noop */
 		}
-	}
+	},
+	addMessageListener() {
+		/* noop */
+	},
+	removeMessageListener() {
+		/* noop */
+	},
 }
 
-export const Context = React.createContext<CapacitorNativeNavigationContext>(DEFAULT_CONTEXT)
+export const Context = React.createContext<NativeNavigationContext>(DEFAULT_CONTEXT)
 
-export function useNativeNavigationContext(): CapacitorNativeNavigationContext {
+export function useNativeNavigationContext(): NativeNavigationContext {
 	return useContext(Context)
 }

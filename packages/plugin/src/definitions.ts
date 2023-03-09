@@ -39,6 +39,11 @@ export interface NativeNavigationPlugin {
 	 * Get the spec and context of a component
 	 */
 	get(options?: GetOptions): Promise<GetResult>
+
+	/**
+	 * Send a message to a component.
+	 */
+	message(options: MessageOptions): Promise<void>
 }
 
 export interface NativeNavigationPluginInternal extends NativeNavigationPlugin {
@@ -48,6 +53,30 @@ export interface NativeNavigationPluginInternal extends NativeNavigationPlugin {
 	 */
 	viewReady(options: ViewReadyOptions): Promise<void>
 
+}
+
+export interface MessageOptions {
+	/**
+	 * The target component of the message, or `undefined` to send to the top-most component.
+	 */
+	target?: ComponentId
+	/**
+	 * The message type.
+	 */
+	type: string
+	/**
+	 * A message value. Must be JSON stringifiable.
+	 */
+	value?: unknown
+}
+
+/**
+ * The data sent with the message event.
+ */
+export interface MessageEventData {
+	target: ComponentId
+	type: string
+	value: unknown
 }
 
 // use window.open to access a view... we need to specify where we want it
@@ -307,6 +336,8 @@ export enum NativeNavigationEvents {
 	 * A click occurred on a button.
 	 */
 	Click = 'click',
+
+	Message = 'message',
 }
 
 export interface CreateViewEventData {

@@ -1,5 +1,5 @@
 import { initViewHandler } from '@cactuslab/native-navigation'
-import type { ComponentId, CreateViewEventData, NativeNavigationPluginInternal, NativeNavigationPlugin, UpdateViewEventData } from '@cactuslab/native-navigation';
+import type { ComponentId, CreateViewEventData, NativeNavigationPluginInternal, NativeNavigationPlugin, UpdateViewEventData , MessageEventData } from '@cactuslab/native-navigation';
 import type { Plugin } from '@capacitor/core';
 import React from 'react';
 import ReactDOM from 'react-dom/client'
@@ -9,7 +9,7 @@ import { initSync, prepareWindowForSync } from './sync'
 import type { NativeNavigationReactRoot, NativeNavigationReactRootProps } from './types'
 import { toNativeNavigationReactRootProps } from './types'
 
-export { useNativeNavigationContext } from './context'
+export { useNativeNavigationContext, NativeNavigationContext } from './context'
 export { NativeNavigationReactRoot, NativeNavigationReactRootProps } from './types'
 
 interface Options {
@@ -49,6 +49,7 @@ export async function initReact(options: Options): Promise<void> {
 			createView,
 			updateView,
 			destroyView,
+			messageView,
 			ready,
 		}
 	})
@@ -74,7 +75,7 @@ export async function initReact(options: Options): Promise<void> {
 			const reactRoot = ReactDOM.createRoot(rootElement)
 			reactRoots[id] = reactRoot
 
-			render(viewWindow, reactRoot, toNativeNavigationReactRootProps(data))
+			render(viewWindow, reactRoot, toNativeNavigationReactRootProps(data, viewWindow))
 		} else {
 			reportError('createView', `Attempted to load view "${path}" but could not find root node: #${viewRootId}`)
 		}
@@ -89,7 +90,11 @@ export async function initReact(options: Options): Promise<void> {
 			return
 		}
 
-		render(viewWindow, reactRoot, toNativeNavigationReactRootProps(data))
+		render(viewWindow, reactRoot, toNativeNavigationReactRootProps(data, viewWindow))
+	}
+	
+	function messageView(viewWindow: Window, data: MessageEventData) {
+		viewWindow.dispatchEvent(new CustomEvent('nativenavigationmessage', { detail: data }))
 	}
 
 	function render(viewWindow: Window, reactRoot: ReactDOM.Root, props: NativeNavigationReactRootProps) {

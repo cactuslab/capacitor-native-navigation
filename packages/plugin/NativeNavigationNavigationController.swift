@@ -1,6 +1,6 @@
 import Foundation
 
-class NativeNavigationNavigationController: UINavigationController {
+class NativeNavigationNavigationController: UINavigationController, NativeNavigationViewController {
     
     let componentId: String
     

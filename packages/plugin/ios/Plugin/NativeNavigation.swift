@@ -888,7 +888,7 @@ extension NativeNavigation: UINavigationControllerDelegate {
             guard let navigationController = navigationController as? NativeNavigationNavigationController else {
                 throw NativeNavigatorError.illegalState(message: "Unexpected UINavigationController implementation")
             }
-            guard let viewController = viewController as? NativeNavigationWebViewController else {
+            guard let viewController = viewController as? NativeNavigationViewController else {
                 throw NativeNavigatorError.illegalState(message: "Unexpected UIViewController implementation")
             }
             
@@ -915,7 +915,7 @@ extension NativeNavigation: UITabBarControllerDelegate {
             guard let tabBarController = tabBarController as? NativeNavigationTabBarController else {
                 throw NativeNavigatorError.illegalState(message: "Unexpected UITabBarController implementation")
             }
-            guard let viewController = viewController as? NativeNavigationWebViewController else {
+            guard let viewController = viewController as? NativeNavigationViewController else {
                 throw NativeNavigatorError.illegalState(message: "Unexpected UIViewController implementation: \(viewController)")
             }
             
@@ -939,12 +939,8 @@ extension NativeNavigation: UIAdaptivePresentationControllerDelegate {
     
     func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
         let viewController = presentationController.presentedViewController
-        if let viewController = viewController as? NativeNavigationWebViewController {
+        if let viewController = viewController as? NativeNavigationViewController {
             self.removeComponent(viewController.componentId)
-        } else if let navigationController = viewController as? NativeNavigationNavigationController {
-            self.removeComponent(navigationController.componentId)
-        } else if let tabBarController = viewController as? NativeNavigationTabBarController {
-            self.removeComponent(tabBarController.componentId)
         }
     }
     

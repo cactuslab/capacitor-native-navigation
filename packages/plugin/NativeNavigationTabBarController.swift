@@ -1,6 +1,6 @@
 import Foundation
 
-class NativeNavigationTabBarController: UITabBarController {
+class NativeNavigationTabBarController: UITabBarController, NativeNavigationViewController {
     
     let componentId: String
     

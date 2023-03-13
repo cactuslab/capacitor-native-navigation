@@ -1,6 +1,6 @@
 import { NativeNavigation } from '@cactuslab/native-navigation'
 import { NativeNavigationReactRootProps } from '@cactuslab/native-navigation-react'
-import { createNavigator } from '@cactuslab/native-navigation-react-router'
+import { useNativeNavigationNavigator } from '@cactuslab/native-navigation-react-router'
 import {  Route, Router, Routes } from 'react-router-dom'
 
 import PageWithState from './PageWithState'
@@ -12,16 +12,45 @@ import Tab1 from './Tab1'
 import View1 from './View1'
 import StackImmediateReplace from './race/StackImmediateReplace'
 import Examples from './examples'
+import Container from './Container'
 
 export default function Root(props: NativeNavigationReactRootProps): JSX.Element {
-	const { path, state, id, stack } = props
+	const { path, state } = props
 
-	const navigator = createNavigator({
+	const navigator = useNativeNavigationNavigator({
 		plugin: NativeNavigation,
-		componentId: id,
-		stack,
+		modals: [
+			{
+				path: '/modal/',
+				presentOptions(path, state) {
+					return {
+						component: {
+							type: 'stack',
+							stack: [
+								{
+									type: 'view',
+									path,
+									state,
+									options: {
+										title: 'Test',
+										stack: {
+											rightItems: [
+												{
+													id: 'back',
+													title: 'Close',
+												},
+											],
+										},
+									},
+								},
+							],
+						},
+						style: 'formSheet',
+					}
+				},
+			},
+		]
 	})
-
 
 	return (
 		<Router location={{ pathname: path, state }} navigator={navigator}>
@@ -37,6 +66,9 @@ export default function Root(props: NativeNavigationReactRootProps): JSX.Element
 					<Route path="stack-immediate-replace" element={<StackImmediateReplace />} />
 				</Route>
 				<Route path="examples/*" element={<Examples />} />
+				<Route path="modal/*" element={<Container />}>
+					<Route path="" element={<View1 />} />
+				</Route>
 			</Routes>
 		</Router>
 	)

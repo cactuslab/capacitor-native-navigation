@@ -78,6 +78,7 @@ export default function Stack1(): JSX.Element {
 			<p><button onClick={handleReplace1}>Replace 1</button></p>
 			<h2>Links</h2>
 			<p><Link to="/stack2">Push New</Link> <Link to="/stack1">Push Same</Link> <Link to="/state" state={{fromLink: true}}>Push With State</Link></p>
+			<p><Link to="/modal/">Link to modal</Link></p>
 			
 			<p><button onClick={() => navigate(-1)}>Go Back</button></p>
 		</div>

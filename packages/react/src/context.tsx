@@ -6,22 +6,26 @@ import type { MessageListener } from './types'
 
 interface ContextInit {
 	componentId: ComponentId
+	path: string
+	state?: unknown
 	stack?: ComponentId
 	plugin: NativeNavigationPlugin & Plugin
 	viewWindow: Window
 }
 
 export function createReactContext(options: ContextInit): NativeNavigationContext {
-	const { componentId: id, stack, viewWindow, plugin } = options
+	const { componentId, path, state, stack, viewWindow, plugin } = options
 
 	const context: NativeNavigationContext = {
-		componentId: id,
+		componentId,
+		path,
+		state,
 		stack,
 		viewWindow,
 
 		setOptions: async function(options) {
 			return plugin.setOptions({
-				id: options.id || id,
+				id: options.id || componentId,
 				animated: options.animated,
 				options,
 			})
@@ -29,24 +33,24 @@ export function createReactContext(options: ContextInit): NativeNavigationContex
 
 		dismiss: async function(options) {
 			return plugin.dismiss({
-				id,
+				id: componentId,
 				...options,
 			})
 		},
 
 		addClickListener: function(func) {
 			let handle: PluginListenerHandle | undefined
-			plugin.addListener(`click:${id}`, func).then(result => {
+			plugin.addListener(`click:${componentId}`, func).then(result => {
 				handle = result
 			}).catch(reason => {
-				console.warn(`NativeNavigation: Failed to add click listener for ${id}, this may cause some navigation buttons to fail: ${reason}`)
+				console.warn(`NativeNavigation: Failed to add click listener for ${componentId}, this may cause some navigation buttons to fail: ${reason}`)
 			})
 
 			return function() {
 				if (handle) {
 					handle.remove()
 				} else {
-					console.warn(`NativeNavigation: Failed to remove listener for ${id}. This may cause a memory leak.`)
+					console.warn(`NativeNavigation: Failed to remove listener for ${componentId}. This may cause a memory leak.`)
 				}
 			}
 		},
@@ -94,6 +98,10 @@ export interface NativeNavigationContext {
 	 */
 	componentId?: string
 
+	path: string
+
+	state?: unknown
+
 	/**
 	 * The id of the stack containing this component, if any.
 	 */
@@ -124,6 +132,7 @@ export interface NativeNavigationContext {
 }
 
 const DEFAULT_CONTEXT: NativeNavigationContext = {
+	path: '',
 	viewWindow: window,
 	setOptions: async function() {
 		return

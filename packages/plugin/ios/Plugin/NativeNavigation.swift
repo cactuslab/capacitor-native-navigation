@@ -379,7 +379,7 @@ class NativeNavigation: NSObject {
             result.id = vc.componentId
             return result
         } else if let vc = vc as? ViewModel {
-            var result = ViewSpec(path: vc.viewController.path)
+            var result = ViewSpec(path: vc.viewController.path, state: vc.viewController.state)
             result.id = vc.componentId
             return result
         } else {

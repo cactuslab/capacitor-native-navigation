@@ -4,16 +4,19 @@ import Capacitor
 class NativeNavigationViewController: UIViewController {
 
     private weak var plugin: CAPPlugin!
+    
     var path: String {
         didSet {
             webViewNeedsUpdate = true
         }
     }
+    
     var state: JSObject? {
         didSet {
             webViewNeedsUpdate = true
         }
     }
+    
     var webView: WKWebView? {
         willSet {
             if let webView = webView {
@@ -55,7 +58,7 @@ class NativeNavigationViewController: UIViewController {
     }
 
     override var debugDescription: String {
-        return "\(super.debugDescription) componentId=\(componentId ?? "none") path=\(path)"
+        return "\(super.debugDescription) componentId=\(componentId ?? "no id") path=\(path)"
     }
 
     /**

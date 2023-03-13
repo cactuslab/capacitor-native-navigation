@@ -11,6 +11,7 @@ CAP_PLUGIN(NativeNavigationPlugin, "NativeNavigation",
            CAP_PLUGIN_METHOD(setOptions, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(reset, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(get, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(message, CAPPluginReturnPromise);
            
            CAP_PLUGIN_METHOD(viewReady, CAPPluginReturnPromise);
 

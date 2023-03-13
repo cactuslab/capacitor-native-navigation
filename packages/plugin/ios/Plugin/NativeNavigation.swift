@@ -341,6 +341,24 @@ class NativeNavigation: NSObject {
         return result
     }
     
+    func message(_ options: MessageOptions) async throws {
+        return try await sync.perform { try await _message(options) }
+    }
+    
+    @MainActor
+    private func _message(_ options: MessageOptions) async throws {
+        let component = try findComponent(id: options.target)
+        
+        var data: [String: Any] = [
+            "target": component.componentId,
+            "type": options.type,
+        ]
+        if let value = options.value {
+            data["value"] = value
+        }
+        self.plugin.notifyListeners("message", data: data, retainUntilConsumed: true)
+    }
+    
     @MainActor
     private func options(_ vc: any ComponentModel) throws -> ComponentSpec {
         if let vc = vc as? StackModel {

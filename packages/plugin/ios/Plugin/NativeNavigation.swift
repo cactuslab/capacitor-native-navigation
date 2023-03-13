@@ -60,10 +60,10 @@ class TabsModel: ComponentModel {
 struct ViewModel: ComponentModel {
     let componentId: ComponentId
     var options: ComponentOptions?
-    let viewController: NativeNavigationViewController
+    let viewController: NativeNavigationWebViewController
     let container: ComponentId?
     
-    init(componentId: ComponentId, options: ComponentOptions? = nil, viewController: NativeNavigationViewController, container: ComponentId? = nil) {
+    init(componentId: ComponentId, options: ComponentOptions? = nil, viewController: NativeNavigationWebViewController, container: ComponentId? = nil) {
         self.componentId = componentId
         self.options = options
         self.viewController = viewController
@@ -263,7 +263,7 @@ class NativeNavigation: NSObject {
                 let targetComponent = try component(targetComponentId)
                 
                 if let popped = stack.viewController.popToViewController(targetComponent.viewController, animated: options.animated), popped.count > 0 {
-                    if let poppedComponentId = (popped[0] as? NativeNavigationViewController)?.componentId {
+                    if let poppedComponentId = (popped[0] as? NativeNavigationWebViewController)?.componentId {
                         guard let from = views.firstIndex(of: poppedComponentId) else {
                             throw NativeNavigatorError.illegalState(message: "Popped a component that is not expected: \(poppedComponentId)")
                         }
@@ -288,7 +288,7 @@ class NativeNavigation: NSObject {
             }
         } else if count == 1 {
             if let viewController = stack.viewController.popViewController(animated: options.animated) {
-                guard let poppedComponentId = (viewController as? NativeNavigationViewController)?.componentId else {
+                guard let poppedComponentId = (viewController as? NativeNavigationWebViewController)?.componentId else {
                     throw NativeNavigatorError.illegalState(message: "Popped an unknown component: \(viewController)")
                 }
                 
@@ -519,7 +519,7 @@ class NativeNavigation: NSObject {
         if let stack = component as? UINavigationController {
             return stack
         }
-        if let view = component as? NativeNavigationViewController {
+        if let view = component as? NativeNavigationWebViewController {
             return view
         }
         if let tabs = component as? UITabBarController {
@@ -640,7 +640,7 @@ class NativeNavigation: NSObject {
         let componentId = spec.id ?? generateId()
         let stackId = (container as? StackModel)?.componentId
         
-        let viewController = NativeNavigationViewController(componentId: componentId, path: spec.path, state: spec.state, stackId: stackId, plugin: plugin)
+        let viewController = NativeNavigationWebViewController(componentId: componentId, path: spec.path, state: spec.state, stackId: stackId, plugin: plugin)
         let model = ViewModel(componentId: componentId, viewController: viewController, container: container?.componentId)
         
         if let componentOptions = spec.options {
@@ -683,7 +683,7 @@ class NativeNavigation: NSObject {
      */
     @MainActor
     private func waitForViewsReady(_ vc: UIViewController) async {
-        if let vc = vc as? NativeNavigationViewController {
+        if let vc = vc as? NativeNavigationWebViewController {
             await vc.createOpdateWebView()
         } else if let nc = vc as? UINavigationController {
             for vc in nc.viewControllers {
@@ -888,7 +888,7 @@ extension NativeNavigation: UINavigationControllerDelegate {
             guard let navigationController = navigationController as? NativeNavigationNavigationController else {
                 throw NativeNavigatorError.illegalState(message: "Unexpected UINavigationController implementation")
             }
-            guard let viewController = viewController as? NativeNavigationViewController else {
+            guard let viewController = viewController as? NativeNavigationWebViewController else {
                 throw NativeNavigatorError.illegalState(message: "Unexpected UIViewController implementation")
             }
             
@@ -915,8 +915,8 @@ extension NativeNavigation: UITabBarControllerDelegate {
             guard let tabBarController = tabBarController as? NativeNavigationTabBarController else {
                 throw NativeNavigatorError.illegalState(message: "Unexpected UITabBarController implementation")
             }
-            guard let viewController = viewController as? NativeNavigationViewController else {
-                throw NativeNavigatorError.illegalState(message: "Unexpected UIViewController implementation")
+            guard let viewController = viewController as? NativeNavigationWebViewController else {
+                throw NativeNavigatorError.illegalState(message: "Unexpected UIViewController implementation: \(viewController)")
             }
             
             guard let component = try self.component(tabBarController.componentId) as? TabsModel else {
@@ -939,7 +939,7 @@ extension NativeNavigation: UIAdaptivePresentationControllerDelegate {
     
     func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
         let viewController = presentationController.presentedViewController
-        if let viewController = viewController as? NativeNavigationViewController {
+        if let viewController = viewController as? NativeNavigationWebViewController {
             self.removeComponent(viewController.componentId)
         } else if let navigationController = viewController as? NativeNavigationNavigationController {
             self.removeComponent(navigationController.componentId)

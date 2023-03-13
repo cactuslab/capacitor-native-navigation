@@ -1,7 +1,7 @@
 import Foundation
 import Capacitor
 
-class NativeNavigationViewController: UIViewController {
+class NativeNavigationWebViewController: UIViewController, NativeNavigationViewController {
 
     private weak var plugin: CAPPlugin!
     

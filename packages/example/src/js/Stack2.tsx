@@ -1,6 +1,6 @@
 import { NativeNavigation } from '@cactuslab/native-navigation'
 import React, { useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 export default function Stack2(): JSX.Element {
 	const navigate = useNavigate()
@@ -38,6 +38,7 @@ export default function Stack2(): JSX.Element {
 			<p><button onClick={handleShowModal}>Show next in modal</button></p>
 			<p><button onClick={handlePush}>Push next</button></p>
 			<p><button onClick={() => navigate(-1)}>Go Back</button></p>
+			<p><Link to="/view1">Link</Link></p>
 		</div>
 	)
 }

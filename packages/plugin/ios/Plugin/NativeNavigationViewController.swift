@@ -5,6 +5,7 @@ class NativeNavigationViewController: UIViewController {
 
     private weak var plugin: CAPPlugin!
     
+    let componentId: String
     var path: String {
         didSet {
             webViewNeedsUpdate = true
@@ -34,12 +35,12 @@ class NativeNavigationViewController: UIViewController {
             }
         }
     }
-    var onDeinit: (() -> Void)?
     private var viewReadyContinuations: [CheckedContinuation<Void, Never>] = []
     private var webViewNeedsUpdate = false
     private let stackId: ComponentId?
 
-    init(path: String, state: JSObject?, stackId: ComponentId?, plugin: CAPPlugin) {
+    init(componentId: String, path: String, state: JSObject?, stackId: ComponentId?, plugin: CAPPlugin) {
+        self.componentId = componentId
         self.path = path
         self.state = state
         self.stackId = stackId
@@ -51,14 +52,8 @@ class NativeNavigationViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    deinit {
-        if let onDeinit = self.onDeinit {
-            onDeinit()
-        }
-    }
-
     override var debugDescription: String {
-        return "\(super.debugDescription) componentId=\(componentId ?? "no id") path=\(path)"
+        return "\(super.debugDescription) componentId=\(componentId) path=\(path)"
     }
 
     /**
@@ -72,7 +67,7 @@ class NativeNavigationViewController: UIViewController {
         await withCheckedContinuation { continuation in
             self.viewReadyContinuations.append(continuation)
 
-            var notificationData: [String : Any] = ["path": self.path, "id": self.componentId!]
+            var notificationData: [String : Any] = ["path": self.path, "id": self.componentId]
             if let state = self.state {
                 notificationData["state"] = state
             }

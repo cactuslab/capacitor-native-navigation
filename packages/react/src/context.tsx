@@ -57,9 +57,9 @@ export function createReactContext(options: ContextInit): NativeNavigationContex
 			}
 			const adapter = listener.nativeNavigationAdapters[type] = listener.nativeNavigationAdapters[type] || function(event: Event) {
 				const customEvent = event as CustomEvent
-				const data: MessageEventData = customEvent.detail.data
+				const data: MessageEventData = customEvent.detail
 				if (!type || data.type === type) {
-					listener(customEvent.detail.data)
+					listener(data)
 				}
 			}
 			viewWindow.addEventListener('nativenavigationmessage', adapter)

@@ -34,5 +34,9 @@ export class NativeNavigationWeb
 	async get(): Promise<GetResult> {
 		throw new Error('Not available on web')
 	}
+	
+	async message(): Promise<void> {
+		throw new Error('Not available on web')
+	}
 
 }

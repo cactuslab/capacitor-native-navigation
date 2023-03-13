@@ -1,5 +1,5 @@
 import { initViewHandler } from '@cactuslab/native-navigation'
-import type { ComponentId, NativeNavigationPluginInternal, NativeNavigationPlugin, CreateViewEventData, UpdateViewEventData } from '@cactuslab/native-navigation';
+import type { ComponentId, NativeNavigationPluginInternal, NativeNavigationPlugin, CreateViewEventData, UpdateViewEventData, MessageEventData } from '@cactuslab/native-navigation';
 import type { Plugin } from '@capacitor/core';
 import React from 'react';
 import ReactDOM from 'react-dom'
@@ -49,6 +49,7 @@ export async function initReact(options: Options): Promise<void> {
 			createView,
 			updateView,
 			destroyView,
+			messageView,
 			ready,
 		}
 	})
@@ -72,7 +73,7 @@ export async function initReact(options: Options): Promise<void> {
 			views[id] = viewWindow
 			rootElements[id] = rootElement
 
-			render(viewWindow, rootElement, toNativeNavigationReactRootProps(data))
+			render(viewWindow, rootElement, toNativeNavigationReactRootProps(data, viewWindow))
 		} else {
 			reportError('createView', `Attempted to load view "${path}" but could not find root node: #${viewRootId}`)
 		}
@@ -88,7 +89,11 @@ export async function initReact(options: Options): Promise<void> {
 		}
 
 		ReactDOM.unmountComponentAtNode(rootElement)
-		render(viewWindow, rootElement, toNativeNavigationReactRootProps(data))
+		render(viewWindow, rootElement, toNativeNavigationReactRootProps(data, viewWindow))
+	}
+	
+	function messageView(viewWindow: Window, data: MessageEventData) {
+		viewWindow.dispatchEvent(new CustomEvent('nativenavigationmessage', { detail: data }))
 	}
 
 	function render(viewWindow: Window, rootElement: Element, props: NativeNavigationReactRootProps) {

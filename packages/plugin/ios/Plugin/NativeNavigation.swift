@@ -339,13 +339,17 @@ class NativeNavigation: NSObject {
         var result = GetResult()
         result.component = try self.options(component)
         
-        if let containerId = component.container {
-            let container = try self.component(containerId)
-            if let stack = container as? StackModel {
+        var containerId = component.container
+        while containerId != nil {
+            let container = try self.component(containerId!)
+            if let stack = container as? StackModel, result.stack == nil {
                 result.stack = try self.options(stack) as? StackSpec
+                containerId = stack.container
             }
-            if let tabs = container as? TabsModel {
+            if let tabs = container as? TabsModel, result.tabs == nil {
                 result.tabs = try self.options(tabs) as? TabsSpec
+                /* We don't look above tabs, as we assume the order is tabs -> stack -> view */
+                break
             }
         }
         return result

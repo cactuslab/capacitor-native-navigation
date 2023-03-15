@@ -126,10 +126,6 @@ export function useNativeNavigationNavigator(options: Options): Navigator {
 		},
 
 		push: async function (to: To, state?: any, opts?: NavigateOptions | undefined): Promise<void> {
-			if (opts?.replace) {
-				return navigator.replace(to, state, opts)
-			}
-
 			const viewState = toViewState(state, opts?.state)
 			if (typeof viewState?.dismiss === 'string') {
 				try {
@@ -182,6 +178,7 @@ export function useNativeNavigationNavigator(options: Options): Navigator {
 				return
 			}
 
+			const replace = !!(opts?.replace || viewState?.replace)
 			try {
 				await plugin.push({
 					component: {
@@ -189,51 +186,17 @@ export function useNativeNavigationNavigator(options: Options): Navigator {
 						path,
 						state: viewState,
 					},
-					mode: viewState?.root ? 'root' : undefined,
+					mode: viewState?.root ? 'root' : replace ? 'replace' : undefined,
 					target: viewState?.target || stack || componentId,
 				})
 			} catch (error) {
-				reportError('push', error)
+				reportError(replace ? 'replace' : 'push', error)
 				throw error
 			}
 		},
 
 		replace: async function (to: To, state?: any, opts?: NavigateOptions | undefined): Promise<void> {
-			const viewState = toViewState(state, opts?.state)
-			if (typeof viewState?.dismiss === 'string') {
-				try {
-					await plugin.dismiss({
-						id: viewState.dismiss,
-					})
-				} catch (error) {
-					reportError('dismiss', error)
-					throw error
-				}
-			} else if (typeof viewState?.dismiss === 'boolean') {
-				try {
-					await plugin.dismiss()
-				} catch (error) {
-					reportError('dismiss', error)
-					throw error
-				}
-			}
-
-			const path = navigator.createHref(to)
-			try {
-				await plugin.push({
-					component: {
-						type: 'view',
-						path,
-						state: viewState,
-					},
-					animated: false,
-					mode: viewState?.root ? 'root' : 'replace',
-					target: viewState?.target || stack || componentId,
-				})
-			} catch (error) {
-				reportError(viewState?.root ? 'root' : 'replace', error)
-				throw error
-			}
+			return navigator.push(to, state, opts ? { ...opts, replace: true } : { replace: true })
 		}
 	}
 

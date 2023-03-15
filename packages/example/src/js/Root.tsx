@@ -15,7 +15,7 @@ import Examples from './examples'
 import Container from './Container'
 
 export default function Root(props: NativeNavigationReactRootProps): JSX.Element {
-	const { path, state } = props
+	const { pathname, search, hash, state } = props
 
 	const navigator = useNativeNavigationNavigator({
 		plugin: NativeNavigation,
@@ -53,7 +53,7 @@ export default function Root(props: NativeNavigationReactRootProps): JSX.Element
 	})
 
 	return (
-		<Router location={{ pathname: path, state }} navigator={navigator}>
+		<Router location={{ pathname, search, hash, state }} navigator={navigator}>
 			<Routes>
 				<Route path="stack1" element={<Stack1 />} />
 				<Route path="stack2" element={<Stack2 />} />

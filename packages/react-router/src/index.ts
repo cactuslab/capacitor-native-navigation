@@ -65,9 +65,9 @@ const NAVIGATOR_NAVIGATE_MESSAGE_TYPE = '@cactuslab/native-navigation-react-rout
 export function useNativeNavigationNavigator(options: Options): Navigator {
 	const { plugin } = options
 
-	const { componentId, stack, path, addMessageListener, removeMessageListener } = useNativeNavigationContext()
-
-	const currentModal = findModalConfig(path, options)
+	const { componentId, stack, pathname: currentPathname, addMessageListener, removeMessageListener } = useNativeNavigationContext()
+	
+	const currentModal = findModalConfig(currentPathname, options)
 
 	function reportError(source: string, error: unknown) {
 		if (error instanceof Error) {
@@ -90,10 +90,10 @@ export function useNativeNavigationNavigator(options: Options): Navigator {
 					result += to.pathname
 				}
 				if (to.search) {
-					result += `?${to.search}`
+					result += `${to.search}`
 				}
 				if (to.hash) {
-					result += `#${to.hash}`
+					result += `${to.hash}`
 				}
 				return result
 			}
@@ -205,7 +205,7 @@ export function useNativeNavigationNavigator(options: Options): Navigator {
 		const targetPath = navigator.createHref(data.value.to)
 
 		/* Decide whether to replace what's already here, or to push */
-		if (path === targetPath) {
+		if (currentPathname === targetPath) {
 			navigator.replace(data.value.to, data.value.state, data.value.opts)
 		} else {
 			navigator.push(data.value.to, data.value.state, data.value.opts)

@@ -6,7 +6,9 @@ import type { MessageListener } from './types'
 
 interface ContextInit {
 	componentId: ComponentId
-	path: string
+	pathname: string
+	search?: string
+	hash?: string
 	state?: unknown
 	stack?: ComponentId
 	plugin: NativeNavigationPlugin & Plugin
@@ -14,11 +16,13 @@ interface ContextInit {
 }
 
 export function createReactContext(options: ContextInit): NativeNavigationContext {
-	const { componentId, path, state, stack, viewWindow, plugin } = options
+	const { componentId, pathname, search, hash, state, stack, viewWindow, plugin } = options
 
 	const context: NativeNavigationContext = {
 		componentId,
-		path,
+		pathname,
+		search,
+		hash,
 		state,
 		stack,
 		viewWindow,
@@ -98,7 +102,9 @@ export interface NativeNavigationContext {
 	 */
 	componentId?: string
 
-	path: string
+	pathname: string
+	search?: string
+	hash?: string
 
 	state?: unknown
 
@@ -132,7 +138,7 @@ export interface NativeNavigationContext {
 }
 
 const DEFAULT_CONTEXT: NativeNavigationContext = {
-	path: '',
+	pathname: '',
 	viewWindow: window,
 	setOptions: async function() {
 		return

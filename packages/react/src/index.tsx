@@ -98,10 +98,12 @@ export async function initReact(options: Options): Promise<void> {
 	}
 
 	function render(viewWindow: Window, reactRoot: ReactDOM.Root, props: NativeNavigationReactRootProps) {
-		const { id, path, state, stack } = props
+		const { id, pathname, search, hash, state, stack } = props
 		const context = createReactContext({
 			componentId: id,
-			path,
+			pathname,
+			search,
+			hash,
 			state,
 			stack,
 			viewWindow,

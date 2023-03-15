@@ -18,7 +18,7 @@ interface ModalConfig {
 	/**
 	 * The path prefix under which this modal lives.
 	 */
-	path: string
+	path: string | RegExp
 	presentOptions(path: string, state?: ViewState): PresentOptions
 }
 
@@ -36,8 +36,14 @@ function findModalConfig(path: string, options: Options): ModalConfig | undefine
 	}
 
 	for (const aModal of modals) {
-		if (path.startsWith(aModal.path)) {
-			return aModal
+		if (typeof aModal.path === 'string') {
+			if (path.startsWith(aModal.path)) {
+				return aModal
+			}
+		} else if (aModal.path instanceof RegExp) {
+			if (aModal.path.test(path)) {
+				return aModal
+			}
 		}
 	}
 	return undefined

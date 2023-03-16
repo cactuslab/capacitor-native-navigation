@@ -19,7 +19,12 @@ class ComponentOptions(var title: Nullable<String>?, var stack: StackConfig?, va
         other.title?.let { this.title = it }
         other.stack?.let { this.stack = it }
         other.tab?.let { this.tab = it }
-        other.bar?.let { this.bar = it }
+        val bar = this.bar
+        if (bar != null) {
+            bar.merge(other.bar)
+        } else {
+            this.bar = other.bar
+        }
     }
 
     companion object {

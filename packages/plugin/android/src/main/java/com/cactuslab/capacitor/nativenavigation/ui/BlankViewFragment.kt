@@ -133,7 +133,9 @@ class BlankViewFragment : Fragment() {
         if (options == null && stackOptions?.options?.bar == null || !isStack) {
             toolbar.visibility = View.GONE
         } else {
-            toolbar.visibility = View.VISIBLE
+
+            val isToolbarVisible = options?.bar?.visible ?: true
+            toolbar.visibility = if (isToolbarVisible) View.VISIBLE else View.GONE
             val titleSpan = options?.title?.value()?.toSpannable()
 
             stackOptions?.options?.bar?.let { bar ->

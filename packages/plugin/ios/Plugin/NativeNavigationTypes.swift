@@ -246,6 +246,7 @@ struct ComponentOptions {
         var background: FillOptions?
         var title: LabelOptions?
         var buttons: LabelOptions?
+        var visible: Bool?
     }
     
     struct FillOptions {

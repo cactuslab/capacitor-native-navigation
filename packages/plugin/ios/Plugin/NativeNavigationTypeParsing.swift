@@ -248,6 +248,7 @@ extension ComponentOptions.BarOptions {
         if let buttonsOptions = object.getObject("buttons") {
             result.buttons = try ComponentOptions.LabelOptions.fromJSObject(buttonsOptions)
         }
+        result.visible = object.getBool("visible")
         return result
     }
 

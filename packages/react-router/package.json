@@ -36,6 +36,9 @@
     "watch": "tsc --watch",
     "prepublishOnly": "pnpm run build"
   },
+  "dependencies": {
+    "@cactuslab/native-navigation-react": "^0.0.9"
+  },
   "devDependencies": {
     "@cactuslab/native-navigation": "^0.0.8",
     "@capacitor/core": "^4.0.0",

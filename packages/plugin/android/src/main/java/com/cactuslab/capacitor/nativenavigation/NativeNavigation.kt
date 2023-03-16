@@ -22,6 +22,7 @@ import com.getcapacitor.PluginCall
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
+import kotlin.NoSuchElementException
 import kotlin.collections.set
 
 
@@ -167,45 +168,55 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         return false
     }
 
-    fun getOptions(options: GetOptions, call: PluginCall) {
-        val target = options.id
-
-        Log.d(TAG, "getOptions: -> id: ${options.id}")
+    @Throws(kotlin.NoSuchElementException::class)
+    fun navContextForTarget(target: String?) : NavContext {
         val navContext = if (target.isNullOrBlank()) {
-            try {
-                navContexts.last()
-            } catch (e: kotlin.NoSuchElementException) {
-                call.reject("No content has been presented", e)
-                return
-            }
+            navContexts.last()
         } else {
             val navContextId = findStackComponentIdHosting(target)
             navContexts.find { it.contextId == navContextId }
         }
         if (navContext == null) {
-            call.reject("This target doesn't exist $target")
-            return
+            throw NoSuchElementException("No content has been presented")
         }
+        return navContext
+    }
 
-        val rootSpec = components.get(navContext.contextId)
+    data class Target(val navContext: NavContext, val viewSpec: ComponentSpec)
+
+    @Throws(kotlin.NoSuchElementException::class)
+    fun findTarget(target: String?) : Target {
+        val navContext = navContextForTarget(target)
         val viewSpec = if (target.isNullOrBlank()) {
-            try {
-                components.get(navContext.virtualStack.last())
-            } catch (e: kotlin.NoSuchElementException) {
-                call.reject("No viewspec in the current component", e)
-                return
-            }
+            components.get(navContext.virtualStack.last())
         } else {
             components.get(target)
         }
+        if (viewSpec == null) {
+            throw NoSuchElementException("No such target exists at target:'$target'")
+        }
+        return Target(navContext, viewSpec)
+    }
 
-        val result = GetResult(component = viewSpec)
-        if (navContext.contextId != options.id) {
+    fun getOptions(options: GetOptions, call: PluginCall) {
+        Log.d(TAG, "getOptions: -> id: ${options.id}")
+
+        val target = try {
+            findTarget(options.id)
+        } catch (e: kotlin.NoSuchElementException) {
+            call.reject("No content matches the target")
+            return
+        }
+
+        val rootSpec = components.get(target.navContext.contextId)
+
+        val result = GetResult(component = target.viewSpec)
+        if (target.navContext.contextId != options.id) {
             rootSpec?.let {
                 when (it) {
                     is StackSpec -> {
                         val componentSpecs =
-                            navContext.virtualStack.mapNotNull { componentSpecForId(it) }
+                            target.navContext.virtualStack.mapNotNull { componentSpecForId(it) }
                         result.stack = StackSpec(id = rootSpec.id, options = rootSpec.options, stack = componentSpecs as List<ViewSpec>)
                     }
                     is TabsSpec -> TODO("Tabs Not implemented yet")
@@ -231,6 +242,17 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
             spec.options = options.options
             viewModel.postSetOptions(options, options.id)
         }
+    }
+
+    fun message(message: MessageOptions, call: PluginCall) {
+        val target = try {
+            findTarget(message.target)
+        } catch (e: kotlin.NoSuchElementException) {
+            call.reject("No content matches the target")
+            return
+        }
+
+        plugin.notifyMessage(target.viewSpec.id, message.type, message.value)
     }
 
     fun reset() {
@@ -484,6 +506,8 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
             }
         }
     }
+
+
 
     fun push(options: PushOptions, call: PluginCall) {
         Log.d(TAG, "push: Started for id ${options.component.id}")

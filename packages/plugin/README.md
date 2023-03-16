@@ -20,6 +20,7 @@ npx cap sync
 * [`setOptions(...)`](#setoptions)
 * [`reset(...)`](#reset)
 * [`get(...)`](#get)
+* [`message(...)`](#message)
 * [Interfaces](#interfaces)
 * [Type Aliases](#type-aliases)
 
@@ -141,6 +142,23 @@ Get the spec and context of a component
 | Param         | Type                                              |
 | ------------- | ------------------------------------------------- |
 | **`options`** | <code><a href="#getoptions">GetOptions</a></code> |
+
+**Returns:** <code>any</code>
+
+--------------------
+
+
+### message(...)
+
+```typescript
+message<D>(options: MessageOptions<D>) => any
+```
+
+Send a message to a component.
+
+| Param         | Type                                                               |
+| ------------- | ------------------------------------------------------------------ |
+| **`options`** | <code><a href="#messageoptions">MessageOptions</a>&lt;D&gt;</code> |
 
 **Returns:** <code>any</code>
 
@@ -331,6 +349,15 @@ Options for stack components
 | **`component`** | <code><a href="#componentspecs">ComponentSpecs</a></code> | The component, if any.                      |
 | **`stack`**     | <code><a href="#stackspec">StackSpec</a></code>           | The stack containing the component, if any. |
 | **`tabs`**      | <code><a href="#tabsspec">TabsSpec</a></code>             | The tabs containing the component, if any.  |
+
+
+#### MessageOptions
+
+| Prop         | Type                                                | Description                                                                            |
+| ------------ | --------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| **`target`** | <code><a href="#componentid">ComponentId</a></code> | The target component of the message, or `undefined` to send to the top-most component. |
+| **`type`**   | <code>string</code>                                 | The message type.                                                                      |
+| **`value`**  | <code>D</code>                                      | A message value. Must be JSON stringifiable.                                           |
 
 
 ### Type Aliases

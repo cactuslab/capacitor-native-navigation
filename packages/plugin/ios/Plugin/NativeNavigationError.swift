@@ -5,7 +5,6 @@ enum NativeNavigatorError: LocalizedError {
     case invalidParameter(name: String, value: Any)
     
     case alreadyPresented(name: String)
-    case notPresented(name: String)
     case notARoot(name: String)
     case componentAlreadyExists(name: String)
     case notAStack(name: String)
@@ -17,8 +16,6 @@ enum NativeNavigatorError: LocalizedError {
         switch self {
         case .alreadyPresented(name: let name):
             return "Already presented: \(name)"
-        case .notPresented(name: let name):
-            return "Not presented: \(name)"
         case .notARoot(name: let name):
             return "Not a root: \(name)"
         case .illegalState(message: let message):

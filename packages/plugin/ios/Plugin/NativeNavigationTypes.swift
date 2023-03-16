@@ -297,7 +297,6 @@ struct GetResult {
     var tabs: TabsSpec?
 }
 
-
 extension GetResult {
 
     func toPluginResult() -> PluginCallResultData {
@@ -314,4 +313,10 @@ extension GetResult {
         return result
     }
 
+}
+
+struct MessageOptions {
+    var target: ComponentId?
+    var type: String
+    var value: JSObjectLike?
 }

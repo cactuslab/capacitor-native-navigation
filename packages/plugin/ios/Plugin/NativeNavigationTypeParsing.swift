@@ -392,3 +392,17 @@ extension GetOptions {
     }
     
 }
+
+extension MessageOptions {
+    
+    static func fromJSObject(_ object: JSObjectLike) throws -> MessageOptions {
+        guard let type = object.getString("type") else {
+            throw NativeNavigatorError.missingParameter(name: "type")
+        }
+        var result = MessageOptions(type: type)
+        result.target = object.getString("target")
+        result.value = object.getObject("value")
+        return result
+    }
+    
+}

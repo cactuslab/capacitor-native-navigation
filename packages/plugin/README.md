@@ -170,11 +170,12 @@ Send a message to a component.
 
 #### PresentOptions
 
-| Prop            | Type                                                            | Description                                           |
-| --------------- | --------------------------------------------------------------- | ----------------------------------------------------- |
-| **`component`** | <code><a href="#componentspecs">ComponentSpecs</a></code>       | The component to present.                             |
-| **`style`**     | <code><a href="#presentationstyle">PresentationStyle</a></code> | The presentation style. Defaults to `'fullScreen'`    |
-| **`animated`**  | <code>boolean</code>                                            | Whether to animate the presenting. Defaults to `true` |
+| Prop              | Type                                                            | Description                                                                                                                                                              |
+| ----------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **`component`**   | <code><a href="#componentspecs">ComponentSpecs</a></code>       | The component to present.                                                                                                                                                |
+| **`style`**       | <code><a href="#presentationstyle">PresentationStyle</a></code> | The presentation style. Defaults to `'fullScreen'`                                                                                                                       |
+| **`cancellable`** | <code>boolean</code>                                            | Whether to allow the user to use system gestures or the back button to unwind the presentation. Useful to prevent the accidental dismissal of a form. Defaults to `true` |
+| **`animated`**    | <code>boolean</code>                                            | Whether to animate the presenting. Defaults to `true`                                                                                                                    |
 
 
 #### StackSpec
@@ -274,9 +275,9 @@ Send a message to a component.
 
 Options for stack components
 
-| Prop      | Type                                                                                                                                                                        |
-| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`bar`** | <code>{ background?: <a href="#filloptions">FillOptions</a>; title?: <a href="#labeloptions">LabelOptions</a>; buttons?: <a href="#labeloptions">LabelOptions</a>; }</code> |
+| Prop      | Type                                                                                                                                                                                           |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`bar`** | <code>{ background?: <a href="#filloptions">FillOptions</a>; title?: <a href="#labeloptions">LabelOptions</a>; buttons?: <a href="#labeloptions">LabelOptions</a>; visible?: boolean; }</code> |
 
 
 #### FillOptions

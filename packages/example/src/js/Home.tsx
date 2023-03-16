@@ -96,14 +96,19 @@ async function setupTabs() {
 					],
 				},
 				{
-					type: 'view',
-					path: '/view1',
-					options: {
-						title: 'View',
-						tab: {
-							image: diamond,
-						}
-					}
+					type: 'stack',
+					stack: [
+						{
+							type: 'view',
+							path: '/view1',
+							options: {
+								title: 'View',
+								tab: {
+									image: diamond,
+								}
+							}
+						},
+					],
 				},
 				{
 					type: 'view',

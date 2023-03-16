@@ -130,6 +130,22 @@ public class NativeNavigationPlugin: CAPPlugin {
         }
     }
     
+    @objc func message(_ call: CAPPluginCall) {
+        do {
+            let options = try MessageOptions.fromJSObject(call)
+            Task {
+                do {
+                    try await implementation.message(options)
+                    call.resolve()
+                } catch {
+                    call.reject("Failed to message: \(error.localizedDescription)")
+                }
+            }
+        } catch {
+            call.reject(error.localizedDescription)
+        }
+    }
+    
     @objc public func viewReady(_ call: CAPPluginCall) {
         do {
             let options = try ViewReadyOptions.fromJSObject(call)

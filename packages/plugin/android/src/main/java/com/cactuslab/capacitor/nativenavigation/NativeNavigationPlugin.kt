@@ -145,6 +145,18 @@ class NativeNavigationPlugin : Plugin() {
         }
     }
 
+    @PluginMethod
+    fun message(call: PluginCall) {
+        try {
+            val options = MessageOptions.fromJSObject(call.data)
+            activity.runOnUiThread {
+                implementation.message(options, call)
+            }
+        } catch (e: MissingParameterException) {
+            call.reject(e.localizedMessage)
+        }
+    }
+
     private fun capacitorChromeClient(): WebChromeClient = if (WebViewFeature.isFeatureSupported(WebViewFeature.GET_WEB_CHROME_CLIENT)) {
         when (val client = WebViewCompat.getWebChromeClient(bridge.webView)) {
             is BridgeWebChromeClient -> {
@@ -223,6 +235,17 @@ class NativeNavigationPlugin : Plugin() {
 
         notifyListeners("click:$componentId",  obj, true)
         notifyListeners("click", obj, true)
+    }
+
+    fun notifyMessage(target: String, type: String, value: JSObject?) {
+        val obj = JSObject()
+        obj.put("target", target)
+        obj.put("type", type)
+        value?.let {
+            obj.put("value", it)
+        }
+
+        notifyListeners("message", obj, true)
     }
 
     companion object {

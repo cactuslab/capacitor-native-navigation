@@ -46,6 +46,7 @@ export default function Root(props: NativeNavigationReactRootProps): JSX.Element
 							],
 						},
 						style: 'formSheet',
+						cancellable: false
 					}
 				},
 			},

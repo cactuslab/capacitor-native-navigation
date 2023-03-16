@@ -9,6 +9,7 @@ protocol ComponentModel {
     var options: ComponentOptions? { get set }
     var viewController: T { get }
     var container: ComponentId? { get }
+    var presentOptions: PresentOptions? { get set }
 }
 
 class StackModel: ComponentModel {
@@ -17,13 +18,15 @@ class StackModel: ComponentModel {
     let viewController: NativeNavigationNavigationController
     var views: [ComponentId]
     let container: ComponentId?
+    var presentOptions: PresentOptions?
     
-    init(componentId: ComponentId, options: ComponentOptions? = nil, viewController: NativeNavigationNavigationController, views: [ComponentId], container: ComponentId? = nil) {
+    init(componentId: ComponentId, options: ComponentOptions? = nil, viewController: NativeNavigationNavigationController, views: [ComponentId], container: ComponentId? = nil, presentOptions: PresentOptions? = nil) {
         self.componentId = componentId
         self.options = options
         self.viewController = viewController
         self.views = views
         self.container = container
+        self.presentOptions = presentOptions
     }
     
     func topComponentId() -> ComponentId? {
@@ -38,14 +41,16 @@ class TabsModel: ComponentModel {
     var tabs: [ComponentId]
     var selectedIndex: Int
     let container: ComponentId?
+    var presentOptions: PresentOptions?
     
-    init(componentId: ComponentId, options: ComponentOptions? = nil, viewController: NativeNavigationTabBarController, tabs: [ComponentId], selectedIndex: Int, container: ComponentId? = nil) {
+    init(componentId: ComponentId, options: ComponentOptions? = nil, viewController: NativeNavigationTabBarController, tabs: [ComponentId], selectedIndex: Int, container: ComponentId? = nil, presentOptions: PresentOptions? = nil) {
         self.componentId = componentId
         self.options = options
         self.viewController = viewController
         self.tabs = tabs
         self.selectedIndex = selectedIndex
         self.container = container
+        self.presentOptions = presentOptions
     }
     
     func selectedComponentId() -> ComponentId? {
@@ -62,12 +67,14 @@ struct ViewModel: ComponentModel {
     var options: ComponentOptions?
     let viewController: NativeNavigationWebViewController
     let container: ComponentId?
+    var presentOptions: PresentOptions?
     
-    init(componentId: ComponentId, options: ComponentOptions? = nil, viewController: NativeNavigationWebViewController, container: ComponentId? = nil) {
+    init(componentId: ComponentId, options: ComponentOptions? = nil, viewController: NativeNavigationWebViewController, container: ComponentId? = nil, presentOptions: PresentOptions? = nil) {
         self.componentId = componentId
         self.options = options
         self.viewController = viewController
         self.container = container
+        self.presentOptions = presentOptions
     }
 }
 
@@ -128,7 +135,9 @@ class NativeNavigation: NSObject {
 
     @MainActor
     private func _present(_ options: PresentOptions) async throws -> PresentResult {
-        let component = try self.createComponent(options.component, container: nil)
+        var component = try self.createComponent(options.component, container: nil)
+        component.presentOptions = options
+        
         await waitForViewsReady(component.viewController)
 
         if !options.animated && options.style == PresentationStyle.fullScreen {
@@ -946,6 +955,16 @@ extension NativeNavigation: UIAdaptivePresentationControllerDelegate {
         if let viewController = viewController as? NativeNavigationViewController {
             self.removeComponent(viewController.componentId)
         }
+    }
+    
+    func presentationControllerShouldDismiss(_ presentationController: UIPresentationController) -> Bool {
+        let viewController = presentationController.presentedViewController
+        if let viewController = viewController as? NativeNavigationViewController {
+            if let root = try? findRoot(id: viewController.componentId), let presentOptions = root.presentOptions {
+                return presentOptions.cancellable
+            }
+        }
+        return true
     }
     
 }

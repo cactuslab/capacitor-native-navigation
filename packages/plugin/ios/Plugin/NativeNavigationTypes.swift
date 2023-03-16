@@ -98,6 +98,7 @@ enum ComponentType: String {
 struct PresentOptions {
     var component: ComponentSpec
     var style: PresentationStyle
+    var cancellable: Bool
     var animated: Bool
 }
 

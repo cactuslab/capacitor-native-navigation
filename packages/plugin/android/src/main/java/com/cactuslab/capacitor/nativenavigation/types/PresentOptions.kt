@@ -6,6 +6,7 @@ import com.getcapacitor.JSObject
 data class PresentOptions(
     var component: ComponentSpec,
     var style: PresentationStyle,
+    var cancellable: Boolean,
     var animated: Boolean) {
 
     companion object {
@@ -13,9 +14,10 @@ data class PresentOptions(
         fun fromJSObject(jsObject: JSObject): PresentOptions {
             val componentJS = jsObject.getJSObject("component") ?: throw MissingParameterException("component")
             val component = ComponentSpec.fromJSObject(componentJS)
+            val cancellable = jsObject.getBool("cancellable") ?: true
             val animated = jsObject.getBool("animated") ?: true
             val style = jsObject.getString("style")?.let { PresentationStyle.get(it) } ?: PresentationStyle.FULLSCREEN
-            return PresentOptions(component, style, animated)
+            return PresentOptions(component, style, cancellable, animated)
         }
     }
 

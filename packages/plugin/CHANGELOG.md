@@ -1,5 +1,11 @@
 # @cactuslab/native-navigation
 
+## 0.1.1
+
+### Patch Changes
+
+- b1f43c4: iOS Fix issue where screen goes blank on a partial swipe back
+
 ## 0.1.0
 
 ### Minor Changes

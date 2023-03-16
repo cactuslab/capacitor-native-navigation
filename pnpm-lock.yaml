@@ -1,5 +1,10 @@
 lockfileVersion: 5.4
 
+patchedDependencies:
+  '@capacitor/android@4.7.0':
+    hash: wqm7wszwv3nonualxnirwdyuea
+    path: patches/@capacitor__android@4.7.0.patch
+
 importers:
 
   .:
@@ -13,11 +18,11 @@ importers:
       '@cactuslab/native-navigation': ^0.0.8
       '@cactuslab/native-navigation-react': ^0.0.9
       '@cactuslab/native-navigation-react-router': ^0.0.8
-      '@capacitor/android': ^4.3.0
+      '@capacitor/android': ^4.7.0
       '@capacitor/camera': latest
-      '@capacitor/cli': ^4.3.0
+      '@capacitor/cli': ^4.7.0
       '@capacitor/core': latest
-      '@capacitor/ios': ^4.0.0
+      '@capacitor/ios': ^4.7.0
       '@capacitor/splash-screen': latest
       '@types/react': ^18.0.21
       '@types/react-dom': ^18.0.6
@@ -30,16 +35,16 @@ importers:
       '@cactuslab/native-navigation': link:../plugin
       '@cactuslab/native-navigation-react': link:../react
       '@cactuslab/native-navigation-react-router': link:../react-router
-      '@capacitor/android': 4.4.0_@capacitor+core@4.7.0
+      '@capacitor/android': 4.7.0_wqm7wszwv3nonualxnirwdyuea_@capacitor+core@4.7.0
       '@capacitor/camera': 4.1.4_@capacitor+core@4.7.0
       '@capacitor/core': 4.7.0
-      '@capacitor/ios': 4.4.0_@capacitor+core@4.7.0
+      '@capacitor/ios': 4.7.0_@capacitor+core@4.7.0
       '@capacitor/splash-screen': 4.2.0_@capacitor+core@4.7.0
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
       react-router-dom: 6.4.3_biqbaboplfbrettd7655fr4n2y
     devDependencies:
-      '@capacitor/cli': 4.4.0
+      '@capacitor/cli': 4.7.0
       '@types/react': 18.0.25
       '@types/react-dom': 18.0.8
       '@vitejs/plugin-react': 2.2.0_vite@3.2.3
@@ -487,13 +492,14 @@ packages:
       '@capacitor/core': 4.4.0
     dev: true
 
-  /@capacitor/android/4.4.0_@capacitor+core@4.7.0:
-    resolution: {integrity: sha512-vPoUcoJ1CZ5pxjceN/HVnq5FuNo+V1/kBj/NH48nAiMzBbZPEDmplguGC8Dj2qbKjhkJ+LMSL26VTfnsyHMJbA==}
+  /@capacitor/android/4.7.0_wqm7wszwv3nonualxnirwdyuea_@capacitor+core@4.7.0:
+    resolution: {integrity: sha512-hyglxuzY2mktY0ST+6Y9IpZjSKxBLsG2xtnKWsIqDvXKKBjy5xRjHJMueP4P3u5z+bpLrdY6YlyR9JMIV/Pwcg==}
     peerDependencies:
-      '@capacitor/core': ^4.3.0
+      '@capacitor/core': ^4.6.0
     dependencies:
       '@capacitor/core': 4.7.0
     dev: false
+    patched: true
 
   /@capacitor/camera/4.1.4_@capacitor+core@4.7.0:
     resolution: {integrity: sha512-7f4n7PlnstYsdGyxc0Kc4hIyS6csFLOjXvffm7pJsuy9pSo+kfdOPdYgGg360QwbUAmA+Yv+J1ZW1eFIwgvWrQ==}
@@ -503,8 +509,8 @@ packages:
       '@capacitor/core': 4.7.0
     dev: false
 
-  /@capacitor/cli/4.4.0:
-    resolution: {integrity: sha512-BB/gbUtZ2PVrUSoqkQAOCvOtEP/5IDG3aZvlqT53RAzmt/rIbcOi7qimOoLsS9iCtNtAIN+UgCqb+f62GdvV5Q==}
+  /@capacitor/cli/4.7.0:
+    resolution: {integrity: sha512-yMbHpm3CegWcNoXp743W2raaUBm0EVnl61y14O8LO/IfUMSXGWOwrWMhUY4cXkkqzLbb6vv2ZIvO8ZzvUGml3w==}
     engines: {node: '>=12.4.0'}
     hasBin: true
     dependencies:
@@ -561,10 +567,10 @@ packages:
       '@capacitor/core': 4.4.0
     dev: true
 
-  /@capacitor/ios/4.4.0_@capacitor+core@4.7.0:
-    resolution: {integrity: sha512-x1i9WgaeUANBgXmCHcXoMrqZC49Ef0eu+kaRmcQ0/UkI2r31/PMGr3BVTlHRJLeBsodzwR4TiEeKRK044WX+Hw==}
+  /@capacitor/ios/4.7.0_@capacitor+core@4.7.0:
+    resolution: {integrity: sha512-GeuPXs4hoyQ5bQaSdBxLIGEd+TvO7IAQe00xe3tpEYsP3987SpkNUnhdW5ikUewFJmOtZIp+A8kCgWOJUmKbUg==}
     peerDependencies:
-      '@capacitor/core': ^4.3.0
+      '@capacitor/core': ^4.6.0
     dependencies:
       '@capacitor/core': 4.7.0
     dev: false

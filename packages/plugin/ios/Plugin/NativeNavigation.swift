@@ -900,7 +900,7 @@ extension NativeNavigation: UINavigationControllerDelegate {
     /**
      We maintain the array of views in our push and pop methods, so this is often a NOOP, however this catches when the user goes back using native controls.
      */
-    func navigationController(_ navigationController: UINavigationController, willShow viewController: UIViewController, animated: Bool) {
+    func navigationController(_ navigationController: UINavigationController, didShow viewController: UIViewController, animated: Bool) {
         do {
             guard let navigationController = navigationController as? NativeNavigationNavigationController else {
                 throw NativeNavigatorError.illegalState(message: "Unexpected UINavigationController implementation")

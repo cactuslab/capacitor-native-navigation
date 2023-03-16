@@ -1,5 +1,21 @@
 # capacitor-app
 
+## 1.1.0
+
+### Minor Changes
+
+- c901c24: Modals: Allow option to prevent system gestures for dismissing
+- a0a7df3: Modal navigation support
+
+### Patch Changes
+
+- Updated dependencies [c901c24]
+- Updated dependencies [a0a7df3]
+- Updated dependencies [cf84e19]
+  - @cactuslab/native-navigation@0.1.0
+  - @cactuslab/native-navigation-react@1.0.0
+  - @cactuslab/native-navigation-react-router@1.0.0
+
 ## 1.0.8
 
 ### Patch Changes

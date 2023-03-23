@@ -1,5 +1,11 @@
 # @cactuslab/native-navigation
 
+## 0.1.2
+
+### Patch Changes
+
+- 580c084: Address listeners not being removed by ensuring that we only forward to the bridge navigation on the main webview
+
 ## 0.1.1
 
 ### Patch Changes

@@ -22,9 +22,10 @@ class NativeNavigationWebViewDelegate : NSObject, WKUIDelegate, WKNavigationDele
     // The force unwrap is part of the protocol declaration, so we should keep it.
     // swiftlint:disable:next implicitly_unwrapped_optional
     public func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
-        self.wrappedNavigationDelegate?.webView?(webView, didStartProvisionalNavigation: navigation)
         
         if webView == mainWebView {
+            self.wrappedNavigationDelegate?.webView?(webView, didStartProvisionalNavigation: navigation)
+            
             /* Whenever there is navigation or a page load in Capacitor's webview we must reset the UI that this plugin has created
                otherwise whatever happens in Capacitor's webview will not be visible as our UI will cover it.
              */

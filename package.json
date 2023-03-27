@@ -12,7 +12,7 @@
     "release": "pnpm clean && pnpm build && pnpm test && pnpm exec changeset publish && pnpm install",
     "release:version": "pnpm changeset version && pnpm install",
     "test": "pnpm --recursive test",
-    "watch": "pnpm --parallel watch"
+    "watch": "(pnpm --recursive build || true) && pnpm --parallel watch"
   },
   "repository": {
     "type": "git",

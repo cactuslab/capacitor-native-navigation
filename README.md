@@ -25,20 +25,20 @@ Here is an example to present a new stack containing a single view:
 
 ```typescript
 const stack = await NativeNavigation.present({
-		component: {
-			type: 'stack',
-			stack: [
-				{
-					type: 'view',
-					path: '/welcome',
-					options: {
-						title: 'Welcome,
-					}
-				}
-			],
-		},
-		animated: false,
-	})
+    component: {
+      type: 'stack',
+      stack: [
+        {
+          type: 'view',
+          path: '/welcome',
+          options: {
+            title: 'Welcome,
+          }
+        }
+      ],
+    },
+    animated: false,
+  })
 ```
 
 The result of the `present` API call is an object containing the `id` of the presented component. You can also specify the `id` in the component specification to hard-code it.
@@ -54,10 +54,10 @@ When you have an existing stack, you can push a new view onto it, or replace the
 
 ```typescript
 NativeNavigation.push({
-	component: {
-		type: 'view',
-		path: '/features',
-	},
+  component: {
+    type: 'view',
+    path: '/features',
+  },
 })
 ```
 
@@ -99,14 +99,14 @@ import { NativeNavigation } from '@cactuslab/native-navigation'
 import { initReact, NativeNavigationReactRootProps } from '@cactuslab/native-navigation-react'
 
 function Root(props: NativeNavigationReactRootProps): JSX.Element {
-	const { pathname, search, hash, state } = props
+  const { pathname, search, hash, state } = props
 
-	...
+  ...
 }
 
 initReact({
-	plugin: NativeNavigation,
-	root: Root,
+  plugin: NativeNavigation,
+  root: Root,
 })
 ```
 
@@ -138,20 +138,20 @@ import { NativeNavigationReactRootProps } from '@cactuslab/native-navigation-rea
 import { useNativeNavigationNavigator } from '@cactuslab/native-navigation-react-router'
 
 export default function Root(props: NativeNavigationReactRootProps): JSX.Element {
-	const { pathname, search, hash, state } = props
+  const { pathname, search, hash, state } = props
 
-	const navigator = useNativeNavigationNavigator({
-		plugin: NativeNavigation,
-		modals: [],
-	})
+  const navigator = useNativeNavigationNavigator({
+    plugin: NativeNavigation,
+    modals: [],
+  })
 
-	return (
-		<Router location={{ pathname, search, hash, state }} navigator={navigator}>
-			<Routes>
-				...
-			</Routes>
-		</Router>
-	)
+  return (
+    <Router location={{ pathname, search, hash, state }} navigator={navigator}>
+      <Routes>
+        ...
+      </Routes>
+    </Router>
+  )
 }
 ```
 
@@ -163,40 +163,40 @@ Special support is available for modal views in the `useNativeNavigationNavigato
 
 ```typescript
 const navigator = useNativeNavigationNavigator({
-		plugin: NativeNavigation,
-		modals: [
-			{
-				path: '/modal/',
-				presentOptions(path, state) {
-					return {
-						component: {
-							type: 'stack',
-							stack: [
-								{
-									type: 'view',
-									path,
-									state,
-									options: {
-										title: 'Test',
-										stack: {
-											rightItems: [
-												{
-													id: 'back',
-													title: 'Close',
-												},
-											],
-										},
-									},
-								},
-							],
-						},
-						style: 'formSheet',
-						cancellable: false
-					}
-				},
-			},
-		]
-	})
+    plugin: NativeNavigation,
+    modals: [
+      {
+        path: '/modal/',
+        presentOptions(path, state) {
+          return {
+            component: {
+              type: 'stack',
+              stack: [
+                {
+                  type: 'view',
+                  path,
+                  state,
+                  options: {
+                    title: 'Test',
+                    stack: {
+                      rightItems: [
+                        {
+                          id: 'back',
+                          title: 'Close',
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+            },
+            style: 'formSheet',
+            cancellable: false
+          }
+        },
+      },
+    ]
+  })
 ```
 
 ## Work in progress

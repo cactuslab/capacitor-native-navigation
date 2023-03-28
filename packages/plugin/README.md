@@ -1,6 +1,10 @@
-# native-navigation
+# Capacitor Native Navigation Plugin
 
-Native navigation for Capacitor apps
+Native navigation for Capacitor apps.
+
+This package provides a [Capacitor](https://capacitorjs.com/) plugin for controlling native navigation UI from a React DOM app.
+
+Please see the root of this repository for a discussion of how to use this plugin.
 
 ## Install
 

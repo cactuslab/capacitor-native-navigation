@@ -166,7 +166,9 @@ const navigator = useNativeNavigationNavigator({
     plugin: NativeNavigation,
     modals: [
       {
+        /* The path prefix for views that should be in the modal */
         path: '/modal/',
+        /* A function to return the component specification for the view to present for the modal */
         presentOptions(path, state) {
           return {
             component: {
@@ -177,11 +179,13 @@ const navigator = useNativeNavigationNavigator({
                   path,
                   state,
                   options: {
-                    title: 'Test',
+                    /* We can specify the title here, or set it using `setOptions` from the component */
+                    title: 'My Modal Title',
                     stack: {
                       rightItems: [
+                        /* Add a close button to the view */
                         {
-                          id: 'back',
+                          id: 'close',
                           title: 'Close',
                         },
                       ],

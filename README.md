@@ -7,6 +7,14 @@ The traditional method of using React DOM on native is to either mimic native na
 without transitions and without a native backstack. Capacitor Native Navigation lets you use all of the native navigation containers from
 React DOM, often transparently, so you have the best of native and web.
 
+## Native navigation components
+
+Native applications are made up of "views". Views can be organised in "stacks" or "tabs". Views can also be presented modally, over another view. On iOS the native component representing a view is the `UIViewController`.
+
+A stack is a collection of views with the top-most view being the visible one, and the views underneath it forming a back-stack. On iOS the native component representing a stack is the `UINavigationController`, on Android the built-in back button navigates back through stacks.
+
+Tabs are another collection of views with buttons (tabs) to switch between the different views. On iOS the native component representing `tabs` is the `UITabBarController`.
+
 ## API
 
 The Capacitor Native Navigation plugin exposes an API for manipulating native views from JavaScript. You'll use the API to initialise the application, but most of the navigation in the application itself can avoid using the Capacitor Native Navigation API by taking advantage of routing library integration. This is a goal of Capacitor Native Navigation, to not require tight coupling in your application.
@@ -80,17 +88,9 @@ Modal views can often be dismissed by the user themselves using native controls,
 * the component `id` to dismiss.
 * an `animated` flag, to allow or prevent transition animations.
 
-## Native navigation components
-
-Native applications are made up of "views". Views can be organised in "stacks" or "tabs". Views can also be presented modally, over another view. On iOS the native component representing a view is the `UIViewController`.
-
-A stack is a collection of views with the top-most view being the visible one, and the views underneath it forming a back-stack. On iOS the native component representing a stack is the `UINavigationController`, on Android the built-in back button navigates back through stacks.
-
-Tabs are another collection of views with buttons (tabs) to switch between the different views. On iOS the native component representing `tabs` is the `UITabBarController`.
-
 ## React
 
-Capacitor Native Navigation integrates with [React](https://react.dev/) to render React components for each view or screen in the app. Each view has a path (and search, hash and state), which is used to work out which components to show; often using a routing library such a React Router ([see below](#ReactRouter)).
+Capacitor Native Navigation integrates with [React](https://react.dev/) to render React components for each view or screen in the app. Each view has a path (and search, hash and state), which is used to work out which components to show; often using a routing library such a React Router ([see below](#react-router)).
 
 The React integration is activated by calling `initReact` and passing a reference to the `NativeNavigation` plugin, and the root component that will render each view.
 

@@ -90,7 +90,7 @@ Modal views can often be dismissed by the user themselves using native controls,
 
 ## React
 
-Capacitor Native Navigation integrates with [React](https://react.dev/) to render React components for each view or screen in the app. Each view has a path (and search, hash and state), which is used to work out which components to show; often using a routing library such a React Router ([see below](#react-router)).
+Capacitor Native Navigation integrates with [React](https://react.dev/) to render React components for each view or screen in the app. Each view has a path (and search, hash and state), which is used to work out which components to show; often using a routing library such as React Router ([see below](#react-router)).
 
 The React integration is activated by calling `initReact` and passing a reference to the `NativeNavigation` plugin, and the root component that will render each view.
 

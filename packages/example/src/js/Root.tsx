@@ -1,7 +1,7 @@
 import { NativeNavigation } from '@cactuslab/native-navigation'
 import { NativeNavigationReactRootProps } from '@cactuslab/native-navigation-react'
 import { useNativeNavigationNavigator } from '@cactuslab/native-navigation-react-router'
-import {  Route, Router, Routes } from 'react-router-dom'
+import { Route, Router, Routes } from 'react-router-dom'
 
 import PageWithState from './PageWithState'
 import Stack1 from './Stack1'

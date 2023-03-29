@@ -26,10 +26,5 @@
   "homepage": "https://github.com/cactuslab/capacitor-native-navigation#readme",
   "devDependencies": {
     "@changesets/cli": "^2.23.0"
-  },
-  "pnpm": {
-    "patchedDependencies": {
-      "@capacitor/android@4.7.0": "patches/@capacitor__android@4.7.0.patch"
-    }
   }
 }

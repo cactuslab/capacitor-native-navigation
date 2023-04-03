@@ -13,21 +13,16 @@ class NativeNavigationWebViewClient(val bridge: Bridge): WebViewClient() {
         view: WebView?,
         request: WebResourceRequest?
     ): WebResourceResponse? {
-        return bridge.localServer.shouldInterceptRequest(request)
+        return bridge.webViewClient.shouldInterceptRequest(view, request)
     }
 
     override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-        val url = request?.url ?: return false
-        var shouldOverride = bridge.launchIntent(url)
-        if (!shouldOverride) {
-            shouldOverride = bridge.localServer.shouldOverrideUrlLoading(view, request)
-        }
-        return shouldOverride
+        return bridge.webViewClient.shouldOverrideUrlLoading(view, request)
     }
 
     @Deprecated("Deprecated in Java")
     override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
-        return bridge.launchIntent(Uri.parse(url))
+        return bridge.webViewClient.shouldOverrideUrlLoading(view, url)
     }
 
 }

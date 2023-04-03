@@ -93,6 +93,9 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
     private val webviewsCache: MutableMap<String, WebView> = mutableMapOf()
 
+    /** used to ensure that when native navigation is popping nothing can prevent it */
+    private var forcePop: Boolean = false;
+
     private fun insertComponent(component: ComponentSpec) {
         components[component.id] = component
         when (component) {
@@ -306,6 +309,16 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
                 val navController = navContext.navController()
 
+                if (navController?.previousBackStackEntry != null) {
+                    navContext.virtualStack.lastOrNull()?.let { topMostId ->
+                        val isBackEnabled = components[topMostId]?.options?.stack?.backEnabled ?: true
+                        if (!isBackEnabled && !forcePop) {
+                            /** Back on stack has been disabled. Tell the system we handled it. */
+                            return
+                        }
+                    }
+                }
+
                 val didNavigate = navController?.previousBackStackEntry?.let { backStackEntry ->
                     navController.navigateUp()
                 } ?: false
@@ -494,7 +507,9 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
     fun pop(call: PluginCall, activity: AppCompatActivity) {
         Log.d(TAG, "pop: Processing pop")
+        forcePop = true
         activity.onBackPressedDispatcher.onBackPressed()
+        forcePop = false
         call.resolve()
     }
 

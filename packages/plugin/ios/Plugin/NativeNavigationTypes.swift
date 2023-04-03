@@ -230,6 +230,7 @@ struct ComponentOptions {
         var backItem: StackItem?
         var leftItems: [StackItem]?
         var rightItems: [StackItem]?
+        var backEnabled: Bool?
     }
 
     struct StackBarItem {

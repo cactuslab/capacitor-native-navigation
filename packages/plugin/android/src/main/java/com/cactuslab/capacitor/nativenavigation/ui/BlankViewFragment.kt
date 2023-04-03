@@ -205,8 +205,10 @@ class BlankViewFragment : Fragment() {
 
         toolbar.invalidateMenu()
 
-        if (findNavController().previousBackStackEntry != null) {
+        if (findNavController().previousBackStackEntry != null && options?.stack?.backEnabled != false) {
             toolbar.setNavigationIcon(androidx.appcompat.R.drawable.abc_ic_ab_back_material)
+        } else {
+            toolbar.navigationIcon = null
         }
     }
 

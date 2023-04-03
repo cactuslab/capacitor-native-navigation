@@ -309,11 +309,12 @@ Options for stack components
 
 #### ComponentOptions
 
-| Prop        | Type                                                                                                   | Description                                       |
-| ----------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------- |
-| **`title`** | <code>string \| null</code>                                                                            |                                                   |
-| **`stack`** | <code>{ backItem?: <a href="#stackbaritem">StackBarItem</a>; leftItems?: {}; rightItems?: {}; }</code> | Options for when the component is used in a stack |
-| **`tab`**   | <code>{ image?: <a href="#imagespec">ImageSpec</a>; badgeValue?: string; }</code>                      | Options for when the component is used in a tab   |
+| Prop              | Type                                                                                                   | Description                                       |
+| ----------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------- |
+| **`title`**       | <code>string \| null</code>                                                                            |                                                   |
+| **`stack`**       | <code>{ backItem?: <a href="#stackbaritem">StackBarItem</a>; leftItems?: {}; rightItems?: {}; }</code> | Options for when the component is used in a stack |
+| **`tab`**         | <code>{ image?: <a href="#imagespec">ImageSpec</a>; badgeValue?: string; }</code>                      | Options for when the component is used in a tab   |
+| **`backEnabled`** | <code>boolean</code>                                                                                   | Defaults to `true`                                |
 
 
 #### StackBarItem

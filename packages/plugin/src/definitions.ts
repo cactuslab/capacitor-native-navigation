@@ -268,6 +268,15 @@ export interface ComponentOptions {
 		backItem?: StackBarItem
 		leftItems?: StackBarItem[]
 		rightItems?: StackBarItem[]
+		
+		/**
+		 * Enables the system gestures and buttons for managing the back action.
+		 * Useful for preventing the user from exiting a window that is running
+		 * an important operation. Does not prevent the user from backgrounding
+		 * the application.
+		 * Defaults to `true`
+		 */
+		backEnabled?: boolean
 	}
 
 	/**

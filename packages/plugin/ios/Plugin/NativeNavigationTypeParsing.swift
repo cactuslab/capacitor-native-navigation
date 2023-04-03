@@ -170,6 +170,9 @@ extension ComponentOptions.StackOptions {
                 result.rightItems!.append(try StackItem.fromJSObject(rightItem))
             }
         }
+        if let backEnabled = object.getBool("backEnabled") {
+            result.backEnabled = backEnabled
+        }
         return result
     }
 

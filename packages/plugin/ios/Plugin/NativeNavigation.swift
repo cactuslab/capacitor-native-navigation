@@ -735,6 +735,10 @@ class NativeNavigation: NSObject {
             if let items = stackOptions.rightItems {
                 viewController.navigationItem.rightBarButtonItems = try items.map({ item in try toBarButtonItem(item) })
             }
+            
+            if let backEnabled = stackOptions.backEnabled {
+                viewController.navigationItem.setHidesBackButton(!backEnabled, animated: animated)
+            }
         }
         
         if let navigationController = viewController as? UINavigationController {
@@ -780,8 +784,15 @@ class NativeNavigation: NSObject {
             }
         }
         
-        if let barOptions = options.bar {
-            viewController.navigationController?.setNavigationBarHidden(barOptions.visible == false, animated: animated)
+        if let navigationController = viewController.navigationController {
+            if navigationController.topViewController == viewController {
+                /** This controller is the topmost in this stack so apply options that may show or hide settings for the whole navigation controller */
+                
+                if let barOptions = options.bar {
+                    navigationController.setNavigationBarHidden(barOptions.visible == false, animated: animated)
+                }
+                
+            }
         }
 
         if let tabOptions = options.tab {

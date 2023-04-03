@@ -29,7 +29,7 @@ export function createReactContext(options: ContextInit): NativeNavigationContex
 
 		setOptions: async function(options) {
 			return plugin.setOptions({
-				id: options.id || componentId,
+				id: componentId,
 				animated: options.animated,
 				options,
 			})
@@ -121,7 +121,7 @@ export interface NativeNavigationContext {
 	/**
 	 * Set this component's options.
 	 */
-	setOptions: (options: AllComponentOptions & { id?: string; animated?: boolean }) => Promise<void>
+	setOptions: (options: AllComponentOptions & { animated?: boolean }) => Promise<void>
 
 	/**
 	 * Dismiss this component, if it was presented.

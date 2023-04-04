@@ -786,7 +786,7 @@ class NativeNavigation: NSObject {
         
         if let navigationController = viewController.navigationController {
             if navigationController.topViewController == viewController {
-                /** This controller is the topmost in this stack so apply options that may show or hide settings for the whole navigation controller */
+                /* This controller is the topmost in this stack so apply options that may show or hide settings for the whole navigation controller */
                 
                 if let barOptions = options.bar {
                     navigationController.setNavigationBarHidden(barOptions.visible == false, animated: animated)

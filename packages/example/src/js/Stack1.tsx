@@ -82,8 +82,6 @@ export default function Stack1(): JSX.Element {
 	}, [])
 
 	useEffect(function() {
-
-		console.log("Setting Options on Stack1")
 		setOptions({
 			title: "Stack One",
 			stack: {

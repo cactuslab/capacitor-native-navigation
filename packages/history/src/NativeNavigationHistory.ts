@@ -147,7 +147,7 @@ export class NativeNavigationHistory implements History {
 
 		let decision: NavigationDecision
 		if (current.stack) {
-			decision = defaultDecider(location, action, current.stack ? current.stack.stack.map(s => toLocationDescriptorObject(s.path, s.state)) : [], this.options)
+			decision = defaultDecider(location, action, current.stack ? current.stack.components.map(s => toLocationDescriptorObject(s.path, s.state)) : [], this.options)
 		} else {
 			decision = {
 				action,

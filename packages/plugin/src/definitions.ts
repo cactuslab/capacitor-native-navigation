@@ -28,7 +28,7 @@ export interface NativeNavigationPlugin {
 	 * Set the options for an existing component
 	 * @param options 
 	 */
-	setOptions(options: SetComponentOptions): Promise<void>
+	setOptions(options: SetOptionsOptions): Promise<void>
 
 	/**
 	 * Remove all of the native UI and reset back to the root Capacitor webview.
@@ -86,7 +86,7 @@ export interface MessageEventData<D = any> {
 export type ComponentId = string
 export type ButtonId = string
 
-export interface ComponentSpec<O extends ComponentOptions> {
+export interface ComponentSpec {
 	type: ComponentType
 
 	/**
@@ -94,23 +94,33 @@ export interface ComponentSpec<O extends ComponentOptions> {
 	 */
 	id?: ComponentId
 
-	options?: O
+	/* There was previously an options property here; this exists temporarily to help find existing usage */
+	options?: never
 }
 
 type ComponentSpecs = StackSpec | TabsSpec | ViewSpec
 
-export interface StackSpec extends ComponentSpec<StackOptions> {
+export interface StackSpec extends ComponentSpec, StackOptions {
 	type: 'stack'
-	stack: ViewSpec[]
+	components: ViewSpec[]
 }
 
-export interface TabsSpec extends ComponentSpec<TabsOptions> {
+export interface TabsSpec extends ComponentSpec, TabsOptions {
 	type: 'tabs'
-	tabs: (StackSpec | ViewSpec)[]
+	tabs: TabSpec[]
+}
+
+export interface TabSpec extends TabOptions {
+	/**
+	 * The id to use for the tab, or undefined to automatically generate an id.
+	 */
+	id?: ComponentId
+
+	component: StackSpec | ViewSpec
 }
 
 export type ViewState = Record<string, string | number | boolean | null | undefined>
-export interface ViewSpec extends ComponentSpec<ViewOptions> {
+export interface ViewSpec extends ComponentSpec, ViewOptions {
 	type: 'view'
 
 	/**
@@ -246,7 +256,7 @@ export interface PopResult {
 	id?: ComponentId
 }
 
-export interface SetComponentOptions {
+export interface SetOptionsOptions {
 	id: ComponentId
 
 	/**
@@ -255,49 +265,26 @@ export interface SetComponentOptions {
 	 */
 	animated?: boolean
 
-	options: AllComponentOptions
+	options: AllOptions
 }
 
 export interface ComponentOptions {
 	title?: string | null
-
-	/**
-	 * Options for when the component is used in a stack
-	 */
-	stack?: {
-		backItem?: StackBarItem
-		leftItems?: StackBarItem[]
-		rightItems?: StackBarItem[]
-		
-		/**
-		 * Enables the system gestures and buttons for managing the back action.
-		 * Useful for preventing the user from exiting a window that is running
-		 * an important operation. Does not prevent the user from backgrounding
-		 * the application.
-		 * Defaults to `true`
-		 */
-		backEnabled?: boolean
-	}
-
-	/**
-	 * Options for when the component is used in a tab
-	 */
-	tab?: {
-		image?: ImageSpec
-		badgeValue?: string
-	}
 }
 
 /**
  * Options for stack components
  */
 export interface StackOptions extends ComponentOptions {
-	bar?: {
-		background?: FillOptions
-		title?: LabelOptions
-		buttons?: LabelOptions
-		visible?: boolean
-	}
+	components?: ViewSpec[]
+	bar?: BarOptions
+}
+
+interface BarOptions {
+	background?: FillOptions
+	title?: LabelOptions
+	buttons?: LabelOptions
+	visible?: boolean
 }
 
 export interface FillOptions {
@@ -317,14 +304,49 @@ export interface FontOptions {
 /**
  * Options for tabs components
  */
-export type TabsOptions = ComponentOptions
+export interface TabsOptions extends ComponentOptions {
+	tabs?: TabSpec[]
+}
+
+export interface TabOptions {
+	title?: string
+	image?: ImageSpec
+	badgeValue?: string
+
+	component?: StackSpec | ViewSpec
+}
 
 /**
  * Options for view components
  */
-export type ViewOptions = ComponentOptions
+export interface ViewOptions extends ComponentOptions {
+	/**
+	 * Options for when the component is used in a stack
+	 */
+	stackItem?: {
+		backItem?: StackBarButtonItem | null
+		leftItems?: StackBarButtonItem[] | null
+		rightItems?: StackBarButtonItem[] | null
+		
+		/**
+		 * Enables the system gestures and buttons for managing the back action.
+		 * Useful for preventing the user from exiting a window that is running
+		 * an important operation. Does not prevent the user from backgrounding
+		 * the application.
+		 * Default behaviour is to use the host Stack configuration which behaves
+		 * as backEnabled is `true`
+		 */
+		backEnabled?: boolean | null
 
-export type AllComponentOptions = StackOptions | TabsOptions | ViewOptions
+		/**
+		 * Customise the bar on top of the default options provided by the
+		 * stack
+		 */
+		bar?: BarOptions | null
+	}
+}
+
+export type AllOptions = StackOptions | TabsOptions | TabOptions | ViewOptions
 
 export interface ResetOptions {
 	/**
@@ -334,7 +356,7 @@ export interface ResetOptions {
 	animated?: boolean
 }
 
-interface StackBarItem {
+interface StackBarButtonItem {
 	id: ButtonId
 	title: string
 	image?: ImageSpec

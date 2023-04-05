@@ -26,21 +26,19 @@ export default function Root(props: NativeNavigationReactRootProps): JSX.Element
 					return {
 						component: {
 							type: 'stack',
-							stack: [
+							components: [
 								{
 									type: 'view',
 									path,
 									state,
-									options: {
-										title: 'Test',
-										stack: {
-											rightItems: [
-												{
-													id: 'back',
-													title: 'Close',
-												},
-											],
-										},
+									title: 'Test',
+									stack: {
+										rightItems: [
+											{
+												id: 'back',
+												title: 'Close',
+											},
+										],
 									},
 								},
 							],

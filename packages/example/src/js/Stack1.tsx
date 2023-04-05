@@ -58,8 +58,10 @@ export default function Stack1(): JSX.Element {
 
 	useEffect(() => {
 		setOptions({
-			bar: {
-				visible: toolbarVisible
+			stack: {
+				bar: {
+					visible: toolbarVisible
+				},
 			},
 			animated: true
 		})

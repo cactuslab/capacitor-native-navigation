@@ -27,7 +27,7 @@ export function createReactContext(options: ContextInit): NativeNavigationContex
 		stack,
 		viewWindow,
 
-		setOptions: async function(options) {
+		updateView: async function(options) {
 			return plugin.setOptions({
 				id: options.id || componentId,
 				animated: options.animated,
@@ -121,7 +121,7 @@ export interface NativeNavigationContext {
 	/**
 	 * Set this component's options.
 	 */
-	setOptions: (options: ViewOptions & { id?: string; animated?: boolean }) => Promise<void>
+	updateView: (options: ViewOptions & { id?: string; animated?: boolean }) => Promise<void>
 
 	/**
 	 * Dismiss this component, if it was presented.
@@ -140,7 +140,7 @@ export interface NativeNavigationContext {
 const DEFAULT_CONTEXT: NativeNavigationContext = {
 	pathname: '',
 	viewWindow: window,
-	setOptions: async function() {
+	updateView: async function() {
 		return
 	},
 	dismiss: async function() {

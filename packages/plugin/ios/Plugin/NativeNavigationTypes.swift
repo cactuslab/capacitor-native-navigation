@@ -212,52 +212,126 @@ extension PopResult {
 
 }
 
-struct SetComponentOptions {
+struct TabOptions: JSObjectDecodable {
+    
+}
+
+protocol ComponentOptions: JSObjectDecodable {
+    var title: Nullable<String>? { get set }
+}
+
+protocol SetOptionsAble {
+    static func fromJSObject(_ object: JSObjectLike) throws -> Self
+}
+
+struct SetOptionsOptions<T: JSObjectDecodable> {
     var id: ComponentId
     var animated: Bool
 
-    var options: ComponentOptions
+    var options: T
 }
 
-struct ComponentOptions {
+struct StackOptions: ComponentOptions {
     var title: Nullable<String>?
-    var stack: ComponentOptions.StackOptions?
-    var tab: ComponentOptions.TabOptions?
-    
+    var components: [ViewSpec]?
     var bar: BarOptions?
+}
 
-    struct StackOptions {
-        var backItem: StackItem?
-        var leftItems: [StackItem]?
-        var rightItems: [StackItem]?
-        var backEnabled: Bool?
-    }
+struct TabsOptions: ComponentOptions {
+    var title: Nullable<String>?
+    var tabs: [TabsSpec]?
+}
 
-    struct StackBarItem {
-        var id: ButtonId
-        var title: String
-        var image: ImageObject?
+struct ViewOptions: ComponentOptions {
+    var title: Nullable<String>?
+    var stackItem: StackItem?
+    
+    struct StackItem {
+        var backItem: Nullable<StackBarButtonItem>?
+        var leftItems: Nullable<[StackBarButtonItem]>?
+        var rightItems: Nullable<[StackBarButtonItem]>?
+        var backEnabled: Nullable<Bool>?
+        
+        struct StackBarButtonItem {
+            var id: ButtonId
+            var title: String
+            var image: Nullable<ImageObject>?
+        }
     }
+}
 
-    struct TabOptions {
-        var image: ImageObject?
-        var badgeValue: String?
-    }
+struct BarOptions {
+    var background: FillOptions?
+    var title: LabelOptions?
+    var buttons: LabelOptions?
+    var visible: Bool?
+}
+
+struct FillOptions {
+    var color: UIColor?
+}
+
+struct LabelOptions {
+    var color: UIColor?
+    var font: UIFont?
+}
+
+//struct ComponentOptions {
+//    /* Common */
+//    var title: Nullable<String>?
+//
+//    /*  */
+//    var stack: ComponentOptions.StackOptions?
+//    var tab: ComponentOptions.TabOptions?
+//
+//    /* StackOptions */
+//
+//
+//    /* TabsOptions */
+//    var tabs: [TabSpec]?
+//
+//    struct StackOptions {
+
+//
+//        mutating func mergeOptions(_ other: StackOptions?) {
+//            guard let other = other else { return }
+//
+//        }
+//    }
+//
+
+//
+//    struct TabOptions {
+//        var image: ImageObject?
+//        var badgeValue: String?
+//    }
+//
+
+//
+
+//
+
+//
+//    func mergeOptions(_ other: ComponentOptions?) -> ComponentOptions {
+//
+//        var new = ComponentOptions()
+//
+//
+//        return new
+//
+//    }
+//}
+
+extension Optional {
     
-    struct BarOptions {
-        var background: FillOptions?
-        var title: LabelOptions?
-        var buttons: LabelOptions?
-        var visible: Bool?
-    }
-    
-    struct FillOptions {
-        var color: UIColor?
-    }
-    
-    struct LabelOptions {
-        var color: UIColor?
-        var font: UIFont?
+    mutating func setOrTryApply(_ other: Wrapped?, apply: (_ base: Wrapped, _ overlay: Wrapped) -> Wrapped) {
+        guard let other = other else { return }
+        switch self {
+        case .none:
+            self = .some(other)
+        case .some(let wrapped):
+            self = .some(apply(wrapped, other))
+        }
     }
     
 }

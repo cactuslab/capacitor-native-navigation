@@ -83,15 +83,46 @@ public class NativeNavigationPlugin: CAPPlugin {
     
     @objc func setOptions(_ call: CAPPluginCall) {
         do {
-            let options = try SetComponentOptions.fromJSObject(call)
-            Task {
-                do {
-                    try await implementation.setOptions(options)
-                    call.resolve()
-                } catch {
-                    call.reject("Failed to set options: \(error.localizedDescription)")
+            guard let id = call.getString("id") else {
+                throw NativeNavigatorError.missingParameter(name: "id")
+            }
+            
+            func applyOptions(apply: @escaping () async throws -> Void) {
+                Task {
+                    do {
+                        try await apply()
+                        call.resolve()
+                    } catch {
+                        call.reject("Failed to set options: \(error.localizedDescription)")
+                    }
                 }
             }
+            
+            guard let implementation = self.implementation else {
+                throw NativeNavigatorError.illegalState(message: "Implementation is missing")
+            }
+            
+            let component = try implementation.findComponent(id: id)
+            switch component {
+            case is StackModel:
+                let options = try SetOptionsOptions<StackOptions>.fromJSObject(call)
+                applyOptions {
+                    try await implementation.setOptions(options)
+                }
+            case is TabsModel:
+                let options = try SetOptionsOptions<TabsOptions>.fromJSObject(call)
+                applyOptions {
+                    try await implementation.setOptions(options)
+                }
+            case is ViewModel:
+                let options = try SetOptionsOptions<ViewOptions>.fromJSObject(call)
+                applyOptions {
+                    try await implementation.setOptions(options)
+                }
+            default:
+                throw NativeNavigatorError.illegalState(message: "Component is not defined correctly in setOptions")
+            }
+            
         } catch {
             call.reject(error.localizedDescription)
         }

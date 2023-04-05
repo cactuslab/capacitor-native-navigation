@@ -311,14 +311,38 @@ class NativeNavigation: NSObject {
             return PopResult(stack: stack.componentId, count: 0)
         }
     }
-    
+        
     @MainActor
-    func setOptions(_ options: SetComponentOptions) async throws {
-        let component = try self.component(options.id)
+    func setOptions(_ options: SetOptionsOptions<StackOptions>) async throws {
+        var component = try self.component(options.id)
 
         let componentOptions = options.options
         
         try self.configureViewController(component, options: componentOptions, animated: options.animated)
+        component.options = options.options
+        try self.updateComponent(component)
+    }
+    
+    @MainActor
+    func setOptions(_ options: SetOptionsOptions<TabsOptions>) async throws {
+        var component = try self.component(options.id)
+
+        let componentOptions = options.options
+        
+        try self.configureViewController(component, options: componentOptions, animated: options.animated)
+        component.options = options.options
+        try self.updateComponent(component)
+    }
+    
+    @MainActor
+    func setOptions(_ options: SetOptionsOptions<ViewOptions>) async throws {
+        var component = try self.component(options.id)
+
+        let componentOptions = options.options
+        
+        try self.configureViewController(component, options: componentOptions, animated: options.animated)
+        component.options = options.options
+        try self.updateComponent(component)
     }
 
     func reset(_ options: ResetOptions) async throws {
@@ -574,6 +598,14 @@ class NativeNavigation: NSObject {
 
         componentsById[model.componentId] = model
     }
+    
+    private func updateComponent(_ model: any ComponentModel) throws {
+        guard self.componentsById[model.componentId] != nil else {
+            throw NativeNavigatorError.componentAlreadyExists(name: model.componentId)
+        }
+        
+        componentsById[model.componentId] = model
+    }
 
     @MainActor
     private func removeComponent(_ id: ComponentId) {
@@ -806,7 +838,7 @@ class NativeNavigation: NSObject {
             }
         }
 
-        func toBarButtonItem(_ stackItem: ComponentOptions.StackBarItem) throws -> UIBarButtonItem {
+        func toBarButtonItem(_ stackItem: ComponentOptions.StackBarButtonItem) throws -> UIBarButtonItem {
             let action = UIAction(title: stackItem.title) { _ in
                 let data = ["buttonId": stackItem.id, "componentId": component.componentId]
                 self.plugin.notifyListeners("click:\(component.componentId)", data: data, retainUntilConsumed: true)
@@ -907,6 +939,28 @@ class NativeNavigation: NSObject {
 }
 
 extension NativeNavigation: UINavigationControllerDelegate {
+    
+    func navigationController(_ navigationController: UINavigationController, willShow viewController: UIViewController, animated: Bool) {
+
+        do {
+            guard let navigationController = navigationController as? NativeNavigationNavigationController else {
+                throw NativeNavigatorError.illegalState(message: "Unexpected UINavigationController implementation")
+            }
+            guard let viewController = viewController as? NativeNavigationViewController else {
+                throw NativeNavigatorError.illegalState(message: "Unexpected UIViewController implementation")
+            }
+
+            let viewComponent = try self.component(viewController.componentId)
+            let barVisible = viewComponent.options?.bar?.visible ?? true
+
+            if navigationController.isNavigationBarHidden == barVisible {
+                navigationController.setNavigationBarHidden(!barVisible, animated: animated)
+            }
+        } catch {
+            fatalError(error.localizedDescription)
+        }
+        
+    }
     
     /**
      We maintain the array of views in our push and pop methods, so this is often a NOOP, however this catches when the user goes back using native controls.

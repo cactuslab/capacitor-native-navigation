@@ -104,14 +104,14 @@ Pop the top component off a stack
 ### setOptions(...)
 
 ```typescript
-setOptions(options: SetComponentOptions) => any
+setOptions(options: SetOptionsOptions) => any
 ```
 
 Set the options for an existing component
 
-| Param         | Type                                                                |
-| ------------- | ------------------------------------------------------------------- |
-| **`options`** | <code><a href="#setcomponentoptions">SetComponentOptions</a></code> |
+| Param         | Type                                                            |
+| ------------- | --------------------------------------------------------------- |
+| **`options`** | <code><a href="#setoptionsoptions">SetOptionsOptions</a></code> |
 
 **Returns:** <code>any</code>
 
@@ -184,10 +184,10 @@ Send a message to a component.
 
 #### StackSpec
 
-| Prop        | Type                 |
-| ----------- | -------------------- |
-| **`type`**  | <code>'stack'</code> |
-| **`stack`** | <code>{}</code>      |
+| Prop             | Type                 |
+| ---------------- | -------------------- |
+| **`type`**       | <code>'stack'</code> |
+| **`components`** | <code>{}</code>      |
 
 
 #### ViewSpec
@@ -204,7 +204,6 @@ Send a message to a component.
 | Prop       | Type                |
 | ---------- | ------------------- |
 | **`type`** | <code>'tabs'</code> |
-| **`tabs`** | <code>{}</code>     |
 
 
 #### PresentResult
@@ -266,22 +265,33 @@ Send a message to a component.
 | **`id`**    | <code><a href="#componentid">ComponentId</a></code> | The id of the component that was popped, if any. If multiple components are popped, the id will be of the last component popped. |
 
 
-#### SetComponentOptions
+#### SetOptionsOptions
 
-| Prop           | Type                                                                | Description                                         |
-| -------------- | ------------------------------------------------------------------- | --------------------------------------------------- |
-| **`id`**       | <code><a href="#componentid">ComponentId</a></code>                 |                                                     |
-| **`animated`** | <code>boolean</code>                                                | Whether to animate the changes. Defaults to `false` |
-| **`options`**  | <code><a href="#allcomponentoptions">AllComponentOptions</a></code> |                                                     |
+| Prop           | Type                                                | Description                                         |
+| -------------- | --------------------------------------------------- | --------------------------------------------------- |
+| **`id`**       | <code><a href="#componentid">ComponentId</a></code> |                                                     |
+| **`animated`** | <code>boolean</code>                                | Whether to animate the changes. Defaults to `false` |
+| **`options`**  | <code><a href="#alloptions">AllOptions</a></code>   |                                                     |
 
 
 #### StackOptions
 
 Options for stack components
 
-| Prop      | Type                                                                                                                                                                                           |
-| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`bar`** | <code>{ background?: <a href="#filloptions">FillOptions</a>; title?: <a href="#labeloptions">LabelOptions</a>; buttons?: <a href="#labeloptions">LabelOptions</a>; visible?: boolean; }</code> |
+| Prop             | Type                                              |
+| ---------------- | ------------------------------------------------- |
+| **`components`** | <code>{}</code>                                   |
+| **`bar`**        | <code><a href="#baroptions">BarOptions</a></code> |
+
+
+#### BarOptions
+
+| Prop             | Type                                                  |
+| ---------------- | ----------------------------------------------------- |
+| **`background`** | <code><a href="#filloptions">FillOptions</a></code>   |
+| **`title`**      | <code><a href="#labeloptions">LabelOptions</a></code> |
+| **`buttons`**    | <code><a href="#labeloptions">LabelOptions</a></code> |
+| **`visible`**    | <code>boolean</code>                                  |
 
 
 #### FillOptions
@@ -307,13 +317,47 @@ Options for stack components
 | **`size`** | <code>number</code> |
 
 
-#### ComponentOptions
+#### TabsOptions
 
-| Prop        | Type                                                                                                                          | Description                                       |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| **`title`** | <code>string \| null</code>                                                                                                   |                                                   |
-| **`stack`** | <code>{ backItem?: <a href="#stackbaritem">StackBarItem</a>; leftItems?: {}; rightItems?: {}; backEnabled?: boolean; }</code> | Options for when the component is used in a stack |
-| **`tab`**   | <code>{ image?: <a href="#imagespec">ImageSpec</a>; badgeValue?: string; }</code>                                             | Options for when the component is used in a tab   |
+Options for tabs components
+
+| Prop       | Type            |
+| ---------- | --------------- |
+| **`tabs`** | <code>{}</code> |
+
+
+#### TabSpec
+
+| Prop     | Type                                                | Description                                                              |
+| -------- | --------------------------------------------------- | ------------------------------------------------------------------------ |
+| **`id`** | <code><a href="#componentid">ComponentId</a></code> | The id to use for the tab, or undefined to automatically generate an id. |
+
+
+#### TabOptions
+
+| Prop             | Type                                                                                |
+| ---------------- | ----------------------------------------------------------------------------------- |
+| **`title`**      | <code>string</code>                                                                 |
+| **`image`**      | <code><a href="#imagespec">ImageSpec</a></code>                                     |
+| **`badgeValue`** | <code>string</code>                                                                 |
+| **`component`**  | <code><a href="#stackspec">StackSpec</a> \| <a href="#viewspec">ViewSpec</a></code> |
+
+
+#### ImageObject
+
+| Prop        | Type                | Description                                                                                                                                                         |
+| ----------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`uri`**   | <code>string</code> | The uri for the image.                                                                                                                                              |
+| **`scale`** | <code>number</code> | The scale to use for the image, e.g. 2 for a 2x scale image. If not provided the scale will be determined automatically from the filename, or it will default to 1. |
+
+
+#### ViewOptions
+
+Options for view components
+
+| Prop        | Type                                                                                                                                                                      | Description                                       |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| **`stack`** | <code>{ backItem?: <a href="#stackbaritem">StackBarItem</a>; leftItems?: {}; rightItems?: {}; backEnabled?: boolean; bar?: <a href="#baroptions">BarOptions</a>; }</code> | Options for when the component is used in a stack |
 
 
 #### StackBarItem
@@ -323,14 +367,6 @@ Options for stack components
 | **`id`**    | <code><a href="#buttonid">ButtonId</a></code>   |
 | **`title`** | <code>string</code>                             |
 | **`image`** | <code><a href="#imagespec">ImageSpec</a></code> |
-
-
-#### ImageObject
-
-| Prop        | Type                | Description                                                                                                                                                         |
-| ----------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`uri`**   | <code>string</code> | The uri for the image.                                                                                                                                              |
-| **`scale`** | <code>number</code> | The scale to use for the image, e.g. 2 for a 2x scale image. If not provided the scale will be determined automatically from the filename, or it will default to 1. |
 
 
 #### ResetOptions
@@ -397,21 +433,9 @@ root: Reset the stack back to just the new component.
 <code>'push' | 'replace' | 'root'</code>
 
 
-#### AllComponentOptions
+#### AllOptions
 
-<code><a href="#stackoptions">StackOptions</a> | <a href="#tabsoptions">TabsOptions</a> | <a href="#viewoptions">ViewOptions</a></code>
-
-
-#### TabsOptions
-
-Options for tabs components
-
-<code><a href="#componentoptions">ComponentOptions</a></code>
-
-
-#### ButtonId
-
-<code>string</code>
+<code><a href="#stackoptions">StackOptions</a> | <a href="#tabsoptions">TabsOptions</a> | <a href="#taboptions">TabOptions</a> | <a href="#viewoptions">ViewOptions</a></code>
 
 
 #### ImageSpec
@@ -419,10 +443,8 @@ Options for tabs components
 <code><a href="#imageobject">ImageObject</a> | string</code>
 
 
-#### ViewOptions
+#### ButtonId
 
-Options for view components
-
-<code><a href="#componentoptions">ComponentOptions</a></code>
+<code>string</code>
 
 </docgen-api>

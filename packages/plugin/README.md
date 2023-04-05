@@ -21,7 +21,7 @@ npx cap sync
 * [`dismiss(...)`](#dismiss)
 * [`push(...)`](#push)
 * [`pop(...)`](#pop)
-* [`setOptions(...)`](#setoptions)
+* [`update(...)`](#update)
 * [`reset(...)`](#reset)
 * [`get(...)`](#get)
 * [`message(...)`](#message)
@@ -101,17 +101,17 @@ Pop the top component off a stack
 --------------------
 
 
-### setOptions(...)
+### update(...)
 
 ```typescript
-setOptions(options: SetOptionsOptions) => any
+update(options: UpdateOptions) => any
 ```
 
 Set the options for an existing component
 
 | Param         | Type                                                            |
 | ------------- | --------------------------------------------------------------- |
-| **`options`** | <code><a href="#setoptionsoptions">SetOptionsOptions</a></code> |
+| **`options`** | <code><a href="#updateoptions">UpdateOptions</a></code> |
 
 **Returns:** <code>any</code>
 
@@ -265,7 +265,7 @@ Send a message to a component.
 | **`id`**    | <code><a href="#componentid">ComponentId</a></code> | The id of the component that was popped, if any. If multiple components are popped, the id will be of the last component popped. |
 
 
-#### SetOptionsOptions
+#### UpdateOptions
 
 | Prop           | Type                                                | Description                                         |
 | -------------- | --------------------------------------------------- | --------------------------------------------------- |

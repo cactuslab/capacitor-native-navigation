@@ -313,7 +313,7 @@ class NativeNavigation: NSObject {
     }
         
     @MainActor
-    func setOptions(_ options: SetOptionsOptions<StackOptions>) async throws {
+    func update(_ options: UpdateOptions<StackOptions>) async throws {
         var component = try self.component(options.id)
 
         let componentOptions = options.options
@@ -324,7 +324,7 @@ class NativeNavigation: NSObject {
     }
     
     @MainActor
-    func setOptions(_ options: SetOptionsOptions<TabsOptions>) async throws {
+    func update(_ options: UpdateOptions<TabsOptions>) async throws {
         var component = try self.component(options.id)
 
         let componentOptions = options.options
@@ -335,7 +335,7 @@ class NativeNavigation: NSObject {
     }
     
     @MainActor
-    func setOptions(_ options: SetOptionsOptions<ViewOptions>) async throws {
+    func update(_ options: UpdateOptions<ViewOptions>) async throws {
         var component = try self.component(options.id)
 
         let componentOptions = options.options

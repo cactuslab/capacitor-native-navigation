@@ -81,7 +81,7 @@ public class NativeNavigationPlugin: CAPPlugin {
         }
     }
     
-    @objc func setOptions(_ call: CAPPluginCall) {
+    @objc func update(_ call: CAPPluginCall) {
         do {
             guard let id = call.getString("id") else {
                 throw NativeNavigatorError.missingParameter(name: "id")
@@ -105,22 +105,22 @@ public class NativeNavigationPlugin: CAPPlugin {
             let component = try implementation.findComponent(id: id)
             switch component {
             case is StackModel:
-                let options = try SetOptionsOptions<StackOptions>.fromJSObject(call)
+                let options = try UpdateOptions<StackOptions>.fromJSObject(call)
                 applyOptions {
-                    try await implementation.setOptions(options)
+                    try await implementation.update(options)
                 }
             case is TabsModel:
-                let options = try SetOptionsOptions<TabsOptions>.fromJSObject(call)
+                let options = try UpdateOptions<TabsOptions>.fromJSObject(call)
                 applyOptions {
-                    try await implementation.setOptions(options)
+                    try await implementation.update(options)
                 }
             case is ViewModel:
-                let options = try SetOptionsOptions<ViewOptions>.fromJSObject(call)
+                let options = try UpdateOptions<ViewOptions>.fromJSObject(call)
                 applyOptions {
-                    try await implementation.setOptions(options)
+                    try await implementation.update(options)
                 }
             default:
-                throw NativeNavigatorError.illegalState(message: "Component is not defined correctly in setOptions")
+                throw NativeNavigatorError.illegalState(message: "Component is not defined correctly in update")
             }
             
         } catch {

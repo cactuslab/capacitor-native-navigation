@@ -28,7 +28,7 @@ export function createReactContext(options: ContextInit): NativeNavigationContex
 		viewWindow,
 
 		updateView: async function(options) {
-			return plugin.setOptions({
+			return plugin.update
 				id: options.id || componentId,
 				animated: options.animated,
 				options,

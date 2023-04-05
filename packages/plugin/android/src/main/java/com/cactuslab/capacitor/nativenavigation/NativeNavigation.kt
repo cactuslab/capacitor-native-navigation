@@ -235,16 +235,16 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         call.resolve(result.toJSObject())
     }
 
-    fun setOptions(options: SetComponentOptions) {
-        Log.d(TAG, "setOptions: -> $options")
+    fun update(options: SetComponentOptions) {
+        Log.d(TAG, "update: -> $options")
         val spec = components.get(options.id)!!
         val specOptions = spec.options
         if (specOptions != null) {
             specOptions.mergeOptions(options.options)
-            viewModel.postSetOptions(SetComponentOptions(options.id, options.animated, specOptions), options.id)
+            viewModel.postUpdate(SetComponentOptions(options.id, options.animated, specOptions), options.id)
         } else {
             spec.options = options.options
-            viewModel.postSetOptions(options, options.id)
+            viewModel.postUpdate(options, options.id)
         }
     }
 

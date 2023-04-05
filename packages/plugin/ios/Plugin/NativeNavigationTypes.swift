@@ -220,11 +220,11 @@ protocol ComponentOptions: JSObjectDecodable {
     var title: Nullable<String>? { get set }
 }
 
-protocol SetOptionsAble {
+protocol UpdateAble {
     static func fromJSObject(_ object: JSObjectLike) throws -> Self
 }
 
-struct SetOptionsOptions<T: JSObjectDecodable> {
+struct UpdateOptions<T: JSObjectDecodable> {
     var id: ComponentId
     var animated: Bool
 

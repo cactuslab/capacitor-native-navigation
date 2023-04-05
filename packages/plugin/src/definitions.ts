@@ -28,7 +28,7 @@ export interface NativeNavigationPlugin {
 	 * Set the options for an existing component
 	 * @param options 
 	 */
-	setOptions(options: SetOptionsOptions): Promise<void>
+	update(options: UpdateOptions): Promise<void>
 
 	/**
 	 * Remove all of the native UI and reset back to the root Capacitor webview.
@@ -256,7 +256,7 @@ export interface PopResult {
 	id?: ComponentId
 }
 
-export interface SetOptionsOptions {
+export interface UpdateOptions {
 	id: ComponentId
 
 	/**

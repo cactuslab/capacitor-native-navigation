@@ -5,10 +5,10 @@ import { useNavigate } from 'react-router-dom'
 
 export default function StackImmediateReplace(): JSX.Element {
 	const navigate = useNavigate()
-	const { setOptions, addClickListener } = useNativeNavigationContext()
+	const { update, addClickListener } = useNativeNavigationContext()
 
 	useEffect(function() {
-		setOptions({
+		update({
 			stack: {
 				rightItems: [
 					{

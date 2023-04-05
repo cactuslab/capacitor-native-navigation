@@ -97,8 +97,8 @@ extension PresentOptions {
     
 }
 
-extension SetOptionsOptions {
-    static func fromJSObject(_ object: JSObjectLike) throws -> SetOptionsOptions {
+extension UpdateOptions {
+    static func fromJSObject(_ object: JSObjectLike) throws -> UpdateOptions {
         guard let id = object.getString("id") else {
             throw NativeNavigatorError.missingParameter(name: "id")
         }
@@ -108,7 +108,7 @@ extension SetOptionsOptions {
         guard let options = object.getObject("options") else {
             throw NativeNavigatorError.missingParameter(name: "options")
         }
-        return SetOptionsOptions(id: id, animated: animated, options: try T.fromJSObject(options))
+        return UpdateOptions(id: id, animated: animated, options: try T.fromJSObject(options))
     }
 }
 

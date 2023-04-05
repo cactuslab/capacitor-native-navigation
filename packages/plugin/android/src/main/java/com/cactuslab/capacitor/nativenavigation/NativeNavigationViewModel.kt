@@ -19,7 +19,7 @@ import java.io.BufferedReader
 class NativeNavigationViewModel: ViewModel() {
 
     sealed class Signal(var consumed: Boolean) {
-        data class SetOptions(val options: SetComponentOptions) : Signal(false)
+        data class Update(val options: SetComponentOptions) : Signal(false)
     }
 
     var nativeNavigation: NativeNavigation? = null
@@ -52,9 +52,9 @@ class NativeNavigationViewModel: ViewModel() {
         return@run liveData
     }
 
-    fun postSetOptions(options: SetComponentOptions, id: String) {
+    fun postUpdate(options: SetComponentOptions, id: String) {
         val signal = findOrCreateSignal(id)
-        signal.postValue(Signal.SetOptions(options))
+        signal.postValue(Signal.Update(options))
     }
 
 

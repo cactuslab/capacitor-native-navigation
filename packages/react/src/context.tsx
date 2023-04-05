@@ -1,4 +1,4 @@
-import type { AllComponentOptions, ClickEventData, ComponentId, DismissOptions, DismissResult, MessageEventData, NativeNavigationPlugin } from '@cactuslab/native-navigation'
+import type { ClickEventData, ComponentId, DismissOptions, DismissResult, MessageEventData, NativeNavigationPlugin , ViewOptions } from '@cactuslab/native-navigation'
 import type { Plugin, PluginListenerHandle } from '@capacitor/core'
 import React, { useContext } from 'react'
 
@@ -121,7 +121,7 @@ export interface NativeNavigationContext {
 	/**
 	 * Set this component's options.
 	 */
-	setOptions: (options: AllComponentOptions & { id?: string; animated?: boolean }) => Promise<void>
+	setOptions: (options: ViewOptions & { id?: string; animated?: boolean }) => Promise<void>
 
 	/**
 	 * Dismiss this component, if it was presented.

@@ -6,7 +6,7 @@ import { Link, useNavigate } from 'react-router-dom'
 let counter = 1
 
 export default function Stack1(): JSX.Element {
-	const { update, addClickListener } = useNativeNavigationContext()
+	const { updateView, addClickListener } = useNativeNavigationContext()
 	const navigate = useNavigate()
 
 	const [toolbarVisible, setToolbarVisible] = useState(true)
@@ -14,14 +14,14 @@ export default function Stack1(): JSX.Element {
 
 	const handleChangeTitle = useCallback(function(evt: React.MouseEvent) {
 		evt.preventDefault()
-		update({
+		updateView({
 			title: `Changed title ${counter++}`,
 		})
 	}, [])
 
 	const handleRemoveTitle = useCallback(function(evt: React.MouseEvent) {
 		evt.preventDefault()
-		update({
+		updateView({
 			title: null,
 		})
 	}, [])
@@ -57,8 +57,8 @@ export default function Stack1(): JSX.Element {
 	}, [backEnabled])
 
 	useEffect(() => {
-		update({
-			stack: {
+		updateView({
+			stackItem: {
 				bar: {
 					visible: toolbarVisible
 				},
@@ -68,8 +68,8 @@ export default function Stack1(): JSX.Element {
 	}, [toolbarVisible])
 
 	useEffect(() => {
-		update({
-			stack: {
+		updateView({
+			stackItem: {
 				backEnabled: backEnabled,
 			},
 			animated: true
@@ -84,9 +84,9 @@ export default function Stack1(): JSX.Element {
 	}, [])
 
 	useEffect(function() {
-		update({
+		updateView({
 			title: "Stack One",
-			stack: {
+			stackItem: {
 				rightItems: [
 					{
 						id: 'reset',

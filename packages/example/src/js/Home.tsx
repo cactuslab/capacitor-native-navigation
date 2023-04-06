@@ -1,4 +1,4 @@
-import { NativeNavigation, StackOptions } from '@cactuslab/native-navigation'
+import { NativeNavigation, StackOptions, StackSpec } from '@cactuslab/native-navigation'
 
 import diamond from '../assets/imgs/diamond@2x.png'
 import flags from '../assets/imgs/flag.2.crossed@2x.png'
@@ -51,7 +51,7 @@ export default function Home(): React.ReactElement {
 	)
 }
 
-async function setupStack(options: { path: string, title: string, options?: StackOptions }) {
+async function setupStack(options: { path: string, title: string, options?: Partial<StackSpec> }) {
 	const stackRoot = await NativeNavigation.present({
 		component: {
 			id: 'rootStack',
@@ -63,7 +63,7 @@ async function setupStack(options: { path: string, title: string, options?: Stac
 					title: options?.title,
 				}
 			],
-			...options.options,
+			...options.options
 		},
 		animated: false,
 	})

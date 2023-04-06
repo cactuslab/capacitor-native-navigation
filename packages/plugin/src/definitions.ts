@@ -100,21 +100,28 @@ export interface ComponentSpec {
 
 type ComponentSpecs = StackSpec | TabsSpec | ViewSpec
 
-export interface StackSpec extends ComponentSpec, StackOptions {
+export interface StackSpec extends ComponentSpec {
 	type: 'stack'
 	components: ViewSpec[]
+	bar?: BarOptions
+	title?: string
 }
 
-export interface TabsSpec extends ComponentSpec, TabsOptions {
+export interface TabsSpec extends ComponentSpec {
 	type: 'tabs'
 	tabs: TabSpec[]
+	title?: string
 }
 
-export interface TabSpec extends TabOptions {
+export interface TabSpec {
 	/**
 	 * The id to use for the tab, or undefined to automatically generate an id.
 	 */
 	id?: ComponentId
+
+	title?: string
+	image?: ImageSpec
+	badgeValue?: string
 
 	component: StackSpec | ViewSpec
 }
@@ -309,9 +316,9 @@ export interface TabsOptions extends ComponentOptions {
 }
 
 export interface TabOptions {
-	title?: string
-	image?: ImageSpec
-	badgeValue?: string
+	title?: string | null
+	image?: ImageSpec | null
+	badgeValue?: string | null
 
 	component?: StackSpec | ViewSpec
 }

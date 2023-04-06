@@ -210,10 +210,10 @@ class NativeNavigation: NSObject {
                     guard let topComponent = try component(topComponentId) as? ViewModel else {
                         throw NativeNavigatorError.illegalState(message: "Top of stack is not a view: \(topComponentId)")
                     }
-                    let afterReady = try await updateView(options.component, component: topComponent)
+                    try await updateView(options.component, component: topComponent)
                     
                     await waitForViewsReady(topComponent.viewController)
-                    afterReady()
+                    
                     return PushResult(id: topComponent.componentId, stack: stack.componentId)
                 }
             }
@@ -245,9 +245,9 @@ class NativeNavigation: NSObject {
             return PushResult(id: viewModel.componentId, stack: stack.componentId)
         } else if let vc = container as? ViewModel {
             /* We can push without a UINavigationController; we just always replace the component's contents */
-            let afterReady = try await updateView(options.component, component: vc)
+            try await updateView(options.component, component: vc)
             await waitForViewsReady(vc.viewController)
-            afterReady()
+            
             return PushResult(id: vc.componentId)
         } else {
             throw NativeNavigatorError.illegalState(message: "Cannot push to component: \(container.componentId)")
@@ -698,10 +698,8 @@ class NativeNavigation: NSObject {
     }
     
     @MainActor
-    private func updateView(_ options: ViewSpec, component: ViewModel) async throws -> () -> Void {
+    private func updateView(_ options: ViewSpec, component: ViewModel) async throws {
         let viewController = component.viewController
-        let savedLeftBarButtonItems = viewController.navigationItem.leftBarButtonItems
-        let savedRightBarButtonItems = viewController.navigationItem.rightBarButtonItems
         
         if let componentOptions = options.options {
             try self.configureViewController(component, options: componentOptions, animated: false)
@@ -709,18 +707,6 @@ class NativeNavigation: NSObject {
         
         viewController.path = options.path
         viewController.state = options.state
-        
-        /* Tidy up any viewController state that has not been changed during the render of the updated view.
-           Doing this _after ready_ means we don't get a flash where items disappear and then appear.
-         */
-        return {
-            if viewController.navigationItem.leftBarButtonItems == savedLeftBarButtonItems {
-                viewController.navigationItem.leftBarButtonItems = nil
-            }
-            if viewController.navigationItem.rightBarButtonItems == savedRightBarButtonItems {
-                viewController.navigationItem.rightBarButtonItems = nil
-            }
-        }
     }
     
     /**

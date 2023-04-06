@@ -26,6 +26,24 @@ export default function Root(props: NativeNavigationReactRootProps): JSX.Element
 					return {
 						component: {
 							type: 'stack',
+							bar: {
+								background: {
+									color: "#23ABED"
+								},
+								title: {
+									color: '#223344',
+									font: {
+										name: 'Solway',
+										size: 26,
+									}
+								},
+								buttons: {
+									color: '#334455',
+									font: {
+										name: 'Solway',
+									}
+								},
+							},
 							components: [
 								{
 									type: 'view',
@@ -35,7 +53,7 @@ export default function Root(props: NativeNavigationReactRootProps): JSX.Element
 									stack: {
 										rightItems: [
 											{
-												id: 'back',
+												id: 'close-button',
 												title: 'Close',
 											},
 										],
@@ -44,7 +62,7 @@ export default function Root(props: NativeNavigationReactRootProps): JSX.Element
 							],
 						},
 						style: 'formSheet',
-						cancellable: false
+						cancellable: true
 					}
 				},
 			},

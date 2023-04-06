@@ -15,6 +15,7 @@ import androidx.navigation.*
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.fragment
 import com.cactuslab.capacitor.nativenavigation.databinding.ActivityNavigationBinding
+import com.cactuslab.capacitor.nativenavigation.helpers.parseRGBAColor
 import com.cactuslab.capacitor.nativenavigation.types.*
 import com.cactuslab.capacitor.nativenavigation.ui.BlankViewFragment
 import com.cactuslab.capacitor.nativenavigation.ui.HostFragment
@@ -286,6 +287,16 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         val transaction = plugin.activity.supportFragmentManager.beginTransaction()
         navContext.tryRemoveFromActivity(transaction)
         transaction.commitNowAllowingStateLoss()
+
+        navContexts.lastOrNull()?.let context@ { topNavContext ->
+            topNavContext.virtualStack.lastOrNull()?.let { topStackId ->
+                val spec = components.get(topStackId) ?: return@context
+                val backgroundColor = spec.options?.bar?.background?.color ?: topNavContext.presentOptions?.component?.options?.bar?.background?.color
+                backgroundColor?.parseRGBAColor()?.let { statusColor ->
+                    plugin.activity.window.statusBarColor = statusColor
+                }
+            }
+        }
     }
 
     private fun popNavContext() {

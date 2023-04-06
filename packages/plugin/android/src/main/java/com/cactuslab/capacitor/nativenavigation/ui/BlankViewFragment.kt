@@ -212,6 +212,13 @@ class BlankViewFragment : Fragment() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        webviewViewModel.componentOptionsLiveData.value?.let {
+            updateToolbar(it)
+        }
+    }
+
     private fun setupMenu() {
         val menuhost = binding?.toolbar ?: return
 

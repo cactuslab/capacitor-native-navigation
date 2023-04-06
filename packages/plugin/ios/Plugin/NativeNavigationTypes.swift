@@ -4,34 +4,60 @@ import Foundation
 typealias ComponentId = String
 typealias ButtonId = String
 
+
+
 protocol ComponentSpec {
     var type: ComponentType { get }
     var id: ComponentId? { get set }
-    var options: ComponentOptions? { get set }
     
     func toPluginResult() -> PluginCallResultData
 }
 
-struct StackSpec: ComponentSpec {
+protocol TabableSpec: ComponentSpec {
+    
+}
+
+struct StackSpec: TabableSpec & StackOptionsLike {
     var type: ComponentType { return ComponentType.stack }
     var id: ComponentId?
-    var options: ComponentOptions?
+    var options: StackOptions?
     
-    var stack: [ViewSpec]
+    var components: [ViewSpec]?
+    var bar: BarOptions?
+    var title: Nullable<String>?
+    
+    func requireComponents() -> [ViewSpec] {
+        return components!
+    }
 }
 
 struct TabsSpec: ComponentSpec {
     var type: ComponentType { return ComponentType.tabs }
     var id: ComponentId?
-    var options: ComponentOptions?
+    var options: TabsOptions?
     
-    var tabs: [ComponentSpec]
+    var tabs: [TabableSpec]
 }
 
-struct ViewSpec: ComponentSpec {
+protocol ViewOptionsLike : ComponentOptions {
+    var stackItem: StackItem? { get set }
+}
+
+protocol StackOptionsLike : ComponentOptions {
+    var bar: BarOptions? { get set }
+    var components: [ViewSpec]? { get set }
+}
+
+protocol TabOptionsLike : ComponentOptions {
+    
+}
+
+struct ViewSpec: TabableSpec & ViewOptionsLike {
     var type: ComponentType { return ComponentType.view }
     var id: ComponentId?
-    var options: ComponentOptions?
+    
+    var title: Nullable<String>?
+    var stackItem: StackItem?
     
     var path: String
     var state: JSObject?
@@ -55,10 +81,10 @@ extension StackSpec {
         var result = componentSpecToPluginResult(self)
         
         var stackResult: [PluginCallResultData] = []
-        for child in self.stack {
+        for child in requireComponents() {
             stackResult.append(child.toPluginResult())
         }
-        result["stack"] = stackResult
+        result["components"] = stackResult
         
         return result
     }
@@ -213,15 +239,15 @@ extension PopResult {
 }
 
 struct TabOptions: JSObjectDecodable {
+    var title: Nullable<String>?
+    var image: Nullable<ImageObject>?
+    var badgeValue: Nullable<String>?
     
+    var component: ComponentSpec?
 }
 
 protocol ComponentOptions: JSObjectDecodable {
     var title: Nullable<String>? { get set }
-}
-
-protocol UpdateAble {
-    static func fromJSObject(_ object: JSObjectLike) throws -> Self
 }
 
 struct UpdateOptions<T: JSObjectDecodable> {
@@ -231,7 +257,7 @@ struct UpdateOptions<T: JSObjectDecodable> {
     var options: T
 }
 
-struct StackOptions: ComponentOptions {
+struct StackOptions: StackOptionsLike {
     var title: Nullable<String>?
     var components: [ViewSpec]?
     var bar: BarOptions?
@@ -242,22 +268,22 @@ struct TabsOptions: ComponentOptions {
     var tabs: [TabsSpec]?
 }
 
-struct ViewOptions: ComponentOptions {
+struct ViewOptions: ViewOptionsLike {
     var title: Nullable<String>?
     var stackItem: StackItem?
-    
-    struct StackItem {
-        var backItem: Nullable<StackBarButtonItem>?
-        var leftItems: Nullable<[StackBarButtonItem]>?
-        var rightItems: Nullable<[StackBarButtonItem]>?
-        var backEnabled: Nullable<Bool>?
-        
-        struct StackBarButtonItem {
-            var id: ButtonId
-            var title: String
-            var image: Nullable<ImageObject>?
-        }
-    }
+}
+
+struct StackItem {
+    var backItem: Nullable<StackBarButtonItem>?
+    var leftItems: [StackBarButtonItem]?
+    var rightItems: [StackBarButtonItem]?
+    var backEnabled: Nullable<Bool>?
+}
+
+struct StackBarButtonItem {
+    var id: ButtonId
+    var title: String
+    var image: Nullable<ImageObject>?
 }
 
 struct BarOptions {
@@ -275,52 +301,6 @@ struct LabelOptions {
     var color: UIColor?
     var font: UIFont?
 }
-
-//struct ComponentOptions {
-//    /* Common */
-//    var title: Nullable<String>?
-//
-//    /*  */
-//    var stack: ComponentOptions.StackOptions?
-//    var tab: ComponentOptions.TabOptions?
-//
-//    /* StackOptions */
-//
-//
-//    /* TabsOptions */
-//    var tabs: [TabSpec]?
-//
-//    struct StackOptions {
-
-//
-//        mutating func mergeOptions(_ other: StackOptions?) {
-//            guard let other = other else { return }
-//
-//        }
-//    }
-//
-
-//
-//    struct TabOptions {
-//        var image: ImageObject?
-//        var badgeValue: String?
-//    }
-//
-
-//
-
-//
-
-//
-//    func mergeOptions(_ other: ComponentOptions?) -> ComponentOptions {
-//
-//        var new = ComponentOptions()
-//
-//
-//        return new
-//
-//    }
-//}
 
 extension Optional {
     

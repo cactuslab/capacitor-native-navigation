@@ -20,7 +20,6 @@ protocol TabableSpec: ComponentSpec {
 struct StackSpec: TabableSpec & StackOptionsLike {
     var type: ComponentType { return ComponentType.stack }
     var id: ComponentId?
-    var options: StackOptions?
     
     var components: [ViewSpec]?
     var bar: BarOptions?
@@ -34,9 +33,19 @@ struct StackSpec: TabableSpec & StackOptionsLike {
 struct TabsSpec: ComponentSpec {
     var type: ComponentType { return ComponentType.tabs }
     var id: ComponentId?
-    var options: TabsOptions?
     
-    var tabs: [TabableSpec]
+    var title: String?
+    var tabs: [TabSpec]
+}
+
+struct TabSpec {
+    var id: ComponentId?
+    
+    var title: String?
+    var image: ImageObject?
+    var badgeValue: String?
+    
+    var component: TabableSpec
 }
 
 protocol ViewOptionsLike : ComponentOptions {
@@ -70,9 +79,6 @@ fileprivate func componentSpecToPluginResult(_ spec: ComponentSpec) -> PluginCal
     if let id = spec.id {
         result["id"] = id
     }
-    if let options = spec.options {
-        result["options"] = options.toPluginResult()
-    }
     return result
 }
 
@@ -85,6 +91,10 @@ extension StackSpec {
             stackResult.append(child.toPluginResult())
         }
         result["components"] = stackResult
+        
+        if let title = title?.toJSValue() {
+            result["title"] = title
+        }
         
         return result
     }
@@ -100,6 +110,16 @@ extension TabsSpec {
         }
         result["tabs"] = tabsResult
         
+        return result
+    }
+}
+
+extension TabSpec {
+    func toPluginResult() -> PluginCallResultData {
+        var result: PluginCallResultData = [:]
+        if let id = id {
+            result["id"] = id
+        }
         return result
     }
 }
@@ -313,7 +333,6 @@ extension Optional {
             self = .some(apply(wrapped, other))
         }
     }
-    
 }
 
 extension ComponentOptions {

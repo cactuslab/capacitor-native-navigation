@@ -51,11 +51,29 @@ extension Nullable where T == Bool {
     static func fromJSObjectOrNil(_ object: JSObjectLike, key: String) throws -> Nullable<T>? {
         return try fromJSObjectOrNil(object, key: key, customDecoder: { $0.getBool($1) })
     }
+    
+    func toJSValue() -> Any {
+        switch self {
+        case .null:
+            return NSNull()
+        case .value(let value):
+            return value
+        }
+    }
 }
 
 extension Nullable where T == String {
     static func fromJSObjectOrNil(_ object: JSObjectLike, key: String) throws -> Nullable<T>? {
         return try fromJSObjectOrNil(object, key: key, customDecoder: { $0.getString($1) })
+    }
+    
+    func toJSValue() -> Any? {
+        switch self {
+        case .null:
+            return nil
+        case .value(let value):
+            return value
+        }
     }
 }
 
@@ -109,9 +127,58 @@ extension StackSpec: JSObjectDecodable {
     }
 }
 
+extension TabSpec: JSObjectDecodable {
+    static func fromJSObject(_ object: JSObjectLike) throws -> TabSpec {
+        guard let componentObject = object.getObject("component") else {
+            throw NativeNavigatorError.missingParameter(name: "component")
+        }
+        
+        let componentSpec = try tabableSpecFromJSObject(componentObject)
+        
+        var result = TabSpec(component: componentSpec)
+        
+        result.id = object.getString("id")
+        result.badgeValue = object.getString("badgeValue")
+        result.image = try ImageObject.fromJSObject(object, key: "image")
+        result.title = object.getString("title")
+        
+        return result
+    }
+}
+
 extension TabsSpec: JSObjectDecodable {
     static func fromJSObject(_ object: JSObjectLike) throws -> TabsSpec {
-        var spec = TabsSpec(
+        
+        guard let initialTabObjects = object.getArray("tabs") as? [JSObject] else {
+            throw NativeNavigatorError.missingParameter(name: "tabs")
+        }
+        var initialTabs: [TabSpec] = []
+        for initialTabItem in initialTabObjects {
+            initialTabs.append(try TabSpec.fromJSObject(initialTabItem))
+        }
+
+        var spec = TabsSpec(tabs: initialTabs)
+        spec.title = object.getString("title")
+        
+        return spec
+    }
+}
+
+func tabableSpecFromJSObject(_ object: JSObjectLike) throws -> TabableSpec {
+    guard let typeString = object.getString("type") else {
+        throw NativeNavigatorError.missingParameter(name: "type")
+    }
+    guard let type = ComponentType(rawValue: typeString) else {
+        throw NativeNavigatorError.invalidParameter(name: "type", value: typeString)
+    }
+
+    switch type {
+    case .stack:
+        return try StackSpec.fromJSObject(object)
+    case .view:
+        return try ViewSpec.fromJSObject(object)
+    case .tabs:
+        throw NativeNavigatorError.invalidParameter(name: "type.tabs", value: "Invalid Option for Tab")
     }
 }
 
@@ -123,24 +190,11 @@ func componentSpecFromJSObject(_ object: JSObjectLike) throws -> ComponentSpec {
         throw NativeNavigatorError.invalidParameter(name: "type", value: typeString)
     }
 
-
     switch type {
     case .stack:
         return try StackSpec.fromJSObject(object)
     case .tabs:
-        var spec = TabsSpec(tabs: [])
-        spec.id = id
-        spec.options = componentOptions
-        
-        guard let tabs = object.getArray("tabs") as? [JSObject] else {
-            throw NativeNavigatorError.missingParameter(name: "tabs")
-        }
-
-        for tabOptions in tabs {
-            spec.tabs.append(try componentSpecFromJSObject(tabOptions))
-        }
-
-        return spec
+        return try TabsSpec.fromJSObject(object)
     case .view:
         return try ViewSpec.fromJSObject(object)
     }

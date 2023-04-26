@@ -184,49 +184,78 @@ Send a message to a component.
 
 #### StackSpec
 
-| Prop             | Type                                              |
-| ---------------- | ------------------------------------------------- |
-| **`type`**       | <code>'stack'</code>                              |
-| **`components`** | <code>{}</code>                                   |
-| **`bar`**        | <code><a href="#baroptions">BarOptions</a></code> |
-| **`title`**      | <code>string</code>                               |
+| Prop             | Type                                        |
+| ---------------- | ------------------------------------------- |
+| **`type`**       | <code>'stack'</code>                        |
+| **`components`** | <code>{}</code>                             |
+| **`bar`**        | <code><a href="#barspec">BarSpec</a></code> |
+| **`title`**      | <code>string</code>                         |
 
 
 #### ViewSpec
 
-| Prop        | Type                                            | Description                     |
-| ----------- | ----------------------------------------------- | ------------------------------- |
-| **`type`**  | <code>'view'</code>                             |                                 |
-| **`path`**  | <code>string</code>                             | The path representing the view. |
-| **`state`** | <code><a href="#viewstate">ViewState</a></code> |                                 |
+| Prop            | Type                                                    | Description                                       |
+| --------------- | ------------------------------------------------------- | ------------------------------------------------- |
+| **`type`**      | <code>'view'</code>                                     |                                                   |
+| **`path`**      | <code>string</code>                                     | The path representing the view.                   |
+| **`state`**     | <code><a href="#viewstate">ViewState</a></code>         |                                                   |
+| **`stackItem`** | <code><a href="#stackitemspec">StackItemSpec</a></code> | Options for when the component is used in a stack |
 
 
-#### BarOptions
+#### StackItemSpec
 
-| Prop             | Type                                                  |
-| ---------------- | ----------------------------------------------------- |
-| **`background`** | <code><a href="#filloptions">FillOptions</a></code>   |
-| **`title`**      | <code><a href="#labeloptions">LabelOptions</a></code> |
-| **`buttons`**    | <code><a href="#labeloptions">LabelOptions</a></code> |
-| **`visible`**    | <code>boolean</code>                                  |
+| Prop              | Type                                                              | Description                                                                                                                                                                                                                                                                                                                      |
+| ----------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`backItem`**    | <code><a href="#stackbarbuttonitem">StackBarButtonItem</a></code> |                                                                                                                                                                                                                                                                                                                                  |
+| **`leftItems`**   | <code>{}</code>                                                   |                                                                                                                                                                                                                                                                                                                                  |
+| **`rightItems`**  | <code>{}</code>                                                   |                                                                                                                                                                                                                                                                                                                                  |
+| **`backEnabled`** | <code>boolean</code>                                              | Enables the system gestures and buttons for managing the back action. Useful for preventing the user from exiting a window that is running an important operation. Does not prevent the user from backgrounding the application. Default behaviour is to use the host Stack configuration which behaves as backEnabled is `true` |
+| **`bar`**         | <code><a href="#barspec">BarSpec</a></code>                       | Customise the bar on top of the default options provided by the stack                                                                                                                                                                                                                                                            |
 
 
-#### FillOptions
+#### StackBarButtonItem
+
+| Prop        | Type                                            |
+| ----------- | ----------------------------------------------- |
+| **`id`**    | <code><a href="#buttonid">ButtonId</a></code>   |
+| **`title`** | <code>string</code>                             |
+| **`image`** | <code><a href="#imagespec">ImageSpec</a></code> |
+
+
+#### ImageObject
+
+| Prop        | Type                | Description                                                                                                                                                         |
+| ----------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`uri`**   | <code>string</code> | The uri for the image.                                                                                                                                              |
+| **`scale`** | <code>number</code> | The scale to use for the image, e.g. 2 for a 2x scale image. If not provided the scale will be determined automatically from the filename, or it will default to 1. |
+
+
+#### BarSpec
+
+| Prop             | Type                                            |
+| ---------------- | ----------------------------------------------- |
+| **`background`** | <code><a href="#fillspec">FillSpec</a></code>   |
+| **`title`**      | <code><a href="#labelspec">LabelSpec</a></code> |
+| **`buttons`**    | <code><a href="#labelspec">LabelSpec</a></code> |
+| **`visible`**    | <code>boolean</code>                            |
+
+
+#### FillSpec
 
 | Prop        | Type                |
 | ----------- | ------------------- |
 | **`color`** | <code>string</code> |
 
 
-#### LabelOptions
+#### LabelSpec
 
-| Prop        | Type                                                |
-| ----------- | --------------------------------------------------- |
-| **`color`** | <code>string</code>                                 |
-| **`font`**  | <code><a href="#fontoptions">FontOptions</a></code> |
+| Prop        | Type                                          |
+| ----------- | --------------------------------------------- |
+| **`color`** | <code>string</code>                           |
+| **`font`**  | <code><a href="#fontspec">FontSpec</a></code> |
 
 
-#### FontOptions
+#### FontSpec
 
 | Prop       | Type                |
 | ---------- | ------------------- |
@@ -252,14 +281,6 @@ Send a message to a component.
 | **`image`**      | <code><a href="#imagespec">ImageSpec</a></code>                                     |                                                                          |
 | **`badgeValue`** | <code>string</code>                                                                 |                                                                          |
 | **`component`**  | <code><a href="#stackspec">StackSpec</a> \| <a href="#viewspec">ViewSpec</a></code> |                                                                          |
-
-
-#### ImageObject
-
-| Prop        | Type                | Description                                                                                                                                                         |
-| ----------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`uri`**   | <code>string</code> | The uri for the image.                                                                                                                                              |
-| **`scale`** | <code>number</code> | The scale to use for the image, e.g. 2 for a 2x scale image. If not provided the scale will be determined automatically from the filename, or it will default to 1. |
 
 
 #### PresentResult
@@ -323,24 +344,57 @@ Send a message to a component.
 
 #### UpdateOptions
 
-| Prop           | Type                                                | Description                                         |
-| -------------- | --------------------------------------------------- | --------------------------------------------------- |
-| **`id`**       | <code><a href="#componentid">ComponentId</a></code> |                                                     |
-| **`animated`** | <code>boolean</code>                                | Whether to animate the changes. Defaults to `false` |
-| **`options`**  | <code><a href="#alloptions">AllOptions</a></code>   |                                                     |
+| Prop           | Type                                                                                                                                                                      | Description                                         |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| **`id`**       | <code><a href="#componentid">ComponentId</a></code>                                                                                                                       |                                                     |
+| **`animated`** | <code>boolean</code>                                                                                                                                                      | Whether to animate the changes. Defaults to `false` |
+| **`update`**   | <code><a href="#stackupdate">StackUpdate</a> \| <a href="#tabsupdate">TabsUpdate</a> \| <a href="#tabupdate">TabUpdate</a> \| <a href="#viewupdate">ViewUpdate</a></code> |                                                     |
 
 
-#### StackOptions
+#### StackUpdate
 
 Options for stack components
 
-| Prop             | Type                                              |
-| ---------------- | ------------------------------------------------- |
-| **`components`** | <code>{}</code>                                   |
-| **`bar`**        | <code><a href="#baroptions">BarOptions</a></code> |
+| Prop             | Type                                            |
+| ---------------- | ----------------------------------------------- |
+| **`components`** | <code>{}</code>                                 |
+| **`bar`**        | <code><a href="#barupdate">BarUpdate</a></code> |
 
 
-#### TabsOptions
+#### BarUpdate
+
+| Prop             | Type                                                        |
+| ---------------- | ----------------------------------------------------------- |
+| **`background`** | <code><a href="#fillupdate">FillUpdate</a> \| null</code>   |
+| **`title`**      | <code><a href="#labelupdate">LabelUpdate</a> \| null</code> |
+| **`buttons`**    | <code><a href="#labelupdate">LabelUpdate</a> \| null</code> |
+| **`visible`**    | <code>boolean \| null</code>                                |
+
+
+#### FillUpdate
+
+| Prop        | Type                        |
+| ----------- | --------------------------- |
+| **`color`** | <code>string \| null</code> |
+
+
+#### LabelUpdate
+
+| Prop        | Type                                                      |
+| ----------- | --------------------------------------------------------- |
+| **`color`** | <code>string \| null</code>                               |
+| **`font`**  | <code><a href="#fontupdate">FontUpdate</a> \| null</code> |
+
+
+#### FontUpdate
+
+| Prop       | Type                        |
+| ---------- | --------------------------- |
+| **`name`** | <code>string \| null</code> |
+| **`size`** | <code>number \| null</code> |
+
+
+#### TabsUpdate
 
 Options for tabs components
 
@@ -349,7 +403,7 @@ Options for tabs components
 | **`tabs`** | <code>{}</code> |
 
 
-#### TabOptions
+#### TabUpdate
 
 | Prop             | Type                                                                                |
 | ---------------- | ----------------------------------------------------------------------------------- |
@@ -359,22 +413,24 @@ Options for tabs components
 | **`component`**  | <code><a href="#stackspec">StackSpec</a> \| <a href="#viewspec">ViewSpec</a></code> |
 
 
-#### ViewOptions
+#### ViewUpdate
 
 Options for view components
 
-| Prop            | Type                                                                                                                                                                                                                          | Description                                       |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| **`stackItem`** | <code>{ backItem?: <a href="#stackbarbuttonitem">StackBarButtonItem</a> \| null; leftItems?: {} \| null; rightItems?: {} \| null; backEnabled?: boolean \| null; bar?: <a href="#baroptions">BarOptions</a> \| null; }</code> | Options for when the component is used in a stack |
+| Prop            | Type                                                        | Description                                       |
+| --------------- | ----------------------------------------------------------- | ------------------------------------------------- |
+| **`stackItem`** | <code><a href="#stackitemupdate">StackItemUpdate</a></code> | Options for when the component is used in a stack |
 
 
-#### StackBarButtonItem
+#### StackItemUpdate
 
-| Prop        | Type                                            |
-| ----------- | ----------------------------------------------- |
-| **`id`**    | <code><a href="#buttonid">ButtonId</a></code>   |
-| **`title`** | <code>string</code>                             |
-| **`image`** | <code><a href="#imagespec">ImageSpec</a></code> |
+| Prop              | Type                                                                      | Description                                                                                                                                                                                                                                                                                                                      |
+| ----------------- | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`backItem`**    | <code><a href="#stackbarbuttonitem">StackBarButtonItem</a> \| null</code> |                                                                                                                                                                                                                                                                                                                                  |
+| **`leftItems`**   | <code>{} \| null</code>                                                   |                                                                                                                                                                                                                                                                                                                                  |
+| **`rightItems`**  | <code>{} \| null</code>                                                   |                                                                                                                                                                                                                                                                                                                                  |
+| **`backEnabled`** | <code>boolean \| null</code>                                              | Enables the system gestures and buttons for managing the back action. Useful for preventing the user from exiting a window that is running an important operation. Does not prevent the user from backgrounding the application. Default behaviour is to use the host Stack configuration which behaves as backEnabled is `true` |
+| **`bar`**         | <code><a href="#barupdate">BarUpdate</a> \| null</code>                   | Customise the bar on top of the default options provided by the stack                                                                                                                                                                                                                                                            |
 
 
 #### ResetOptions
@@ -422,7 +478,7 @@ Options for view components
 <code>Record&lt;string, string | number | boolean | null&gt;</code>
 
 
-#### ComponentId
+#### ButtonId
 
 <code>string</code>
 
@@ -430,6 +486,11 @@ Options for view components
 #### ImageSpec
 
 <code><a href="#imageobject">ImageObject</a> | string</code>
+
+
+#### ComponentId
+
+<code>string</code>
 
 
 #### PresentationStyle
@@ -444,15 +505,5 @@ replace: Replace the current top-most component in the stack.
 root: Reset the stack back to just the new component.
 
 <code>'push' | 'replace' | 'root'</code>
-
-
-#### AllOptions
-
-<code><a href="#stackoptions">StackOptions</a> | <a href="#tabsoptions">TabsOptions</a> | <a href="#taboptions">TabOptions</a> | <a href="#viewoptions">ViewOptions</a></code>
-
-
-#### ButtonId
-
-<code>string</code>
 
 </docgen-api>

@@ -103,7 +103,7 @@ type ComponentSpecs = StackSpec | TabsSpec | ViewSpec
 export interface StackSpec extends ComponentSpec {
 	type: 'stack'
 	components: ViewSpec[]
-	bar?: BarOptions
+	bar?: BarSpec
 	title?: string
 }
 
@@ -127,7 +127,7 @@ export interface TabSpec {
 }
 
 export type ViewState = Record<string, string | number | boolean | null | undefined>
-export interface ViewSpec extends ComponentSpec, ViewOptions {
+export interface ViewSpec extends ComponentSpec {
 	type: 'view'
 
 	/**
@@ -136,6 +136,11 @@ export interface ViewSpec extends ComponentSpec, ViewOptions {
 	path: string
 
 	state?: ViewState
+
+	/**
+	 * Options for when the component is used in a stack
+	 */
+	stackItem?: StackItemSpec
 }
 
 export type ComponentType = 'stack' | 'tabs' | 'view'
@@ -272,7 +277,7 @@ export interface UpdateOptions {
 	 */
 	animated?: boolean
 
-	options: AllOptions
+	update: StackUpdate | TabsUpdate | TabUpdate | ViewUpdate
 }
 
 export interface ComponentOptions {
@@ -282,40 +287,61 @@ export interface ComponentOptions {
 /**
  * Options for stack components
  */
-export interface StackOptions extends ComponentOptions {
+export interface StackUpdate extends ComponentOptions {
 	components?: ViewSpec[]
-	bar?: BarOptions
+	bar?: BarUpdate
 }
 
-interface BarOptions {
-	background?: FillOptions
-	title?: LabelOptions
-	buttons?: LabelOptions
+interface BarSpec {
+	background?: FillSpec
+	title?: LabelSpec
+	buttons?: LabelSpec
 	visible?: boolean
 }
 
-export interface FillOptions {
+interface BarUpdate {
+	background?: FillUpdate | null
+	title?: LabelUpdate | null
+	buttons?: LabelUpdate | null
+	visible?: boolean | null
+}
+
+export interface FillSpec {
 	color?: string
 }
 
-export interface LabelOptions {
-	color?: string
-	font?: FontOptions
+export interface FillUpdate {
+	color?: string | null
 }
 
-export interface FontOptions {
+export interface LabelSpec {
+	color?: string
+	font?: FontSpec
+}
+
+export interface LabelUpdate {
+	color?: string | null
+	font?: FontUpdate | null
+}
+
+export interface FontSpec {
 	name?: string
 	size?: number
+}
+
+export interface FontUpdate {
+	name?: string | null
+	size?: number | null
 }
 
 /**
  * Options for tabs components
  */
-export interface TabsOptions extends ComponentOptions {
+export interface TabsUpdate extends ComponentOptions {
 	tabs?: TabSpec[]
 }
 
-export interface TabOptions {
+export interface TabUpdate {
 	title?: string | null
 	image?: ImageSpec | null
 	badgeValue?: string | null
@@ -326,34 +352,57 @@ export interface TabOptions {
 /**
  * Options for view components
  */
-export interface ViewOptions extends ComponentOptions {
+export interface ViewUpdate extends ComponentOptions {
 	/**
 	 * Options for when the component is used in a stack
 	 */
-	stackItem?: {
-		backItem?: StackBarButtonItem | null
-		leftItems?: StackBarButtonItem[] | null
-		rightItems?: StackBarButtonItem[] | null
-		
-		/**
-		 * Enables the system gestures and buttons for managing the back action.
-		 * Useful for preventing the user from exiting a window that is running
-		 * an important operation. Does not prevent the user from backgrounding
-		 * the application.
-		 * Default behaviour is to use the host Stack configuration which behaves
-		 * as backEnabled is `true`
-		 */
-		backEnabled?: boolean | null
-
-		/**
-		 * Customise the bar on top of the default options provided by the
-		 * stack
-		 */
-		bar?: BarOptions | null
-	}
+	stackItem?: StackItemUpdate
 }
 
-export type AllOptions = StackOptions | TabsOptions | TabOptions | ViewOptions
+export interface StackItemSpec {
+	backItem?: StackBarButtonItem
+	leftItems?: StackBarButtonItem[]
+	rightItems?: StackBarButtonItem[]
+	
+	/**
+	 * Enables the system gestures and buttons for managing the back action.
+	 * Useful for preventing the user from exiting a window that is running
+	 * an important operation. Does not prevent the user from backgrounding
+	 * the application.
+	 * Default behaviour is to use the host Stack configuration which behaves
+	 * as backEnabled is `true`
+	 */
+	backEnabled?: boolean
+
+	/**
+	 * Customise the bar on top of the default options provided by the
+	 * stack
+	 */
+	bar?: BarSpec
+}
+export interface StackItemUpdate {
+	backItem?: StackBarButtonItem | null
+	leftItems?: StackBarButtonItem[] | null
+	rightItems?: StackBarButtonItem[] | null
+	
+	/**
+	 * Enables the system gestures and buttons for managing the back action.
+	 * Useful for preventing the user from exiting a window that is running
+	 * an important operation. Does not prevent the user from backgrounding
+	 * the application.
+	 * Default behaviour is to use the host Stack configuration which behaves
+	 * as backEnabled is `true`
+	 */
+	backEnabled?: boolean | null
+
+	/**
+	 * Customise the bar on top of the default options provided by the
+	 * stack
+	 */
+	bar?: BarUpdate | null
+}
+
+
 
 export interface ResetOptions {
 	/**

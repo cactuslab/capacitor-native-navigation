@@ -9,6 +9,24 @@ protocol JSObjectUpdatable {
     static func updateOrCreate(_ object: JSObjectLike, existingObj: inout Self?) throws
 }
 
+extension JSObjectUpdatable {
+    
+    /// An updateOrCreate that can handle `null` attributes used when unsetting something. If `null` then the existingObject is set to nil as if it were unset.
+    /// - Parameters:
+    ///   - object: The Container js object
+    ///   - key: The key for the attribute we are inspecting
+    ///   - existingObject: An object to mutate when the value is decoded.
+    static func updateOrCreate(_ object: JSObjectLike, key: String, existingObject: inout Self?) throws {
+        if object.isNull(key) {
+            existingObject = nil
+        } else {
+            if let obj = object.getObject(key) {
+                try Self.updateOrCreate(obj, existingObj: &existingObject)
+            }
+        }
+    }
+}
+
 extension Nullable where T: JSObjectDecodable {
     static func fromJSObject(_ object: JSObjectLike, key: String) throws -> Nullable<T> {
         if object.isNull(key) {
@@ -38,6 +56,12 @@ extension Nullable where T: JSObjectDecodable {
 }
 
 extension Nullable {
+    /// A helper function to resolve the three possible states of `key` of `object`. This function allows us to interpret `undefined | null | T` types.
+    /// - Parameters:
+    ///   - object: The container object.
+    ///   - key: The key to inspect for decoding.
+    ///   - customDecoder: A block to decode the object if it exists.
+    /// - Returns: `nil` if the key isn't present, otherwise a `Nullable`
     static func fromJSObjectOrNil(_ object: JSObjectLike, key: String, customDecoder: (_ object: JSObjectLike, _ key: String) throws -> T?) throws -> Nullable<T>? {
         if object.isNull(key) {
             return .null
@@ -55,29 +79,11 @@ extension Nullable where T == Bool {
     static func fromJSObjectOrNil(_ object: JSObjectLike, key: String) throws -> Nullable<T>? {
         return try fromJSObjectOrNil(object, key: key, customDecoder: { $0.getBool($1) })
     }
-    
-    func toJSValue() -> Any {
-        switch self {
-        case .null:
-            return NSNull()
-        case .value(let value):
-            return value
-        }
-    }
 }
 
 extension Nullable where T == String {
     static func fromJSObjectOrNil(_ object: JSObjectLike, key: String) throws -> Nullable<T>? {
         return try fromJSObjectOrNil(object, key: key, customDecoder: { $0.getString($1) })
-    }
-    
-    func toJSValue() -> Any? {
-        switch self {
-        case .null:
-            return nil
-        case .value(let value):
-            return value
-        }
     }
 }
 
@@ -114,18 +120,6 @@ extension Nullable where T == Int {
 extension Nullable where T == ImageObject {
     static func fromJSObjectOrNil(_ object: JSObjectLike, key: String) throws -> Nullable<T>? {
         return try fromJSObjectOrNil(object, key: key, customDecoder: { try ImageObject.fromJSObject($0, key: $1) })
-    }
-}
-
-extension JSObjectUpdatable {
-    static func updateOrCreate(_ object: JSObjectLike, key: String, existingObject: inout Self?) throws {
-        if object.isNull(key) {
-            existingObject = nil
-        } else {
-            if let obj = object.getObject(key) {
-                try Self.updateOrCreate(obj, existingObj: &existingObject)
-            }
-        }
     }
 }
 

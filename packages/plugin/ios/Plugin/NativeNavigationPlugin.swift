@@ -87,42 +87,24 @@ public class NativeNavigationPlugin: CAPPlugin {
                 throw NativeNavigatorError.missingParameter(name: "id")
             }
             
-            func applyOptions(apply: @escaping () async throws -> Void) {
-                Task {
-                    do {
-                        try await apply()
-                        call.resolve()
-                    } catch {
-                        call.reject("Failed to set options: \(error.localizedDescription)")
-                    }
-                }
-            }
-            
             guard let implementation = self.implementation else {
                 throw NativeNavigatorError.illegalState(message: "Implementation is missing")
             }
             
-            let component = try implementation.findComponent(id: id)
-            switch component {
-            case is StackModel:
-                let options = try UpdateOptions<StackOptions>.fromJSObject(call)
-                applyOptions {
-                    try await implementation.update(options)
+            let updateOptions = try UpdateOptions.fromJSObject(call)
+            if let options = updateOptions.update {
+                var componentSpec = try implementation.findComponent(id: id).spec
+                try componentSpec.update(options)
+                let updatedSpec = componentSpec
+                Task {
+                    do {
+                        try await implementation.update(updateOptions, updatedSpec: updatedSpec)
+                        call.resolve()
+                    } catch {
+                        call.reject("Failed to update: \(error.localizedDescription)")
+                    }
                 }
-            case is TabsModel:
-                let options = try UpdateOptions<TabsOptions>.fromJSObject(call)
-                applyOptions {
-                    try await implementation.update(options)
-                }
-            case is ViewModel:
-                let options = try UpdateOptions<ViewOptions>.fromJSObject(call)
-                applyOptions {
-                    try await implementation.update(options)
-                }
-            default:
-                throw NativeNavigatorError.illegalState(message: "Component is not defined correctly in update")
             }
-            
         } catch {
             call.reject(error.localizedDescription)
         }

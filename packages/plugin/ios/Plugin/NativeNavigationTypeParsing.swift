@@ -5,6 +5,10 @@ protocol JSObjectDecodable {
     static func fromJSObject(_ object: JSObjectLike) throws -> Self
 }
 
+protocol JSObjectUpdatable {
+    static func updateOrCreate(_ object: JSObjectLike, existingObj: inout Self?) throws
+}
+
 extension Nullable where T: JSObjectDecodable {
     static func fromJSObject(_ object: JSObjectLike, key: String) throws -> Nullable<T> {
         if object.isNull(key) {
@@ -77,6 +81,30 @@ extension Nullable where T == String {
     }
 }
 
+extension Nullable where T == UIColor {
+    static func fromJSObjectOrNil(_ object: JSObjectLike, key: String) throws -> Nullable<T>? {
+        return try fromJSObjectOrNil(object, key: key, customDecoder: {
+            if let color = $0.getString($1) {
+                return try parseColor(color)
+            } else {
+                return nil
+            }
+        })
+    }
+}
+
+extension Nullable where T == UIFont {
+    static func fromJSObjectOrNil(_ object: JSObjectLike, key: String) throws -> Nullable<T>? {
+        return try fromJSObjectOrNil(object, key: key, customDecoder: {
+            if let font = $0.getObject($1) {
+                return try parseFont(font)
+            } else {
+                return nil
+            }
+        })
+    }
+}
+
 extension Nullable where T == Int {
     static func fromJSObjectOrNil(_ object: JSObjectLike, key: String) throws -> Nullable<T>? {
         return try fromJSObjectOrNil(object, key: key, customDecoder: { $0.getInt($1) })
@@ -89,78 +117,15 @@ extension Nullable where T == ImageObject {
     }
 }
 
-extension ViewSpec: JSObjectDecodable {
-    static func fromJSObject(_ object: JSObjectLike) throws -> ViewSpec {
-        guard let path = object.getString("path") else {
-            throw NativeNavigatorError.missingParameter(name: "path")
+extension JSObjectUpdatable {
+    static func updateOrCreate(_ object: JSObjectLike, key: String, existingObject: inout Self?) throws {
+        if object.isNull(key) {
+            existingObject = nil
+        } else {
+            if let obj = object.getObject(key) {
+                try Self.updateOrCreate(obj, existingObj: &existingObject)
+            }
         }
-        var spec = ViewSpec(path: path)
-        spec.id = object.getString("id")
-        
-        if let state = object.getObject("state") {
-            spec.state = state
-        }
-        
-        try spec.setViewOptionsFromJSObject(object)
-        
-        return spec
-    }
-}
-
-extension StackSpec: JSObjectDecodable {
-    static func fromJSObject(_ object: JSObjectLike) throws -> StackSpec {
-        var spec = StackSpec()
-        spec.id = object.getString("id")
-        
-        guard let initialStackObjects = object.getArray("components") as? [JSObject] else {
-            throw NativeNavigatorError.missingParameter(name: "components")
-        }
-        
-        var initialStack: [ViewSpec] = []
-        for initialStackItem in initialStackObjects {
-            initialStack.append(try ViewSpec.fromJSObject(initialStackItem))
-        }
-        
-        try spec.setStackOptionsFromJSObject(object)
-        
-        return spec
-    }
-}
-
-extension TabSpec: JSObjectDecodable {
-    static func fromJSObject(_ object: JSObjectLike) throws -> TabSpec {
-        guard let componentObject = object.getObject("component") else {
-            throw NativeNavigatorError.missingParameter(name: "component")
-        }
-        
-        let componentSpec = try tabableSpecFromJSObject(componentObject)
-        
-        var result = TabSpec(component: componentSpec)
-        
-        result.id = object.getString("id")
-        result.badgeValue = object.getString("badgeValue")
-        result.image = try ImageObject.fromJSObject(object, key: "image")
-        result.title = object.getString("title")
-        
-        return result
-    }
-}
-
-extension TabsSpec: JSObjectDecodable {
-    static func fromJSObject(_ object: JSObjectLike) throws -> TabsSpec {
-        
-        guard let initialTabObjects = object.getArray("tabs") as? [JSObject] else {
-            throw NativeNavigatorError.missingParameter(name: "tabs")
-        }
-        var initialTabs: [TabSpec] = []
-        for initialTabItem in initialTabObjects {
-            initialTabs.append(try TabSpec.fromJSObject(initialTabItem))
-        }
-
-        var spec = TabsSpec(tabs: initialTabs)
-        spec.title = object.getString("title")
-        
-        return spec
     }
 }
 
@@ -229,150 +194,6 @@ extension PresentOptions {
     
 }
 
-extension UpdateOptions: JSObjectDecodable {
-    static func fromJSObject(_ object: JSObjectLike) throws -> UpdateOptions {
-        guard let id = object.getString("id") else {
-            throw NativeNavigatorError.missingParameter(name: "id")
-        }
-
-        let animated = object.getBool("animated", false)
-        
-        guard let options = object.getObject("options") else {
-            throw NativeNavigatorError.missingParameter(name: "options")
-        }
-        return UpdateOptions(id: id, animated: animated, options: try T.fromJSObject(options))
-    }
-}
-
-extension ComponentOptions {
-    fileprivate mutating func setComponentOptionsFromJSObject(_ object: JSObjectLike) throws {
-        title = try Nullable<String>.fromJSObjectOrNil(object, key: "title")
-    }
-}
-
-extension ViewOptionsLike {
-    fileprivate mutating func setViewOptionsFromJSObject(_ object: JSObjectLike) throws {
-        if let obj = object.getObject("stackItem") {
-            stackItem = try StackItem.fromJSObject(obj)
-        }
-        try setComponentOptionsFromJSObject(object)
-    }
-}
-
-extension StackOptionsLike {
-    fileprivate mutating func setStackOptionsFromJSObject(_ object: JSObjectLike) throws {
-        try setComponentOptionsFromJSObject(object)
-        
-        if object.has("components") {
-            guard let viewSpecObjects = object.getArray("components") as? [JSObject] else {
-                throw NativeNavigatorError.missingParameter(name: "components")
-            }
-            
-            var stackComponents: [ViewSpec] = []
-            for initialStackItem in viewSpecObjects {
-                stackComponents.append(try ViewSpec.fromJSObject(initialStackItem))
-            }
-            components = stackComponents
-        }
-        
-        if let barObject = object.getObject("bar") {
-            bar = try BarOptions.fromJSObject(barObject)
-        }
-    }
-}
-
-extension StackOptions {
-    static func fromJSObject(_ object: JSObjectLike) throws -> StackOptions {
-        var result = StackOptions()
-        try result.setComponentOptionsFromJSObject(object)
-        return result
-    }
-}
-
-extension TabsOptions {
-    static func fromJSObject(_ object: JSObjectLike) throws -> TabsOptions {
-        var result = TabsOptions()
-        try result.setComponentOptionsFromJSObject(object)
-        
-        return result
-    }
-}
-
-extension ViewOptions {
-    static func fromJSObject(_ object: JSObjectLike) throws -> ViewOptions {
-        var result = ViewOptions()
-        try result.setViewOptionsFromJSObject(object)
-        return result
-    }
-}
-
-extension TabOptions {
-    static func fromJSObject(_ object: JSObjectLike) throws -> TabOptions {
-        var result = TabOptions()
-        result.badgeValue = try Nullable<String>.fromJSObjectOrNil(object, key: "badgeValue")
-        result.image = try Nullable<ImageObject>.fromJSObjectOrNil(object, key: "image")
-        result.title = try Nullable<String>.fromJSObjectOrNil(object, key: "title")
-        
-        if let componentObject = object.getObject("component") {
-            result.component = try componentSpecFromJSObject(componentObject)
-        }
-        
-        return result
-    }
-}
-
-extension StackBarButtonItem: JSObjectDecodable {
-    static func fromJSObject(_ object: JSObjectLike) throws -> StackBarButtonItem {
-        guard let id = object.getString("id") else {
-            throw NativeNavigatorError.invalidParameter(name: "StackItem.id", value: object)
-        }
-        guard let title = object.getString("title") else {
-            throw NativeNavigatorError.invalidParameter(name: "StackItem.title", value: object)
-        }
-        
-        let image = try Nullable<ImageObject>.fromJSObjectOrNil(object, key: "image")
-        
-        return StackBarButtonItem(id: id, title: title, image: image)
-    }
-}
-
-extension StackItem: JSObjectDecodable {
-    static func fromJSObject(_ object: JSObjectLike) throws -> StackItem {
-        var result = StackItem()
-        result.backItem = try Nullable<StackBarButtonItem>.fromJSObjectOrNil(object, key: "backItem")
-        
-        if let leftItems = object.getArray("leftItems") {
-            var items: [StackBarButtonItem] = []
-
-            for leftItem in leftItems {
-                guard let leftItem = leftItem as? JSObject else {
-                    throw NativeNavigatorError.invalidParameter(name: "StackOptions.leftItems", value: leftItem)
-                }
-
-                items.append(try StackBarButtonItem.fromJSObject(leftItem))
-            }
-            
-            result.leftItems = items
-        }
-        if let rightItems = object.getArray("rightItems") {
-            var items: [StackBarButtonItem] = []
-
-            for rightItem in rightItems {
-                guard let rightItem = rightItem as? JSObject else {
-                    throw NativeNavigatorError.invalidParameter(name: "StackOptions.rightItems", value: rightItem)
-                }
-
-                items.append(try StackBarButtonItem.fromJSObject(rightItem))
-            }
-            
-            result.rightItems = items
-        }
-        result.backEnabled = try Nullable<Bool>.fromJSObjectOrNil(object, key: "backEnabled")
-        
-        return result
-    }
-}
-
 extension ImageObject {
     
     typealias This = ImageObject
@@ -402,24 +223,6 @@ extension ImageObject {
     }
 }
 
-extension BarOptions: JSObjectDecodable {
-
-    static func fromJSObject(_ object: JSObjectLike) throws -> BarOptions {
-        var result = BarOptions()
-        if let backgroundOptions = object.getObject("background") {
-            result.background = try FillOptions.fromJSObject(backgroundOptions)
-        }
-        if let titleOptions = object.getObject("title") {
-            result.title = try LabelOptions.fromJSObject(titleOptions)
-        }
-        if let buttonsOptions = object.getObject("buttons") {
-            result.buttons = try LabelOptions.fromJSObject(buttonsOptions)
-        }
-        result.visible = object.getBool("visible")
-        return result
-    }
-
-}
 
 func parseColor(_ color: String) throws -> UIColor {
     if let result = UIColor(hex: color) {
@@ -427,33 +230,6 @@ func parseColor(_ color: String) throws -> UIColor {
     } else {
         throw NativeNavigatorError.invalidParameter(name: "color", value: color)
     }
-}
-
-extension FillOptions: JSObjectDecodable {
- 
-    static func fromJSObject(_ object: JSObjectLike) throws -> FillOptions {
-        var result = FillOptions()
-        if let color = object.getString("color") {
-            result.color = try parseColor(color)
-        }
-        return result
-    }
-    
-}
-
-extension LabelOptions: JSObjectDecodable {
-
-    static func fromJSObject(_ object: JSObjectLike) throws -> LabelOptions {
-        var result = LabelOptions()
-        if let color = object.getString("color") {
-            result.color = try parseColor(color)
-        }
-        if let font = object.getObject("font") {
-            result.font = try parseFont(font)
-        }
-        return result
-    }
-    
 }
 
 func parseFont(_ object: JSObjectLike) throws -> UIFont {

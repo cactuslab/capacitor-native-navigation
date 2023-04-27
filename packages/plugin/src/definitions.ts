@@ -434,6 +434,11 @@ export enum NativeNavigationEvents {
 	Click = 'click',
 
 	Message = 'message',
+
+	ViewWillAppear = 'viewWillAppear',
+	ViewDidAppear = 'viewDidAppear',
+	ViewWillDisappear = 'viewWillDisappear',
+	ViewDidDisappear = 'viewDidDisappear',
 }
 
 export interface CreateViewEventData {

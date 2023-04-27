@@ -18,6 +18,23 @@ interface ContextInit {
 export function createReactContext(options: ContextInit): NativeNavigationContext {
 	const { componentId, pathname, search, hash, state, stack, viewWindow, plugin } = options
 
+	function createPluginComponentListener(type: string, func: (...args: any[]) => any) {
+		let handle: PluginListenerHandle | undefined
+		plugin.addListener(`${type}:${componentId}`, func).then(result => {
+			handle = result
+		}).catch(reason => {
+			console.warn(`NativeNavigation: Failed to add ${type} listener for ${componentId}: ${reason}`)
+		})
+
+		return function() {
+			if (handle) {
+				handle.remove()
+			} else {
+				console.warn(`NativeNavigation: Failed to remove ${type} listener for ${componentId}. This may cause a memory leak.`)
+			}
+		}
+	}
+
 	const context: NativeNavigationContext = {
 		componentId,
 		pathname,
@@ -51,20 +68,20 @@ export function createReactContext(options: ContextInit): NativeNavigationContex
 		},
 
 		addClickListener: function(func) {
-			let handle: PluginListenerHandle | undefined
-			plugin.addListener(`click:${componentId}`, func).then(result => {
-				handle = result
-			}).catch(reason => {
-				console.warn(`NativeNavigation: Failed to add click listener for ${componentId}, this may cause some navigation buttons to fail: ${reason}`)
-			})
+			return createPluginComponentListener('click', func)
+		},
 
-			return function() {
-				if (handle) {
-					handle.remove()
-				} else {
-					console.warn(`NativeNavigation: Failed to remove listener for ${componentId}. This may cause a memory leak.`)
-				}
-			}
+		addViewWillAppearListener: function(func) {
+			return createPluginComponentListener('viewWillAppear', func)
+		},
+		addViewDidAppearListener: function(func) {
+			return createPluginComponentListener('viewDidAppear', func)
+		},
+		addViewWillDisappearListener: function(func) {
+			return createPluginComponentListener('viewWillDisappear', func)
+		},
+		addViewDidDisappearListener: function(func) {
+			return createPluginComponentListener('viewDidDisappear', func)
 		},
 
 		addMessageListener(type, listener: MessageListenerWithAdapter) {
@@ -102,6 +119,7 @@ interface MessageListenerWithAdapter extends MessageListener {
 
 
 type ClickListenerFunc = (data: ClickEventData) => void
+type ViewTransitionListenerFunc = () => void
 type RemoveListenerFunction = () => void
 
 export interface NativeNavigationContext {
@@ -146,6 +164,11 @@ export interface NativeNavigationContext {
 	 */
 	addClickListener: (func: ClickListenerFunc) => RemoveListenerFunction
 
+	addViewWillAppearListener: (func: ViewTransitionListenerFunc) => RemoveListenerFunction
+	addViewDidAppearListener: (func: ViewTransitionListenerFunc) => RemoveListenerFunction
+	addViewWillDisappearListener: (func: ViewTransitionListenerFunc) => RemoveListenerFunction
+	addViewDidDisappearListener: (func: ViewTransitionListenerFunc) => RemoveListenerFunction
+
 	addMessageListener: (type: string, listener: MessageListener) => void
 	removeMessageListener: (type: string, listener: MessageListener) => void
 }
@@ -163,6 +186,26 @@ const DEFAULT_CONTEXT: NativeNavigationContext = {
 		throw new Error('Not in a native context')
 	},
 	addClickListener: function() {
+		return function() {
+			/* noop */
+		}
+	},
+	addViewWillAppearListener: function() {
+		return function() {
+			/* noop */
+		}
+	},
+	addViewDidAppearListener: function() {
+		return function() {
+			/* noop */
+		}
+	},
+	addViewWillDisappearListener: function() {
+		return function() {
+			/* noop */
+		}
+	},
+	addViewDidDisappearListener: function() {
 		return function() {
 			/* noop */
 		}

@@ -1,5 +1,6 @@
 import { NativeNavigation } from '@cactuslab/native-navigation'
-import React, { useCallback } from 'react'
+import { useNativeNavigationContext } from '@cactuslab/native-navigation-react'
+import React, { useCallback, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 export default function Stack2(): JSX.Element {
@@ -29,6 +30,29 @@ export default function Stack2(): JSX.Element {
 				type: 'view',
 				path: '/view1',
 			},
+		})
+	}, [])
+
+	const { addViewWillAppearListener, addViewDidAppearListener, addViewWillDisappearListener, addViewDidDisappearListener } = useNativeNavigationContext()
+
+	useEffect(function() {
+		return addViewWillAppearListener(() => {
+			console.log('Stack2 received viewWillAppear')
+		})
+	}, [])
+	useEffect(function() {
+		return addViewDidAppearListener(() => {
+			console.log('Stack2 received viewDidAppear')
+		})
+	}, [])
+	useEffect(function() {
+		return addViewWillDisappearListener(() => {
+			console.log('Stack2 received viewWillDisappear')
+		})
+	}, [])
+	useEffect(function() {
+		return addViewDidDisappearListener(() => {
+			console.log('Stack2 received viewDidDisappear')
 		})
 	}, [])
 

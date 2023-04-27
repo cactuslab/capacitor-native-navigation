@@ -28,7 +28,7 @@ export interface NativeNavigationPlugin {
 	 * Set the options for an existing component
 	 * @param options 
 	 */
-	setOptions(options: SetComponentOptions): Promise<void>
+	update(options: UpdateOptions): Promise<void>
 
 	/**
 	 * Remove all of the native UI and reset back to the root Capacitor webview.
@@ -86,7 +86,7 @@ export interface MessageEventData<D = any> {
 export type ComponentId = string
 export type ButtonId = string
 
-export interface ComponentSpec<O extends ComponentOptions> {
+export interface ComponentSpec {
 	type: ComponentType
 
 	/**
@@ -94,23 +94,40 @@ export interface ComponentSpec<O extends ComponentOptions> {
 	 */
 	id?: ComponentId
 
-	options?: O
+	/* There was previously an options property here; this exists temporarily to help find existing usage */
+	options?: never
 }
 
 type ComponentSpecs = StackSpec | TabsSpec | ViewSpec
 
-export interface StackSpec extends ComponentSpec<StackOptions> {
+export interface StackSpec extends ComponentSpec {
 	type: 'stack'
-	stack: ViewSpec[]
+	components: ViewSpec[]
+	bar?: BarSpec
+	title?: string
 }
 
-export interface TabsSpec extends ComponentSpec<TabsOptions> {
+export interface TabsSpec extends ComponentSpec {
 	type: 'tabs'
-	tabs: (StackSpec | ViewSpec)[]
+	tabs: TabSpec[]
+	title?: string
+}
+
+export interface TabSpec {
+	/**
+	 * The id to use for the tab, or undefined to automatically generate an id.
+	 */
+	id?: ComponentId
+
+	title?: string
+	image?: ImageSpec
+	badgeValue?: string
+
+	component: StackSpec | ViewSpec
 }
 
 export type ViewState = Record<string, string | number | boolean | null | undefined>
-export interface ViewSpec extends ComponentSpec<ViewOptions> {
+export interface ViewSpec extends ComponentSpec {
 	type: 'view'
 
 	/**
@@ -119,6 +136,11 @@ export interface ViewSpec extends ComponentSpec<ViewOptions> {
 	path: string
 
 	state?: ViewState
+
+	/**
+	 * Options for when the component is used in a stack
+	 */
+	stackItem?: StackItemSpec
 }
 
 export type ComponentType = 'stack' | 'tabs' | 'view'
@@ -246,7 +268,7 @@ export interface PopResult {
 	id?: ComponentId
 }
 
-export interface SetComponentOptions {
+export interface UpdateOptions {
 	id: ComponentId
 
 	/**
@@ -255,67 +277,132 @@ export interface SetComponentOptions {
 	 */
 	animated?: boolean
 
-	options: AllComponentOptions
+	update: StackUpdate | TabsUpdate | TabUpdate | ViewUpdate
 }
 
 export interface ComponentOptions {
 	title?: string | null
-
-	/**
-	 * Options for when the component is used in a stack
-	 */
-	stack?: {
-		backItem?: StackBarItem
-		leftItems?: StackBarItem[]
-		rightItems?: StackBarItem[]
-	}
-
-	/**
-	 * Options for when the component is used in a tab
-	 */
-	tab?: {
-		image?: ImageSpec
-		badgeValue?: string
-	}
 }
 
 /**
  * Options for stack components
  */
-export interface StackOptions extends ComponentOptions {
-	bar?: {
-		background?: FillOptions
-		title?: LabelOptions
-		buttons?: LabelOptions
-		visible?: boolean
-	}
+export interface StackUpdate extends ComponentOptions {
+	components?: ViewSpec[]
+	bar?: BarUpdate
 }
 
-export interface FillOptions {
+interface BarSpec {
+	background?: FillSpec
+	title?: LabelSpec
+	buttons?: LabelSpec
+	visible?: boolean
+}
+
+interface BarUpdate {
+	background?: FillUpdate | null
+	title?: LabelUpdate | null
+	buttons?: LabelUpdate | null
+	visible?: boolean | null
+}
+
+export interface FillSpec {
 	color?: string
 }
 
-export interface LabelOptions {
-	color?: string
-	font?: FontOptions
+export interface FillUpdate {
+	color?: string | null
 }
 
-export interface FontOptions {
+export interface LabelSpec {
+	color?: string
+	font?: FontSpec
+}
+
+export interface LabelUpdate {
+	color?: string | null
+	font?: FontUpdate | null
+}
+
+export interface FontSpec {
 	name?: string
 	size?: number
+}
+
+export interface FontUpdate {
+	name?: string | null
+	size?: number | null
 }
 
 /**
  * Options for tabs components
  */
-export type TabsOptions = ComponentOptions
+export interface TabsUpdate extends ComponentOptions {
+	tabs?: TabSpec[]
+}
+
+export interface TabUpdate {
+	title?: string | null
+	image?: ImageSpec | null
+	badgeValue?: string | null
+
+	component?: StackSpec | ViewSpec
+}
 
 /**
  * Options for view components
  */
-export type ViewOptions = ComponentOptions
+export interface ViewUpdate extends ComponentOptions {
+	/**
+	 * Options for when the component is used in a stack
+	 */
+	stackItem?: StackItemUpdate
+}
 
-export type AllComponentOptions = StackOptions | TabsOptions | ViewOptions
+export interface StackItemSpec {
+	backItem?: StackBarButtonItem
+	leftItems?: StackBarButtonItem[]
+	rightItems?: StackBarButtonItem[]
+	
+	/**
+	 * Enables the system gestures and buttons for managing the back action.
+	 * Useful for preventing the user from exiting a window that is running
+	 * an important operation. Does not prevent the user from backgrounding
+	 * the application.
+	 * Default behaviour is to use the host Stack configuration which behaves
+	 * as backEnabled is `true`
+	 */
+	backEnabled?: boolean
+
+	/**
+	 * Customise the bar on top of the default options provided by the
+	 * stack
+	 */
+	bar?: BarSpec
+}
+export interface StackItemUpdate {
+	backItem?: StackBarButtonItem | null
+	leftItems?: StackBarButtonItem[] | null
+	rightItems?: StackBarButtonItem[] | null
+	
+	/**
+	 * Enables the system gestures and buttons for managing the back action.
+	 * Useful for preventing the user from exiting a window that is running
+	 * an important operation. Does not prevent the user from backgrounding
+	 * the application.
+	 * Default behaviour is to use the host Stack configuration which behaves
+	 * as backEnabled is `true`
+	 */
+	backEnabled?: boolean | null
+
+	/**
+	 * Customise the bar on top of the default options provided by the
+	 * stack
+	 */
+	bar?: BarUpdate | null
+}
+
+
 
 export interface ResetOptions {
 	/**
@@ -325,7 +412,7 @@ export interface ResetOptions {
 	animated?: boolean
 }
 
-interface StackBarItem {
+interface StackBarButtonItem {
 	id: ButtonId
 	title: string
 	image?: ImageSpec

@@ -18,7 +18,7 @@
 
 - c901c24: Modals: Allow option to prevent system gestures for dismissing
 - a0a7df3: Modal navigation support
-- cf84e19: toolbar: Added ability to set visibility of bars using setOptions
+- cf84e19: toolbar: Added ability to set visibility of bars using update
 
 ## 0.0.8
 

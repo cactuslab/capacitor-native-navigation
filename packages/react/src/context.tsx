@@ -1,4 +1,4 @@
-import type { AllComponentOptions, ClickEventData, ComponentId, DismissOptions, DismissResult, MessageEventData, NativeNavigationPlugin } from '@cactuslab/native-navigation'
+import type { ClickEventData, ComponentId, DismissOptions, DismissResult, MessageEventData, NativeNavigationPlugin , TabUpdate, ViewUpdate } from '@cactuslab/native-navigation'
 import type { Plugin, PluginListenerHandle } from '@capacitor/core'
 import React, { useContext } from 'react'
 
@@ -27,11 +27,19 @@ export function createReactContext(options: ContextInit): NativeNavigationContex
 		stack,
 		viewWindow,
 
-		setOptions: async function(options) {
-			return plugin.setOptions({
-				id: options.id || componentId,
-				animated: options.animated,
-				options,
+		updateView: async function(update) {
+			return plugin.update({
+				id: componentId,
+				animated: update.animated,
+				update,
+			})
+		},
+
+		updateTab: async function(update) {
+			return plugin.update({
+				id: componentId,
+				animated: update.animated,
+				update,
 			})
 		},
 
@@ -121,7 +129,12 @@ export interface NativeNavigationContext {
 	/**
 	 * Set this component's options.
 	 */
-	setOptions: (options: AllComponentOptions & { id?: string; animated?: boolean }) => Promise<void>
+	updateView: (update: ViewUpdate & { animated?: boolean }) => Promise<void>
+
+	/**
+	 * Set this component's options.
+	 */
+	updateTab: (update: TabUpdate & { animated?: boolean }) => Promise<void>
 
 	/**
 	 * Dismiss this component, if it was presented.
@@ -140,7 +153,10 @@ export interface NativeNavigationContext {
 const DEFAULT_CONTEXT: NativeNavigationContext = {
 	pathname: '',
 	viewWindow: window,
-	setOptions: async function() {
+	updateView: async function() {
+		return
+	},
+	updateTab: async function() {
 		return
 	},
 	dismiss: async function() {

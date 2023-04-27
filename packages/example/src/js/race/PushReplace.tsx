@@ -15,10 +15,10 @@ export default function PushReplace(): JSX.Element {
 
 function PushReplace1(): JSX.Element {
 	const navigate = useNavigate()
-	const { setOptions, addClickListener } = useNativeNavigationContext()
+	const { update, addClickListener } = useNativeNavigationContext()
 
 	useEffect(function() {
-		setOptions({
+		update({
 			stack: {
 				rightItems: [
 					{

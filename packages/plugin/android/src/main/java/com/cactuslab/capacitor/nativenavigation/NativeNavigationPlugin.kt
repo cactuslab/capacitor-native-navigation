@@ -133,11 +133,11 @@ class NativeNavigationPlugin : Plugin() {
     }
 
     @PluginMethod
-    fun setOptions(call: PluginCall) {
+    fun update(call: PluginCall) {
         try {
             val options = SetComponentOptions.fromJSObject(call.data)
             activity.runOnUiThread {
-                implementation.setOptions(options)
+                implementation.update(options)
                 call.resolve()
             }
         } catch (e: MissingParameterException) {

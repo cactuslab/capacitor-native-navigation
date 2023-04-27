@@ -15,6 +15,7 @@ import androidx.navigation.*
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.fragment
 import com.cactuslab.capacitor.nativenavigation.databinding.ActivityNavigationBinding
+import com.cactuslab.capacitor.nativenavigation.helpers.parseRGBAColor
 import com.cactuslab.capacitor.nativenavigation.types.*
 import com.cactuslab.capacitor.nativenavigation.ui.BlankViewFragment
 import com.cactuslab.capacitor.nativenavigation.ui.HostFragment
@@ -92,6 +93,9 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
     private var onBackPressedCallback: OnBackPressedCallback? = null
 
     private val webviewsCache: MutableMap<String, WebView> = mutableMapOf()
+
+    /** used to ensure that when native navigation is popping nothing can prevent it */
+    private var applicationDrivenPop: Boolean = false;
 
     private fun insertComponent(component: ComponentSpec) {
         components[component.id] = component
@@ -232,16 +236,16 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         call.resolve(result.toJSObject())
     }
 
-    fun setOptions(options: SetComponentOptions) {
-        Log.d(TAG, "setOptions: -> $options")
+    fun update(options: SetComponentOptions) {
+        Log.d(TAG, "update: -> $options")
         val spec = components.get(options.id)!!
         val specOptions = spec.options
         if (specOptions != null) {
             specOptions.mergeOptions(options.options)
-            viewModel.postSetOptions(SetComponentOptions(options.id, options.animated, specOptions), options.id)
+            viewModel.postUpdate(SetComponentOptions(options.id, options.animated, specOptions), options.id)
         } else {
             spec.options = options.options
-            viewModel.postSetOptions(options, options.id)
+            viewModel.postUpdate(options, options.id)
         }
     }
 
@@ -283,6 +287,16 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         val transaction = plugin.activity.supportFragmentManager.beginTransaction()
         navContext.tryRemoveFromActivity(transaction)
         transaction.commitNowAllowingStateLoss()
+
+        navContexts.lastOrNull()?.let context@ { topNavContext ->
+            topNavContext.virtualStack.lastOrNull()?.let { topStackId ->
+                val spec = components.get(topStackId) ?: return@context
+                val backgroundColor = spec.options?.bar?.background?.color ?: topNavContext.presentOptions?.component?.options?.bar?.background?.color
+                backgroundColor?.parseRGBAColor()?.let { statusColor ->
+                    plugin.activity.window.statusBarColor = statusColor
+                }
+            }
+        }
     }
 
     private fun popNavContext() {
@@ -305,6 +319,16 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                 val navContext = navContexts.last()
 
                 val navController = navContext.navController()
+
+                if (navController?.previousBackStackEntry != null) {
+                    navContext.virtualStack.lastOrNull()?.let { topMostId ->
+                        val isBackEnabled = components[topMostId]?.options?.stack?.backEnabled ?: true
+                        if (!isBackEnabled && !applicationDrivenPop) {
+                            /** Back on stack has been disabled. Tell the system we handled it. */
+                            return
+                        }
+                    }
+                }
 
                 val didNavigate = navController?.previousBackStackEntry?.let { backStackEntry ->
                     navController.navigateUp()
@@ -494,7 +518,9 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
     fun pop(call: PluginCall, activity: AppCompatActivity) {
         Log.d(TAG, "pop: Processing pop")
+        applicationDrivenPop = true
         activity.onBackPressedDispatcher.onBackPressed()
+        applicationDrivenPop = false
         call.resolve()
     }
 

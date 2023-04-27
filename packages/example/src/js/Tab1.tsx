@@ -4,14 +4,12 @@ import React, { useCallback } from 'react'
 let badgeCounter = 1
 
 export default function Tab1(): JSX.Element {
-	const { setOptions } = useNativeNavigationContext()
+	const { updateTab } = useNativeNavigationContext()
 
 	const handleUpdateBadge = useCallback(function(evt: React.MouseEvent) {
 		evt.preventDefault()
-		setOptions({
-			tab: {
-				badgeValue: `${badgeCounter++}`,
-			}
+		updateTab({
+			badgeValue: `${badgeCounter++}`,
 		})
 	}, [])
 

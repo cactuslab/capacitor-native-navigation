@@ -1,4 +1,4 @@
-import { NativeNavigation, StackOptions } from '@cactuslab/native-navigation'
+import { NativeNavigation, StackOptions, StackSpec } from '@cactuslab/native-navigation'
 
 import diamond from '../assets/imgs/diamond@2x.png'
 import flags from '../assets/imgs/flag.2.crossed@2x.png'
@@ -51,21 +51,19 @@ export default function Home(): React.ReactElement {
 	)
 }
 
-async function setupStack(options: { path: string, title: string, options?: StackOptions }) {
+async function setupStack(options: { path: string, title: string, options?: Partial<StackSpec> }) {
 	const stackRoot = await NativeNavigation.present({
 		component: {
 			id: 'rootStack',
 			type: 'stack',
-			stack: [
+			components: [
 				{
 					type: 'view',
 					path: options?.path,
-					options: {
-						title: options?.title,
-					}
+					title: options?.title,
 				}
 			],
-			options: options.options,
+			...options.options
 		},
 		animated: false,
 	})
@@ -79,46 +77,39 @@ async function setupTabs() {
 			type: 'tabs',
 			tabs: [
 				{
-					id: 'rootStack',
-					type: 'stack',
-					options: {
-						title: 'First',
-						tab: {
-							// badgeValue: 'Yes',
-							image: star,
-						}
-					},
-					stack: [
-						{
-							type: 'view',
-							path: '/stack1',
-						}
-					],
-				},
-				{
-					type: 'stack',
-					stack: [
-						{
-							type: 'view',
-							path: '/view1',
-							options: {
-								title: 'View',
-								tab: {
-									image: diamond,
-								}
+					title: 'First',
+					image: star,
+					component: {
+						id: 'rootStack',
+						type: 'stack',
+						components: [
+							{
+								type: 'view',
+								path: '/stack1',
 							}
-						},
-					],
+						],
+					},
 				},
 				{
-					type: 'view',
-					path: '/tab1',
-					options: {
-						title: 'Tab Test',
-						tab: {
-							image: flags,
-						}
-					}
+					title: 'View',
+					image: diamond,
+					component: {
+						type: 'stack',
+						components: [
+							{
+								type: 'view',
+								path: '/view1',
+							},
+						],
+					},
+				},
+				{
+					title: 'Tab Test',
+					image: flags,
+					component: {
+						type: 'view',
+						path: '/tab1',
+					},
 				},
 			],
 		},

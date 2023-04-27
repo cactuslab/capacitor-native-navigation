@@ -17,7 +17,12 @@ class ComponentOptions(var title: Nullable<String>?, var stack: StackConfig?, va
 
     fun mergeOptions(other: ComponentOptions) {
         other.title?.let { this.title = it }
-        other.stack?.let { this.stack = it }
+        val myStack = this.stack
+        if (myStack != null) {
+            myStack.mergeOptions(other.stack)
+        } else {
+            this.stack = other.stack
+        }
         other.tab?.let { this.tab = it }
         val bar = this.bar
         if (bar != null) {

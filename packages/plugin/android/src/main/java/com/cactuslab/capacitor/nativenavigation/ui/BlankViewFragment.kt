@@ -108,8 +108,8 @@ class BlankViewFragment : Fragment() {
             }
 
             when (signal) {
-                is NativeNavigationViewModel.Signal.SetOptions -> {
-                    Log.d(TAG, "setOptions Received $optionsId pushing to viewModel")
+                is NativeNavigationViewModel.Signal.Update -> {
+                    Log.d(TAG, "update Received $optionsId pushing to viewModel")
                     webviewViewModel.setComponentOptions(signal.options.options)
                 }
             }
@@ -129,7 +129,7 @@ class BlankViewFragment : Fragment() {
 
         val isStack = stackOptions?.type == ComponentType.STACK
 
-        Log.d(TAG, "viewModel setOptions being applied $componentId")
+        Log.d(TAG, "viewModel update being applied $componentId")
         if (options == null && stackOptions?.options?.bar == null || !isStack) {
             toolbar.visibility = View.GONE
         } else {
@@ -205,8 +205,17 @@ class BlankViewFragment : Fragment() {
 
         toolbar.invalidateMenu()
 
-        if (findNavController().previousBackStackEntry != null) {
+        if (findNavController().previousBackStackEntry != null && options?.stack?.backEnabled != false) {
             toolbar.setNavigationIcon(androidx.appcompat.R.drawable.abc_ic_ab_back_material)
+        } else {
+            toolbar.navigationIcon = null
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        webviewViewModel.componentOptionsLiveData.value?.let {
+            updateToolbar(it)
         }
     }
 

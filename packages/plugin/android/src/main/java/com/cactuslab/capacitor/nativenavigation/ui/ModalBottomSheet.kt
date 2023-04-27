@@ -87,8 +87,8 @@ class ModalBottomSheet: BottomSheetDialogFragment() {
             }
 
             when (signal) {
-                is NativeNavigationViewModel.Signal.SetOptions -> {
-                    Log.d(TAG, "setOptions Received $optionsId pushing to viewModel")
+                is NativeNavigationViewModel.Signal.Update -> {
+                    Log.d(TAG, "update Received $optionsId pushing to viewModel")
                     webviewViewModel.setComponentOptions(signal.options.options)
                 }
             }
@@ -100,7 +100,7 @@ class ModalBottomSheet: BottomSheetDialogFragment() {
     private fun updateToolbar(options: ComponentOptions?) {
         val toolbar = binding?.toolbar ?: return
 
-        Log.d(TAG, "viewModel setOptions being applied $componentId")
+        Log.d(TAG, "viewModel update being applied $componentId")
         if (options == null) {
             toolbar.visibility = View.GONE
         } else {

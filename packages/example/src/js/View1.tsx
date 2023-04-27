@@ -1,12 +1,13 @@
 import { NativeNavigation } from '@cactuslab/native-navigation'
 import { useNativeNavigationContext } from '@cactuslab/native-navigation-react'
 import React, { useCallback, useEffect, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 export default function View1(): JSX.Element {
-	const { dismiss } = useNativeNavigationContext()
+	const { dismiss, addClickListener } = useNativeNavigationContext()
 	const location = useLocation()
 	const [got, setGot] = useState('')
+	const navigate = useNavigate()
 
 	const handleDismiss = useCallback(function(evt: React.MouseEvent) {
 		evt.preventDefault()
@@ -28,6 +29,14 @@ export default function View1(): JSX.Element {
 		return function() {
 			alert('View1 has been unmounted')
 		}
+	}, [])
+
+	useEffect(function() {
+		return addClickListener(function(data) {
+			if (data.buttonId === 'close-button') {
+				navigate("/stack1")
+			}
+		})
 	}, [])
 	
 	return (

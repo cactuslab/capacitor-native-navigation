@@ -5,8 +5,9 @@ import Capacitor
 
 protocol ComponentModel {
     associatedtype T: UIViewController
+    associatedtype S: ComponentSpec
     var componentId: ComponentId { get }
-    var options: ComponentOptions? { get set }
+    var spec: S { get set }
     var viewController: T { get }
     var container: ComponentId? { get }
     var presentOptions: PresentOptions? { get set }
@@ -14,15 +15,15 @@ protocol ComponentModel {
 
 class StackModel: ComponentModel {
     let componentId: ComponentId
-    var options: ComponentOptions?
+    var spec: StackSpec
     let viewController: NativeNavigationNavigationController
     var views: [ComponentId]
     let container: ComponentId?
     var presentOptions: PresentOptions?
     
-    init(componentId: ComponentId, options: ComponentOptions? = nil, viewController: NativeNavigationNavigationController, views: [ComponentId], container: ComponentId? = nil, presentOptions: PresentOptions? = nil) {
+    init(componentId: ComponentId, spec: StackSpec, viewController: NativeNavigationNavigationController, views: [ComponentId], container: ComponentId? = nil, presentOptions: PresentOptions? = nil) {
         self.componentId = componentId
-        self.options = options
+        self.spec = spec
         self.viewController = viewController
         self.views = views
         self.container = container
@@ -36,16 +37,16 @@ class StackModel: ComponentModel {
 
 class TabsModel: ComponentModel {
     let componentId: ComponentId
-    var options: ComponentOptions?
+    var spec: TabsSpec
     let viewController: NativeNavigationTabBarController
     var tabs: [ComponentId]
     var selectedIndex: Int
     let container: ComponentId?
     var presentOptions: PresentOptions?
     
-    init(componentId: ComponentId, options: ComponentOptions? = nil, viewController: NativeNavigationTabBarController, tabs: [ComponentId], selectedIndex: Int, container: ComponentId? = nil, presentOptions: PresentOptions? = nil) {
+    init(componentId: ComponentId, spec: TabsSpec, viewController: NativeNavigationTabBarController, tabs: [ComponentId], selectedIndex: Int, container: ComponentId? = nil, presentOptions: PresentOptions? = nil) {
         self.componentId = componentId
-        self.options = options
+        self.spec = spec
         self.viewController = viewController
         self.tabs = tabs
         self.selectedIndex = selectedIndex
@@ -62,16 +63,16 @@ class TabsModel: ComponentModel {
     }
 }
 
-struct ViewModel: ComponentModel {
+class ViewModel: ComponentModel {
     let componentId: ComponentId
-    var options: ComponentOptions?
+    var spec: ViewSpec
     let viewController: NativeNavigationWebViewController
     let container: ComponentId?
     var presentOptions: PresentOptions?
     
-    init(componentId: ComponentId, options: ComponentOptions? = nil, viewController: NativeNavigationWebViewController, container: ComponentId? = nil, presentOptions: PresentOptions? = nil) {
+    init(componentId: ComponentId, spec: ViewSpec, viewController: NativeNavigationWebViewController, container: ComponentId? = nil, presentOptions: PresentOptions? = nil) {
         self.componentId = componentId
-        self.options = options
+        self.spec = spec
         self.viewController = viewController
         self.container = container
         self.presentOptions = presentOptions
@@ -210,10 +211,10 @@ class NativeNavigation: NSObject {
                     guard let topComponent = try component(topComponentId) as? ViewModel else {
                         throw NativeNavigatorError.illegalState(message: "Top of stack is not a view: \(topComponentId)")
                     }
-                    let afterReady = try await updateView(options.component, component: topComponent)
+                    try await updateView(options.component, component: topComponent)
                     
                     await waitForViewsReady(topComponent.viewController)
-                    afterReady()
+                    
                     return PushResult(id: topComponent.componentId, stack: stack.componentId)
                 }
             }
@@ -245,9 +246,9 @@ class NativeNavigation: NSObject {
             return PushResult(id: viewModel.componentId, stack: stack.componentId)
         } else if let vc = container as? ViewModel {
             /* We can push without a UINavigationController; we just always replace the component's contents */
-            let afterReady = try await updateView(options.component, component: vc)
+            try await updateView(options.component, component: vc)
             await waitForViewsReady(vc.viewController)
-            afterReady()
+            
             return PushResult(id: vc.componentId)
         } else {
             throw NativeNavigatorError.illegalState(message: "Cannot push to component: \(container.componentId)")
@@ -311,14 +312,27 @@ class NativeNavigation: NSObject {
             return PopResult(stack: stack.componentId, count: 0)
         }
     }
-    
-    @MainActor
-    func setOptions(_ options: SetComponentOptions) async throws {
-        let component = try self.component(options.id)
-
-        let componentOptions = options.options
         
-        try self.configureViewController(component, options: componentOptions, animated: options.animated)
+    @MainActor
+    func update(_ options: UpdateOptions, updatedSpec: any ComponentSpec) async throws {
+        let component = try self.component(options.id)
+        
+        switch (component, updatedSpec) {
+        case let (model as TabsModel, spec as TabsSpec):
+            try self.configureViewController(model, options: spec, animated: options.animated)
+            model.spec = spec
+            try self.updateComponent(model)
+        case let (model as ViewModel, spec as ViewSpec):
+            try self.configureViewController(model, options: spec, animated: options.animated)
+            model.spec = spec
+            try self.updateComponent(model)
+        case let (model as StackModel, spec as StackSpec):
+            try self.configureViewController(model, options: spec, animated: options.animated)
+            model.spec = spec
+            try self.updateComponent(model)
+        default:
+            throw NativeNavigatorError.illegalState(message: "Component and Spec did not match types \(component.self), \(updatedSpec.self)")
+        }
     }
 
     func reset(_ options: ResetOptions) async throws {
@@ -385,17 +399,19 @@ class NativeNavigation: NSObject {
     @MainActor
     private func options(_ vc: any ComponentModel) throws -> ComponentSpec {
         if let vc = vc as? StackModel {
-            var result = StackSpec(stack: [])
-            result.id = vc.componentId
+            var specs: [ViewSpec] = []
             
             for childId in vc.views {
                 let child = try self.component(childId)
                 if let childOptions = try options(child) as? ViewSpec {
-                    result.stack.append(childOptions)
+                    specs.append(childOptions)
                 } else {
                     throw NativeNavigatorError.illegalState(message: "Stack contained view controller of an unexpected type: \(childId)")
                 }
             }
+            
+            var result = StackSpec(components: specs)
+            result.id = vc.componentId
             return result
         } else if let vc = vc as? TabsModel {
             var result = TabsSpec(tabs: [])
@@ -574,6 +590,14 @@ class NativeNavigation: NSObject {
 
         componentsById[model.componentId] = model
     }
+    
+    private func updateComponent(_ model: any ComponentModel) throws {
+        guard self.componentsById[model.componentId] != nil else {
+            throw NativeNavigatorError.componentAlreadyExists(name: model.componentId)
+        }
+        
+        componentsById[model.componentId] = model
+    }
 
     @MainActor
     private func removeComponent(_ id: ComponentId) {
@@ -603,17 +627,15 @@ class NativeNavigation: NSObject {
         let componentId = spec.id ?? generateId()
         let nc = NativeNavigationNavigationController(componentId: componentId)
         
-        let model = StackModel(componentId: componentId, viewController: nc, views: [], container: container?.componentId)
+        let model = StackModel(componentId: componentId, spec: spec, viewController: nc, views: [], container: container?.componentId)
         
         /* So our webView doesn't disappear under the title bar */
 //        nc.navigationBar.scrollEdgeAppearance = nc.navigationBar.standardAppearance
 
-        if let componentOptions = spec.options {
-            try self.configureViewController(model, options: componentOptions, animated: false)
-        }
+        try self.configureViewController(model, options: spec, animated: false)
         
         var viewControllers = [UIViewController]()
-        for stackItemCreateOptions in spec.stack {
+        for stackItemCreateOptions in spec.components {
             let stackItem = try self.createView(stackItemCreateOptions, container: model)
             model.views.append(stackItem.componentId)
             viewControllers.append(stackItem.viewController)
@@ -629,23 +651,23 @@ class NativeNavigation: NSObject {
     private func createTabs(_ spec: TabsSpec, container: (any ComponentModel)?) throws -> TabsModel {
         let componentId = spec.id ?? generateId()
         let tc = NativeNavigationTabBarController(componentId: componentId)
-        let model = TabsModel(componentId: componentId, viewController: tc, tabs: [], selectedIndex: 0, container: container?.componentId)
+        let model = TabsModel(componentId: componentId, spec: spec, viewController: tc, tabs: [], selectedIndex: 0, container: container?.componentId)
         
-        if let componentOptions = spec.options {
-            try self.configureViewController(model, options: componentOptions, animated: false)
-        }
+        try self.configureViewController(model, options: spec, animated: false)
+    
+        // TODO: Fix tabs to work with tabSpec
+        fatalError("Unimplemented processing of tabComponents in createTabs")
+//        let tabComponents = try spec.tabs.map {
+//            try self.createComponent($0, container: model)
+//        }
         
-        let tabComponents = try spec.tabs.map {
-            try self.createComponent($0, container: model)
-        }
+//        model.tabs = tabComponents.map { $0.componentId }
         
-        model.tabs = tabComponents.map { $0.componentId }
-        
-        tc.viewControllers = tabComponents.map { $0.viewController }
-        tc.delegate = self
+//        tc.viewControllers = tabComponents.map { $0.viewController }
+//        tc.delegate = self
 
-        try storeComponent(model)
-        return model
+//        try storeComponent(model)
+//        return model
     }
 
     @MainActor
@@ -654,11 +676,9 @@ class NativeNavigation: NSObject {
         let stackId = (container as? StackModel)?.componentId
         
         let viewController = NativeNavigationWebViewController(componentId: componentId, path: spec.path, state: spec.state, stackId: stackId, plugin: plugin)
-        let model = ViewModel(componentId: componentId, viewController: viewController, container: container?.componentId)
+        let model = ViewModel(componentId: componentId, spec: spec, viewController: viewController, container: container?.componentId)
         
-        if let componentOptions = spec.options {
-            try self.configureViewController(model, options: componentOptions, animated: false)
-        }
+        try self.configureViewController(model, options: spec, animated: false)
 
         try storeComponent(model)
         
@@ -666,29 +686,13 @@ class NativeNavigation: NSObject {
     }
     
     @MainActor
-    private func updateView(_ options: ViewSpec, component: ViewModel) async throws -> () -> Void {
+    private func updateView(_ spec: ViewSpec, component: ViewModel) async throws {
         let viewController = component.viewController
-        let savedLeftBarButtonItems = viewController.navigationItem.leftBarButtonItems
-        let savedRightBarButtonItems = viewController.navigationItem.rightBarButtonItems
         
-        if let componentOptions = options.options {
-            try self.configureViewController(component, options: componentOptions, animated: false)
-        }
+        try self.configureViewController(component, options: spec, animated: false)
         
-        viewController.path = options.path
-        viewController.state = options.state
-        
-        /* Tidy up any viewController state that has not been changed during the render of the updated view.
-           Doing this _after ready_ means we don't get a flash where items disappear and then appear.
-         */
-        return {
-            if viewController.navigationItem.leftBarButtonItems == savedLeftBarButtonItems {
-                viewController.navigationItem.leftBarButtonItems = nil
-            }
-            if viewController.navigationItem.rightBarButtonItems == savedRightBarButtonItems {
-                viewController.navigationItem.rightBarButtonItems = nil
-            }
-        }
+        viewController.path = spec.path
+        viewController.state = spec.state
     }
     
     /**
@@ -708,103 +712,128 @@ class NativeNavigation: NSObject {
             }
         }
     }
-
-    private func configureViewController(_ component: any ComponentModel, options: ComponentOptions, animated: Bool) throws {
+    
+    private func configureViewController(_ component: StackModel, options: StackSpec, animated: Bool) throws {
         let viewController = component.viewController
-        if let title = options.title {
-            switch title {
-            case .null:
-                viewController.title = nil
-            case .value(let title):
-                viewController.title = title
-                
-                /* If there is no title set on a UIViewController when it's the root of a stack, the title doesn't show up immediately unless... */
-                if let nc = viewController.navigationController {
-                    nc.navigationBar.setNeedsLayout()
-                }
-            }
-        }
-
-        if let stackOptions = options.stack {
-            if let item = stackOptions.backItem {
-                viewController.navigationItem.backButtonTitle = item.title
-            }
-            if let items = stackOptions.leftItems {
-                viewController.navigationItem.leftBarButtonItems = try items.map({ item in try toBarButtonItem(item) })
-            }
-            if let items = stackOptions.rightItems {
-                viewController.navigationItem.rightBarButtonItems = try items.map({ item in try toBarButtonItem(item) })
-            }
-        }
-        
-        if let navigationController = viewController as? UINavigationController {
-            func customiseBarAppearance(_ a: UINavigationBarAppearance, options barOptions: ComponentOptions.BarOptions) -> UINavigationBarAppearance {
-                let aa = UINavigationBarAppearance(barAppearance: a)
-                if let color = barOptions.background?.color {
-                    aa.backgroundColor = color
-                }
-                
-                if let titleOptions = barOptions.title {
-                    if let color = titleOptions.color {
-                        aa.titleTextAttributes[.foregroundColor] = color
-                    }
-                    if let font = titleOptions.font {
-                        aa.titleTextAttributes[.font] = font
-                    }
-                }
-                if let buttonOptions = barOptions.buttons {
-                    let navButtonAppearance = UIBarButtonItemAppearance()
-                    
-                    if let color = buttonOptions.color {
-                        navButtonAppearance.normal.titleTextAttributes[.foregroundColor] = color
-                        navigationController.navigationBar.tintColor = color
-                    }
-                    if let font = buttonOptions.font {
-                        navButtonAppearance.normal.titleTextAttributes[.font] = font
-                    }
-                    
-                    aa.backButtonAppearance = navButtonAppearance
-                    aa.buttonAppearance = navButtonAppearance
-                    aa.doneButtonAppearance = navButtonAppearance
-                }
-                return aa
-            }
-            
-            if let barOptions = options.bar {
-                if barOptions.background != nil {
-                    navigationController.navigationBar.scrollEdgeAppearance = customiseBarAppearance(UINavigationBarAppearance(), options: barOptions)
-                } else {
-                    navigationController.navigationBar.scrollEdgeAppearance = nil
-                }
-                navigationController.navigationBar.standardAppearance = customiseBarAppearance(UINavigationBarAppearance(), options: barOptions)
-            }
+        viewController.title = options.title
+        /* If there is no title set on a UIViewController when it's the root of a stack, the title doesn't show up immediately unless... */
+        if let nc = viewController.navigationController {
+            nc.navigationBar.setNeedsLayout()
         }
         
         if let barOptions = options.bar {
-            viewController.navigationController?.setNavigationBarHidden(barOptions.visible == false, animated: animated)
-        }
-
-        if let tabOptions = options.tab {
-            if let badgeValue = tabOptions.badgeValue {
-                viewController.tabBarItem.badgeValue = badgeValue
+            /* There doesn't seem to be an easy way to tint the back button item */
+            if let color = barOptions.buttons?.color {
+                viewController.navigationBar.tintColor = color
+            }
+            
+            if barOptions.background != nil {
+                viewController.navigationBar.scrollEdgeAppearance = customiseBarAppearance(UINavigationBarAppearance(), options: barOptions)
             } else {
-                viewController.tabBarItem.badgeValue = nil
+                viewController.navigationBar.scrollEdgeAppearance = nil
             }
-            if let image = tabOptions.image {
-                viewController.tabBarItem.image = try toImage(image)
+            viewController.navigationBar.standardAppearance = customiseBarAppearance(UINavigationBarAppearance(), options: barOptions)
+        }
+    }
+    
+    private func configureViewController(_ component: TabsModel, options: TabsSpec, animated: Bool) throws {
+        let viewController = component.viewController
+        viewController.title = options.title
+        /* If there is no title set on a UIViewController when it's the root of a stack, the title doesn't show up immediately unless... */
+        if let nc = viewController.navigationController {
+            nc.navigationBar.setNeedsLayout()
+        }
+        // TODO: Fix up the code below to work with the new TabsSpec
+//        if let tabOptions = options.tab {
+//            if let badgeValue = tabOptions.badgeValue {
+//                viewController.tabBarItem.badgeValue = badgeValue
+//            } else {
+//                viewController.tabBarItem.badgeValue = nil
+//            }
+//            if let image = tabOptions.image {
+//                viewController.tabBarItem.image = try toImage(image)
+//            }
+//        }
+    }
+
+    private func configureViewController(_ component: ViewModel, options: ViewSpec, animated: Bool) throws {
+        let viewController = component.viewController
+        viewController.title = options.title
+        /* If there is no title set on a UIViewController when it's the root of a stack, the title doesn't show up immediately unless... */
+        if let nc = viewController.navigationController {
+            nc.navigationBar.setNeedsLayout()
+        }
+        
+        if let stackItem = options.stackItem {
+            if let backItem = stackItem.backItem {
+                viewController.navigationItem.backButtonTitle = backItem.title
+                if let _ = backItem.image {
+                    // TODO: Handle a back button with a custom image
+                }
+            } else {
+                viewController.navigationItem.backButtonTitle = nil
+                viewController.navigationItem.backBarButtonItem = nil
+            }
+            
+            if let items = stackItem.leftItems {
+                let existingItems = viewController.navigationItem.leftBarButtonItems ?? []
+                viewController.navigationItem.leftBarButtonItems = try items.enumerated().map({ (index, item) in try setOrCreateBarButtonItem(item, buttonItem: existingItems.safeElement(at: index)) })
+            } else {
+                viewController.navigationItem.leftBarButtonItems = []
+            }
+            
+            if let items = stackItem.rightItems {
+                let existingItems = viewController.navigationItem.rightBarButtonItems ?? []
+                viewController.navigationItem.rightBarButtonItems = try items.enumerated().map({ (index, item) in try setOrCreateBarButtonItem(item, buttonItem: existingItems.safeElement(at: index)) })
+            } else {
+                viewController.navigationItem.rightBarButtonItems = []
+            }
+            
+            if let backEnabled = stackItem.backEnabled {
+                viewController.navigationItem.setHidesBackButton(!backEnabled, animated: animated)
+            } else {
+                // TODO: verify correct behaviour, but a sufficient default might be that it's false
+                viewController.navigationItem.setHidesBackButton(false, animated: animated)
+            }
+            
+            
+            var barSpec = stackItem.bar ?? BarSpec()
+            if let containerId = component.container, let stackModel = try findComponent(id: containerId) as? StackModel, let spec = stackModel.spec.bar {
+                barSpec = barSpec.barSpecWithFallback(spec)
+            }
+            
+            let appearance = stackItem.bar != nil ? customiseBarAppearance(UINavigationBarAppearance(), options: barSpec) : nil
+            viewController.navigationItem.standardAppearance = appearance
+            viewController.navigationItem.scrollEdgeAppearance = appearance
+            viewController.navigationItem.compactAppearance = appearance
+            
+            if let navigationController = viewController.navigationController {
+                if navigationController.topViewController == viewController {
+                    /* This controller is the topmost in this stack so apply options that may show or hide settings for the whole navigation controller */
+                    if let barOptions = stackItem.bar {
+                        navigationController.setNavigationBarHidden(barOptions.visible == false, animated: animated)
+                    }
+                    
+                }
             }
         }
 
-        func toBarButtonItem(_ stackItem: ComponentOptions.StackBarItem) throws -> UIBarButtonItem {
+        func setOrCreateBarButtonItem(_ stackItem: StackBarButtonItem, buttonItem: UIBarButtonItem?) throws -> UIBarButtonItem {
             let action = UIAction(title: stackItem.title) { _ in
                 let data = ["buttonId": stackItem.id, "componentId": component.componentId]
                 self.plugin.notifyListeners("click:\(component.componentId)", data: data, retainUntilConsumed: true)
                 self.plugin.notifyListeners("click", data: data, retainUntilConsumed: true)
             }
+            
+            let result = buttonItem ?? UIBarButtonItem()
+            
             if let image = stackItem.image {
                 action.image = try toImage(image)
             }
-            return UIBarButtonItem(primaryAction: action)
+            
+            result.primaryAction = action
+        
+            return result
         }
 
         func toImage(_ image: ImageObject) throws -> UIImage {
@@ -837,7 +866,37 @@ class NativeNavigation: NSObject {
                 return 1
             }
         }
-
+    }
+    
+    private func customiseBarAppearance(_ a: UINavigationBarAppearance, options barOptions: BarSpec) -> UINavigationBarAppearance {
+        let aa = UINavigationBarAppearance(barAppearance: a)
+        if let color = barOptions.background?.color {
+            aa.backgroundColor = color
+        }
+        
+        if let titleOptions = barOptions.title {
+            if let color = titleOptions.color {
+                aa.titleTextAttributes[.foregroundColor] = color
+            }
+            if let font = titleOptions.font {
+                aa.titleTextAttributes[.font] = font
+            }
+        }
+        if let buttonOptions = barOptions.buttons {
+            let navButtonAppearance = UIBarButtonItemAppearance()
+            
+            if let color = buttonOptions.color {
+                navButtonAppearance.normal.titleTextAttributes[.foregroundColor] = color
+            }
+            if let font = buttonOptions.font {
+                navButtonAppearance.normal.titleTextAttributes[.font] = font
+            }
+            
+            aa.backButtonAppearance = navButtonAppearance
+            aa.buttonAppearance = navButtonAppearance
+            aa.doneButtonAppearance = navButtonAppearance
+        }
+        return aa
     }
 
     /**
@@ -896,6 +955,31 @@ class NativeNavigation: NSObject {
 }
 
 extension NativeNavigation: UINavigationControllerDelegate {
+    
+    func navigationController(_ navigationController: UINavigationController, willShow viewController: UIViewController, animated: Bool) {
+
+        do {
+            guard let navigationController = navigationController as? NativeNavigationNavigationController else {
+                throw NativeNavigatorError.illegalState(message: "Unexpected UINavigationController implementation")
+            }
+            guard let viewController = viewController as? NativeNavigationViewController else {
+                throw NativeNavigatorError.illegalState(message: "Unexpected UIViewController implementation")
+            }
+
+            let viewComponent = try self.component(viewController.componentId)
+            if let viewModel = viewComponent as? ViewModel {
+                let barVisible = viewModel.spec.stackItem?.bar?.visible ?? true
+
+                if navigationController.isNavigationBarHidden == barVisible {
+                    navigationController.setNavigationBarHidden(!barVisible, animated: animated)
+                }
+            }
+            
+        } catch {
+            fatalError(error.localizedDescription)
+        }
+        
+    }
     
     /**
      We maintain the array of views in our push and pop methods, so this is often a NOOP, however this catches when the user goes back using native controls.
@@ -1040,4 +1124,11 @@ class CaptureDataURLSchemeTask: NSObject, WKURLSchemeTask {
         continuation?.resume(throwing: error)
     }
     
+}
+
+extension Array {
+    func safeElement(at index: Int) -> Element? {
+        guard index >= 0 && index < count else { return nil }
+        return self[index]
+    }
 }

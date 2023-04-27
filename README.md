@@ -179,7 +179,7 @@ const navigator = useNativeNavigationNavigator({
                   path,
                   state,
                   options: {
-                    /* We can specify the title here, or set it using `setOptions` from the component */
+                    /* We can specify the title here, or set it using `update` from the component */
                     title: 'My Modal Title',
                     stack: {
                       rightItems: [

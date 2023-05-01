@@ -36,7 +36,7 @@ npx cap sync
 ### present(...)
 
 ```typescript
-present(options: PresentOptions) => any
+present(options: PresentOptions) => Promise<PresentResult>
 ```
 
 Present a new native UI.
@@ -45,7 +45,7 @@ Present a new native UI.
 | ------------- | --------------------------------------------------------- |
 | **`options`** | <code><a href="#presentoptions">PresentOptions</a></code> |
 
-**Returns:** <code>any</code>
+**Returns:** <code>Promise&lt;<a href="#presentresult">PresentResult</a>&gt;</code>
 
 --------------------
 
@@ -53,7 +53,7 @@ Present a new native UI.
 ### dismiss(...)
 
 ```typescript
-dismiss(options?: DismissOptions | undefined) => any
+dismiss(options?: DismissOptions | undefined) => Promise<DismissResult>
 ```
 
 Dismiss a native UI.
@@ -62,7 +62,7 @@ Dismiss a native UI.
 | ------------- | --------------------------------------------------------- |
 | **`options`** | <code><a href="#dismissoptions">DismissOptions</a></code> |
 
-**Returns:** <code>any</code>
+**Returns:** <code>Promise&lt;<a href="#dismissresult">DismissResult</a>&gt;</code>
 
 --------------------
 
@@ -70,7 +70,7 @@ Dismiss a native UI.
 ### push(...)
 
 ```typescript
-push(options: PushOptions) => any
+push(options: PushOptions) => Promise<PushResult>
 ```
 
 Push a new component onto a stack, or replace an existing component.
@@ -79,7 +79,7 @@ Push a new component onto a stack, or replace an existing component.
 | ------------- | --------------------------------------------------- |
 | **`options`** | <code><a href="#pushoptions">PushOptions</a></code> |
 
-**Returns:** <code>any</code>
+**Returns:** <code>Promise&lt;<a href="#pushresult">PushResult</a>&gt;</code>
 
 --------------------
 
@@ -87,7 +87,7 @@ Push a new component onto a stack, or replace an existing component.
 ### pop(...)
 
 ```typescript
-pop(options: PopOptions) => any
+pop(options: PopOptions) => Promise<PopResult>
 ```
 
 Pop the top component off a stack
@@ -96,7 +96,7 @@ Pop the top component off a stack
 | ------------- | ------------------------------------------------- |
 | **`options`** | <code><a href="#popoptions">PopOptions</a></code> |
 
-**Returns:** <code>any</code>
+**Returns:** <code>Promise&lt;<a href="#popresult">PopResult</a>&gt;</code>
 
 --------------------
 
@@ -104,7 +104,7 @@ Pop the top component off a stack
 ### update(...)
 
 ```typescript
-update(options: UpdateOptions) => any
+update(options: UpdateOptions) => Promise<void>
 ```
 
 Set the options for an existing component
@@ -113,15 +113,13 @@ Set the options for an existing component
 | ------------- | ------------------------------------------------------- |
 | **`options`** | <code><a href="#updateoptions">UpdateOptions</a></code> |
 
-**Returns:** <code>any</code>
-
 --------------------
 
 
 ### reset(...)
 
 ```typescript
-reset(options?: ResetOptions | undefined) => any
+reset(options?: ResetOptions | undefined) => Promise<void>
 ```
 
 Remove all of the native UI and reset back to the root Capacitor webview.
@@ -130,15 +128,13 @@ Remove all of the native UI and reset back to the root Capacitor webview.
 | ------------- | ----------------------------------------------------- |
 | **`options`** | <code><a href="#resetoptions">ResetOptions</a></code> |
 
-**Returns:** <code>any</code>
-
 --------------------
 
 
 ### get(...)
 
 ```typescript
-get(options?: GetOptions | undefined) => any
+get(options?: GetOptions | undefined) => Promise<GetResult>
 ```
 
 Get the spec and context of a component
@@ -147,7 +143,7 @@ Get the spec and context of a component
 | ------------- | ------------------------------------------------- |
 | **`options`** | <code><a href="#getoptions">GetOptions</a></code> |
 
-**Returns:** <code>any</code>
+**Returns:** <code>Promise&lt;<a href="#getresult">GetResult</a>&gt;</code>
 
 --------------------
 
@@ -155,7 +151,7 @@ Get the spec and context of a component
 ### message(...)
 
 ```typescript
-message<D>(options: MessageOptions<D>) => any
+message<D>(options: MessageOptions<D>) => Promise<void>
 ```
 
 Send a message to a component.
@@ -164,12 +160,17 @@ Send a message to a component.
 | ------------- | ------------------------------------------------------------------ |
 | **`options`** | <code><a href="#messageoptions">MessageOptions</a>&lt;D&gt;</code> |
 
-**Returns:** <code>any</code>
-
 --------------------
 
 
 ### Interfaces
+
+
+#### PresentResult
+
+| Prop     | Type                                                |
+| -------- | --------------------------------------------------- |
+| **`id`** | <code><a href="#componentid">ComponentId</a></code> |
 
 
 #### PresentOptions
@@ -187,7 +188,7 @@ Send a message to a component.
 | Prop             | Type                                        |
 | ---------------- | ------------------------------------------- |
 | **`type`**       | <code>'stack'</code>                        |
-| **`components`** | <code>{}</code>                             |
+| **`components`** | <code>ViewSpec[]</code>                     |
 | **`bar`**        | <code><a href="#barspec">BarSpec</a></code> |
 | **`title`**      | <code>string</code>                         |
 
@@ -207,8 +208,8 @@ Send a message to a component.
 | Prop              | Type                                                              | Description                                                                                                                                                                                                                                                                                                                      |
 | ----------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **`backItem`**    | <code><a href="#stackbarbuttonitem">StackBarButtonItem</a></code> |                                                                                                                                                                                                                                                                                                                                  |
-| **`leftItems`**   | <code>{}</code>                                                   |                                                                                                                                                                                                                                                                                                                                  |
-| **`rightItems`**  | <code>{}</code>                                                   |                                                                                                                                                                                                                                                                                                                                  |
+| **`leftItems`**   | <code>StackBarButtonItem[]</code>                                 |                                                                                                                                                                                                                                                                                                                                  |
+| **`rightItems`**  | <code>StackBarButtonItem[]</code>                                 |                                                                                                                                                                                                                                                                                                                                  |
 | **`backEnabled`** | <code>boolean</code>                                              | Enables the system gestures and buttons for managing the back action. Useful for preventing the user from exiting a window that is running an important operation. Does not prevent the user from backgrounding the application. Default behaviour is to use the host Stack configuration which behaves as backEnabled is `true` |
 | **`bar`**         | <code><a href="#barspec">BarSpec</a></code>                       | Customise the bar on top of the default options provided by the stack                                                                                                                                                                                                                                                            |
 
@@ -265,11 +266,11 @@ Send a message to a component.
 
 #### TabsSpec
 
-| Prop        | Type                |
-| ----------- | ------------------- |
-| **`type`**  | <code>'tabs'</code> |
-| **`tabs`**  | <code>{}</code>     |
-| **`title`** | <code>string</code> |
+| Prop        | Type                   |
+| ----------- | ---------------------- |
+| **`type`**  | <code>'tabs'</code>    |
+| **`tabs`**  | <code>TabSpec[]</code> |
+| **`title`** | <code>string</code>    |
 
 
 #### TabSpec
@@ -280,10 +281,10 @@ Send a message to a component.
 | **`title`**      | <code>string</code>                                                                 |                                                                          |
 | **`image`**      | <code><a href="#imagespec">ImageSpec</a></code>                                     |                                                                          |
 | **`badgeValue`** | <code>string</code>                                                                 |                                                                          |
-| **`component`**  | <code><a href="#stackspec">StackSpec</a> \| <a href="#viewspec">ViewSpec</a></code> |                                                                          |
+| **`component`**  | <code><a href="#viewspec">ViewSpec</a> \| <a href="#stackspec">StackSpec</a></code> |                                                                          |
 
 
-#### PresentResult
+#### DismissResult
 
 | Prop     | Type                                                |
 | -------- | --------------------------------------------------- |
@@ -298,11 +299,12 @@ Send a message to a component.
 | **`animated`** | <code>boolean</code>                                |
 
 
-#### DismissResult
+#### PushResult
 
-| Prop     | Type                                                |
-| -------- | --------------------------------------------------- |
-| **`id`** | <code><a href="#componentid">ComponentId</a></code> |
+| Prop        | Type                                                | Description                                                |
+| ----------- | --------------------------------------------------- | ---------------------------------------------------------- |
+| **`id`**    | <code><a href="#componentid">ComponentId</a></code> | The id of the component that was pushed.                   |
+| **`stack`** | <code><a href="#componentid">ComponentId</a></code> | The stack that was pushed to, if it was pushed to a stack. |
 
 
 #### PushOptions
@@ -316,12 +318,13 @@ Send a message to a component.
 | **`popCount`**  | <code>number</code>                                 | How many items to pop first                                                                                                                                                                                      |
 
 
-#### PushResult
+#### PopResult
 
-| Prop        | Type                                                | Description                                                |
-| ----------- | --------------------------------------------------- | ---------------------------------------------------------- |
-| **`id`**    | <code><a href="#componentid">ComponentId</a></code> | The id of the component that was pushed.                   |
-| **`stack`** | <code><a href="#componentid">ComponentId</a></code> | The stack that was pushed to, if it was pushed to a stack. |
+| Prop        | Type                                                | Description                                                                                                                      |
+| ----------- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **`stack`** | <code><a href="#componentid">ComponentId</a></code> |                                                                                                                                  |
+| **`count`** | <code>number</code>                                 | The number of components that were popped                                                                                        |
+| **`id`**    | <code><a href="#componentid">ComponentId</a></code> | The id of the component that was popped, if any. If multiple components are popped, the id will be of the last component popped. |
 
 
 #### PopOptions
@@ -331,15 +334,6 @@ Send a message to a component.
 | **`stack`**    | <code><a href="#componentid">ComponentId</a></code> | The stack to pop from, or undefined to pop from the current stack. |
 | **`count`**    | <code>number</code>                                 | How many items to pop                                              |
 | **`animated`** | <code>boolean</code>                                | Whether to animate the pop. Defaults to `true`                     |
-
-
-#### PopResult
-
-| Prop        | Type                                                | Description                                                                                                                      |
-| ----------- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| **`stack`** | <code><a href="#componentid">ComponentId</a></code> |                                                                                                                                  |
-| **`count`** | <code>number</code>                                 | The number of components that were popped                                                                                        |
-| **`id`**    | <code><a href="#componentid">ComponentId</a></code> | The id of the component that was popped, if any. If multiple components are popped, the id will be of the last component popped. |
 
 
 #### UpdateOptions
@@ -357,7 +351,7 @@ Options for stack components
 
 | Prop             | Type                                            |
 | ---------------- | ----------------------------------------------- |
-| **`components`** | <code>{}</code>                                 |
+| **`components`** | <code>ViewSpec[]</code>                         |
 | **`bar`**        | <code><a href="#barupdate">BarUpdate</a></code> |
 
 
@@ -398,9 +392,9 @@ Options for stack components
 
 Options for tabs components
 
-| Prop       | Type            |
-| ---------- | --------------- |
-| **`tabs`** | <code>{}</code> |
+| Prop       | Type                   |
+| ---------- | ---------------------- |
+| **`tabs`** | <code>TabSpec[]</code> |
 
 
 #### TabUpdate
@@ -410,7 +404,7 @@ Options for tabs components
 | **`title`**      | <code>string \| null</code>                                                         |
 | **`image`**      | <code><a href="#imagespec">ImageSpec</a> \| null</code>                             |
 | **`badgeValue`** | <code>string \| null</code>                                                         |
-| **`component`**  | <code><a href="#stackspec">StackSpec</a> \| <a href="#viewspec">ViewSpec</a></code> |
+| **`component`**  | <code><a href="#viewspec">ViewSpec</a> \| <a href="#stackspec">StackSpec</a></code> |
 
 
 #### ViewUpdate
@@ -427,8 +421,8 @@ Options for view components
 | Prop              | Type                                                                      | Description                                                                                                                                                                                                                                                                                                                      |
 | ----------------- | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **`backItem`**    | <code><a href="#stackbarbuttonitem">StackBarButtonItem</a> \| null</code> |                                                                                                                                                                                                                                                                                                                                  |
-| **`leftItems`**   | <code>{} \| null</code>                                                   |                                                                                                                                                                                                                                                                                                                                  |
-| **`rightItems`**  | <code>{} \| null</code>                                                   |                                                                                                                                                                                                                                                                                                                                  |
+| **`leftItems`**   | <code>StackBarButtonItem[] \| null</code>                                 |                                                                                                                                                                                                                                                                                                                                  |
+| **`rightItems`**  | <code>StackBarButtonItem[] \| null</code>                                 |                                                                                                                                                                                                                                                                                                                                  |
 | **`backEnabled`** | <code>boolean \| null</code>                                              | Enables the system gestures and buttons for managing the back action. Useful for preventing the user from exiting a window that is running an important operation. Does not prevent the user from backgrounding the application. Default behaviour is to use the host Stack configuration which behaves as backEnabled is `true` |
 | **`bar`**         | <code><a href="#barupdate">BarUpdate</a> \| null</code>                   | Customise the bar on top of the default options provided by the stack                                                                                                                                                                                                                                                            |
 
@@ -440,13 +434,6 @@ Options for view components
 | **`animated`** | <code>boolean</code> | Whether to animate resetting the navigation back to Capacitor Defaults to `false` |
 
 
-#### GetOptions
-
-| Prop     | Type                                                | Description                                                          |
-| -------- | --------------------------------------------------- | -------------------------------------------------------------------- |
-| **`id`** | <code><a href="#componentid">ComponentId</a></code> | The component id to get, or undefined to get the top-most component. |
-
-
 #### GetResult
 
 | Prop            | Type                                                      | Description                                 |
@@ -454,6 +441,13 @@ Options for view components
 | **`component`** | <code><a href="#componentspecs">ComponentSpecs</a></code> | The component, if any.                      |
 | **`stack`**     | <code><a href="#stackspec">StackSpec</a></code>           | The stack containing the component, if any. |
 | **`tabs`**      | <code><a href="#tabsspec">TabsSpec</a></code>             | The tabs containing the component, if any.  |
+
+
+#### GetOptions
+
+| Prop     | Type                                                | Description                                                          |
+| -------- | --------------------------------------------------- | -------------------------------------------------------------------- |
+| **`id`** | <code><a href="#componentid">ComponentId</a></code> | The component id to get, or undefined to get the top-most component. |
 
 
 #### MessageOptions
@@ -468,6 +462,11 @@ Options for view components
 ### Type Aliases
 
 
+#### ComponentId
+
+<code>string</code>
+
+
 #### ComponentSpecs
 
 <code><a href="#stackspec">StackSpec</a> | <a href="#tabsspec">TabsSpec</a> | <a href="#viewspec">ViewSpec</a></code>
@@ -475,7 +474,14 @@ Options for view components
 
 #### ViewState
 
-<code>Record&lt;string, string | number | boolean | null&gt;</code>
+<code><a href="#record">Record</a>&lt;string, string | number | boolean | null&gt;</code>
+
+
+#### Record
+
+Construct a type with a set of properties K of type T
+
+<code>{ [P in K]: T; }</code>
 
 
 #### ButtonId
@@ -486,11 +492,6 @@ Options for view components
 #### ImageSpec
 
 <code><a href="#imageobject">ImageObject</a> | string</code>
-
-
-#### ComponentId
-
-<code>string</code>
 
 
 #### PresentationStyle

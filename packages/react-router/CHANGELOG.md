@@ -1,5 +1,16 @@
 # @cactuslab/native-navigation-react-router
 
+## 2.0.0
+
+### Patch Changes
+
+- Updated dependencies [07a0376]
+- Updated dependencies [e6ef6ea]
+- Updated dependencies [1c09146]
+- Updated dependencies [c7971af]
+  - @cactuslab/native-navigation@0.2.0
+  - @cactuslab/native-navigation-react@2.0.0
+
 ## 1.0.0
 
 ### Minor Changes

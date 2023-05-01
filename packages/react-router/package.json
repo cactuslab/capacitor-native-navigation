@@ -1,6 +1,6 @@
 {
   "name": "@cactuslab/native-navigation-react-router",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "React Router support for Native navigation for Capacitor apps",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
@@ -37,10 +37,10 @@
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
-    "@cactuslab/native-navigation-react": "^1.0.0"
+    "@cactuslab/native-navigation-react": "^2.0.0"
   },
   "devDependencies": {
-    "@cactuslab/native-navigation": "^0.1.0",
+    "@cactuslab/native-navigation": "^0.2.0",
     "@capacitor/core": "^4.0.0",
     "@ionic/eslint-config": "^0.3.0",
     "@ionic/prettier-config": "^1.0.1",
@@ -54,7 +54,7 @@
     "typescript": "~4.8.4"
   },
   "peerDependencies": {
-    "@cactuslab/native-navigation": "^0.1.0",
+    "@cactuslab/native-navigation": "^0.2.0",
     "@capacitor/core": "^4.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

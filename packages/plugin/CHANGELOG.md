@@ -1,5 +1,16 @@
 # @cactuslab/native-navigation
 
+## 0.2.0
+
+### Minor Changes
+
+- 07a0376: feature: Added support for disabling system back action on stack
+- e6ef6ea: Android: Added support for 'update' and viewWillAppear etc
+
+### Patch Changes
+
+- c7971af: Removed need for patching capacitor
+
 ## 0.1.2
 
 ### Patch Changes

@@ -1,15 +1,12 @@
 package com.cactuslab.capacitor.nativenavigation
 
 import android.net.Uri
-import android.os.Message
 import android.util.Log
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import androidx.lifecycle.*
-import com.cactuslab.capacitor.nativenavigation.types.ComponentOptions
-import com.cactuslab.capacitor.nativenavigation.types.SetComponentOptions
+import com.cactuslab.capacitor.nativenavigation.types.UpdateOptions
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -19,7 +16,7 @@ import java.io.BufferedReader
 class NativeNavigationViewModel: ViewModel() {
 
     sealed class Signal(var consumed: Boolean) {
-        data class Update(val options: SetComponentOptions) : Signal(false)
+        data class Update(val options: UpdateOptions) : Signal(false)
     }
 
     var nativeNavigation: NativeNavigation? = null
@@ -52,7 +49,7 @@ class NativeNavigationViewModel: ViewModel() {
         return@run liveData
     }
 
-    fun postUpdate(options: SetComponentOptions, id: String) {
+    fun postUpdate(options: UpdateOptions, id: String) {
         val signal = findOrCreateSignal(id)
         signal.postValue(Signal.Update(options))
     }

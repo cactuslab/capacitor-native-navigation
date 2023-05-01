@@ -7,14 +7,21 @@ import com.getcapacitor.JSObject
 import java.util.*
 
 class TabsSpec(id: String? = null,
-               options: ComponentOptions? = null,
-               var tabs: List<TabsOptionsTabs>) : ComponentSpec(type = ComponentType.TABS, id = id ?: UUID.randomUUID().toString(), options = options) {
+               var tabs: List<TabsOptionsTabs>) : ComponentSpec(type = ComponentType.TABS, id = id ?: UUID.randomUUID().toString()) {
 
     override fun toJSObject(): JSObject {
         val obj = super.toJSObject()
 
 
         return obj
+    }
+
+    override fun topBarSpec(): BarSpec? {
+        TODO("Not yet implemented")
+    }
+
+    override fun update(jsObject: JSObject) {
+        TODO("Not yet implemented")
     }
 
     companion object {
@@ -54,10 +61,7 @@ class TabsSpec(id: String? = null,
             if (!jsObject.has("tabs")) throw MissingParameterException("tabs")
             val tabs = jsObject.getJSONArray("tabs")
 
-            val options = jsObject.getJSObject("options")?.let { ComponentOptions.fromJSObject(it) }
-
             return TabsSpec(id = jsObject.getString("id"),
-                options = options,
                 tabs = tabs.jsObjectSequence().map { tabFromJsObject(it) }.toList()
             )
         }

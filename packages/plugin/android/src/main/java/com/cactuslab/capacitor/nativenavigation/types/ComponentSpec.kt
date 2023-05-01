@@ -5,18 +5,18 @@ import com.cactuslab.capacitor.nativenavigation.exceptions.MissingParameterExcep
 import com.getcapacitor.JSObject
 
 sealed class ComponentSpec(val type: ComponentType,
-                           var id: String,
-                           var options: ComponentOptions? = null) {
+                           var id: String) {
 
     open fun toJSObject(): JSObject {
         val obj = JSObject()
         obj.put("type", type.id)
         obj.put("id", id)
-        options?.let {
-            obj.put("options", it.toJSObject())
-        }
         return obj
     }
+
+    abstract fun update(jsObject: JSObject)
+
+    abstract fun topBarSpec(): BarSpec?
 
     companion object {
 

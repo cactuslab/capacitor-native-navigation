@@ -95,18 +95,22 @@ class NativeNavigationWebViewController: UIViewController, NativeNavigationViewC
     }
     
     override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         self.plugin.notifyListeners("viewWillAppear:\(self.componentId)", data: [:], retainUntilConsumed: true)
     }
     
     override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
         self.plugin.notifyListeners("viewDidAppear:\(self.componentId)", data: [:], retainUntilConsumed: true)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
         self.plugin.notifyListeners("viewWillDisappear:\(self.componentId)", data: [:], retainUntilConsumed: true)
     }
     
     override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
         self.plugin.notifyListeners("viewDidDisappear:\(self.componentId)", data: [:], retainUntilConsumed: true)
     }
 

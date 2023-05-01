@@ -2,14 +2,18 @@ package com.cactuslab.capacitor.nativenavigation.types
 
 import com.cactuslab.capacitor.nativenavigation.exceptions.InvalidParameterException
 import com.cactuslab.capacitor.nativenavigation.exceptions.MissingParameterException
+import com.cactuslab.capacitor.nativenavigation.helpers.updateFromContainer
 import com.getcapacitor.JSObject
 import java.util.*
 
 class ViewSpec(id: String? = null,
-               options: ComponentOptions? = null,
                var path: String,
-               var state: JSObject?) :
-    ComponentSpec(type = ComponentType.VIEW, id = id ?: UUID.randomUUID().toString(), options = options), TabsOptionsTabs
+               var state: JSObject?,
+
+               var title: String? = null,
+               var stackItem: StackItemSpec? = null,
+               ) :
+    ComponentSpec(type = ComponentType.VIEW, id = id ?: UUID.randomUUID().toString()), TabsOptionsTabs
 {
 
     override fun toJSObject(): JSObject {
@@ -17,6 +21,15 @@ class ViewSpec(id: String? = null,
         obj.put("path", path)
         state?.let { obj.put("state", it) }
         return obj
+    }
+
+    override fun update(jsObject: JSObject) {
+        title = String.updateFromContainer(jsObject, "title", title)
+        stackItem = StackItemSpec.updateFromContainer(jsObject, "stackItem", stackItem)
+    }
+
+    override fun topBarSpec(): BarSpec? {
+        return stackItem?.bar
     }
 
     companion object {
@@ -35,13 +48,17 @@ class ViewSpec(id: String? = null,
             val path = jsObject.getString("path") ?: throw MissingParameterException("path")
             val state = jsObject.getJSObject("state")
 
-            val options = jsObject.getJSObject("options")?.let { ComponentOptions.fromJSObject(it) }
+            val stackItem = jsObject.getJSObject("stackItem")?.let { StackItemSpec.fromJSObject(it) }
+            val title = jsObject.getString("title")
 
             return ViewSpec(id = jsObject.getString("id"),
-                options = options,
                 path = path,
-                state = state
+                state = state,
+                title = title,
+                stackItem = stackItem
                 )
         }
+
+
     }
 }

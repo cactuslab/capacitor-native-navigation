@@ -135,7 +135,7 @@ class NativeNavigationPlugin : Plugin() {
     @PluginMethod
     fun update(call: PluginCall) {
         try {
-            val options = SetComponentOptions.fromJSObject(call.data)
+            val options = UpdateOptions.fromJSObject(call.data)
             activity.runOnUiThread {
                 implementation.update(options)
                 call.resolve()
@@ -246,6 +246,22 @@ class NativeNavigationPlugin : Plugin() {
         }
 
         notifyListeners("message", obj, true)
+    }
+
+    fun notifyViewWillAppear(componentId: String) {
+        notifyListeners("viewWillAppear:$componentId", JSObject(), true)
+    }
+
+    fun notifyViewDidAppear(componentId: String) {
+        notifyListeners("viewDidAppear:$componentId", JSObject(), true)
+    }
+
+    fun notifyViewWillDisappear(componentId: String) {
+        notifyListeners("viewWillDisappear:$componentId", JSObject(), true)
+    }
+
+    fun notifyViewDidDisappear(componentId: String) {
+        notifyListeners("viewDidDisappear:$componentId", JSObject(), true)
     }
 
     companion object {

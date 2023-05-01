@@ -8,7 +8,7 @@
     <fragment
         android:id="@+id/navigation_view_fragment"
         android:label="Home"
-        android:name="com.cactuslab.capacitor.nativenavigation.ui.BlankViewFragment"
+        android:name="com.cactuslab.capacitor.nativenavigation.ui.ViewSpecFragment"
         tools:layout="@layout/fragment_screen"
         >
 

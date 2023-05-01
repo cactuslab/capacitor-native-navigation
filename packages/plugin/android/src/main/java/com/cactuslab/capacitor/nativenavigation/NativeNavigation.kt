@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.net.Uri
 import android.os.Message
 import android.util.Log
-import android.view.View
 import android.webkit.WebView
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
@@ -17,7 +16,7 @@ import androidx.navigation.fragment.fragment
 import com.cactuslab.capacitor.nativenavigation.databinding.ActivityNavigationBinding
 import com.cactuslab.capacitor.nativenavigation.helpers.parseRGBAColor
 import com.cactuslab.capacitor.nativenavigation.types.*
-import com.cactuslab.capacitor.nativenavigation.ui.BlankViewFragment
+import com.cactuslab.capacitor.nativenavigation.ui.ViewSpecFragment
 import com.cactuslab.capacitor.nativenavigation.ui.HostFragment
 import com.getcapacitor.PluginCall
 import kotlinx.coroutines.Dispatchers
@@ -71,7 +70,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         fun runSetup(startDestination: String) {
             val host = getBinding()?.navigationHost?.getFragment<NavHostFragment>() ?: throw Exception("The navigation host is null")
             val graph = host.createGraph(startDestination = "$contextId/{${nav_arguments.component_id}}", route = "$contextId/$startDestination") {
-                fragment<BlankViewFragment>("$contextId/{${nav_arguments.component_id}}") {
+                fragment<ViewSpecFragment>("$contextId/{${nav_arguments.component_id}}") {
                     argument(nav_arguments.component_id) {
                         type = NavType.StringType
                     }
@@ -101,7 +100,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         components[component.id] = component
         when (component) {
             is StackSpec -> {
-                component.stack?.forEach { insertComponent(it) }
+                component.components?.forEach { insertComponent(it) }
             }
             is TabsSpec -> {
                 component.tabs.forEach { insertComponent(it as ComponentSpec) }
@@ -112,6 +111,10 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
     fun componentSpecForId(id: String): ComponentSpec? {
         return components.get(id)
+    }
+
+    fun viewSpecForId(id: String): ViewSpec? {
+        return components[id] as? ViewSpec
     }
 
     fun findStackComponentIdHosting(componentId: String): String? {
@@ -222,7 +225,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                     is StackSpec -> {
                         val componentSpecs =
                             target.navContext.virtualStack.mapNotNull { componentSpecForId(it) }
-                        result.stack = StackSpec(id = rootSpec.id, options = rootSpec.options, stack = componentSpecs as List<ViewSpec>)
+                        result.stack = StackSpec(id = rootSpec.id, components = componentSpecs as List<ViewSpec>)
                     }
                     is TabsSpec -> TODO("Tabs Not implemented yet")
                     is ViewSpec -> {
@@ -236,17 +239,14 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         call.resolve(result.toJSObject())
     }
 
-    fun update(options: SetComponentOptions) {
+    fun update(options: UpdateOptions) {
         Log.d(TAG, "update: -> $options")
-        val spec = components.get(options.id)!!
-        val specOptions = spec.options
-        if (specOptions != null) {
-            specOptions.mergeOptions(options.options)
-            viewModel.postUpdate(SetComponentOptions(options.id, options.animated, specOptions), options.id)
-        } else {
-            spec.options = options.options
-            viewModel.postUpdate(options, options.id)
+        val spec = components[options.id]!!
+
+        options.update?.let { obj ->
+            spec.update(obj)
         }
+        viewModel.postUpdate(options, options.id)
     }
 
     fun message(message: MessageOptions, call: PluginCall) {
@@ -290,8 +290,9 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
         navContexts.lastOrNull()?.let context@ { topNavContext ->
             topNavContext.virtualStack.lastOrNull()?.let { topStackId ->
-                val spec = components.get(topStackId) ?: return@context
-                val backgroundColor = spec.options?.bar?.background?.color ?: topNavContext.presentOptions?.component?.options?.bar?.background?.color
+                val spec = components[topStackId] ?: return@context
+
+                val backgroundColor = spec.topBarSpec()?.background?.color ?: topNavContext.presentOptions?.component?.topBarSpec()?.background?.color
                 backgroundColor?.parseRGBAColor()?.let { statusColor ->
                     plugin.activity.window.statusBarColor = statusColor
                 }
@@ -322,7 +323,13 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
                 if (navController?.previousBackStackEntry != null) {
                     navContext.virtualStack.lastOrNull()?.let { topMostId ->
-                        val isBackEnabled = components[topMostId]?.options?.stack?.backEnabled ?: true
+                        val isBackEnabled = when (val componentSpec = components[topMostId]) {
+                            is ViewSpec -> {
+                                componentSpec.stackItem?.backEnabled
+                            }
+                            else -> { null }
+                        } ?: true
+
                         if (!isBackEnabled && !applicationDrivenPop) {
                             /** Back on stack has been disabled. Tell the system we handled it. */
                             return
@@ -459,7 +466,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                 notifyCreateView(component.id)
             }
             is StackSpec -> {
-                val stack = component.stack ?: listOf()
+                val stack = component.components ?: listOf()
                 navContext.virtualStack.clear()
 
                 stack.forEachIndexed { _, viewSpec ->

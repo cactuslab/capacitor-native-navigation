@@ -13,6 +13,7 @@ import androidx.annotation.ColorInt
 import androidx.annotation.RequiresApi
 import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.toColorInt
+import com.getcapacitor.JSObject
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
@@ -168,4 +169,32 @@ fun View.onMeasuredSize(onResult: (width: Int, height: Int) -> Unit) {
             return true
         }
     })
+}
+
+fun<T> checkNullOrUndefined(jsObject: JSObject, key: String, existingValue: T?, processValue: () -> T): T? {
+    if (!jsObject.has(key)) {
+        return existingValue
+    }
+    if (jsObject.isNull(key)) {
+        return null
+    }
+    return processValue()
+}
+
+fun String.Companion.updateFromContainer(jsObject: JSObject, key: String, existingValue: String?): String? {
+    return checkNullOrUndefined(jsObject, key, existingValue) {
+        jsObject.getString(key)
+    }
+}
+
+fun Double.Companion.updateFromContainer(jsObject: JSObject, key: String, existingValue: Double?): Double? {
+    return checkNullOrUndefined(jsObject, key, existingValue) {
+        jsObject.getDouble(key)
+    }
+}
+
+fun Boolean.Companion.updateFromContainer(jsObject: JSObject, key: String, existingValue: Boolean?): Boolean? {
+    return checkNullOrUndefined(jsObject, key, existingValue) {
+        jsObject.getBool(key)
+    }
 }

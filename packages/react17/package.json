@@ -1,6 +1,6 @@
 {
   "name": "@cactuslab/native-navigation-react17",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "",
   "main": "index.js",
   "module": "dist/esm/index.js",
@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "history": "^5.3.0",
-    "@cactuslab/native-navigation": "^0.2.0"
+    "@cactuslab/native-navigation": "^0.3.0"
   },
   "devDependencies": {
     "@capacitor/core": "^4.8.0",

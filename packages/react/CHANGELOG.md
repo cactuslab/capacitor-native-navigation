@@ -1,5 +1,19 @@
 # @cactuslab/native-navigation-react
 
+## 3.0.0
+
+### Minor Changes
+
+- 8eb7b84: Fix race condition when removing plugin listeners before the addListener Promise completes
+
+### Patch Changes
+
+- 815da46: Upgrade dependencies
+- Updated dependencies [3f25211]
+- Updated dependencies [e2706c1]
+- Updated dependencies [f6b3925]
+  - @cactuslab/native-navigation@0.3.0
+
 ## 2.0.0
 
 ### Minor Changes

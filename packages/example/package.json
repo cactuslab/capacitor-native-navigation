@@ -1,6 +1,6 @@
 {
   "name": "capacitor-app",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "An Amazing Capacitor App",
   "main": "index.js",
   "private": true,
@@ -16,9 +16,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@cactuslab/native-navigation": "^0.2.0",
-    "@cactuslab/native-navigation-react": "^2.0.0",
-    "@cactuslab/native-navigation-react-router": "^2.0.0",
+    "@cactuslab/native-navigation": "^0.3.0",
+    "@cactuslab/native-navigation-react": "^3.0.0",
+    "@cactuslab/native-navigation-react-router": "^3.0.0",
     "@capacitor/android": "^4.8.0",
     "@capacitor/camera": "latest",
     "@capacitor/core": "latest",

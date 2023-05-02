@@ -14,13 +14,13 @@ importers:
   packages/example:
     dependencies:
       '@cactuslab/native-navigation':
-        specifier: ^0.2.0
+        specifier: ^0.3.0
         version: link:../plugin
       '@cactuslab/native-navigation-react':
-        specifier: ^2.0.0
+        specifier: ^3.0.0
         version: link:../react
       '@cactuslab/native-navigation-react-router':
-        specifier: ^2.0.0
+        specifier: ^3.0.0
         version: link:../react-router
       '@capacitor/android':
         specifier: ^4.8.0
@@ -73,7 +73,7 @@ importers:
         version: 18.2.0(react@18.2.0)
     devDependencies:
       '@cactuslab/native-navigation':
-        specifier: ^0.2.0
+        specifier: ^0.3.0
         version: link:../plugin
       '@capacitor/core':
         specifier: ^4.8.0
@@ -158,7 +158,7 @@ importers:
         version: 18.2.0(react@18.2.0)
     devDependencies:
       '@cactuslab/native-navigation':
-        specifier: ^0.2.0
+        specifier: ^0.3.0
         version: link:../plugin
       '@capacitor/core':
         specifier: ^4.8.0
@@ -194,7 +194,7 @@ importers:
   packages/react-router:
     dependencies:
       '@cactuslab/native-navigation-react':
-        specifier: ^2.0.0
+        specifier: ^3.0.0
         version: link:../react
       react:
         specifier: ^18.2.0
@@ -204,7 +204,7 @@ importers:
         version: 18.2.0(react@18.2.0)
     devDependencies:
       '@cactuslab/native-navigation':
-        specifier: ^0.2.0
+        specifier: ^0.3.0
         version: link:../plugin
       '@capacitor/core':
         specifier: ^4.8.0
@@ -243,7 +243,7 @@ importers:
   packages/react17:
     dependencies:
       '@cactuslab/native-navigation':
-        specifier: ^0.2.0
+        specifier: ^0.3.0
         version: link:../plugin
       history:
         specifier: ^5.3.0

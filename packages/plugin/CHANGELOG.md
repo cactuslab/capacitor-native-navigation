@@ -1,5 +1,16 @@
 # @cactuslab/native-navigation
 
+## 0.3.0
+
+### Minor Changes
+
+- 3f25211: iOS: Resolve race condition on model updates
+
+### Patch Changes
+
+- e2706c1: Remove unnecessary react dependencies
+- f6b3925: Android: Properly decode and apply the scale to an image
+
 ## 0.2.0
 
 ### Minor Changes

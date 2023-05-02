@@ -19,18 +19,24 @@ export function createReactContext(options: ContextInit): NativeNavigationContex
 	const { componentId, pathname, search, hash, state, stack, viewWindow, plugin } = options
 
 	function createPluginComponentListener(type: string, func: (...args: any[]) => any) {
-		let handle: PluginListenerHandle | undefined
+		const holder: { handle?: PluginListenerHandle | undefined, removed?: boolean } = {}
+		
 		plugin.addListener(`${type}:${componentId}`, func).then(result => {
-			handle = result
+			if (holder.removed) {
+				result.remove()
+			} else {
+				holder.handle = result
+			}
 		}).catch(reason => {
 			console.warn(`NativeNavigation: Failed to add ${type} listener for ${componentId}: ${reason}`)
 		})
 
 		return function() {
+			const handle = holder.handle
 			if (handle) {
 				handle.remove()
 			} else {
-				console.warn(`NativeNavigation: Failed to remove ${type} listener for ${componentId}. This may cause a memory leak.`)
+				holder.removed = true
 			}
 		}
 	}

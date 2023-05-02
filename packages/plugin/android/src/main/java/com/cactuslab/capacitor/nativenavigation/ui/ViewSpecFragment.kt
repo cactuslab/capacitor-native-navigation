@@ -11,6 +11,7 @@ import android.text.Spanned
 import android.text.style.AbsoluteSizeSpan
 import android.text.style.ForegroundColorSpan
 import android.util.Base64
+import android.util.DisplayMetrics
 import android.util.Log
 import android.view.*
 import android.webkit.WebResourceRequest
@@ -283,15 +284,19 @@ class ViewSpecFragment : Fragment(), MenuProvider {
 
                 item.image?.let { path ->
                     var url = path
+                    var scale: Double = 1.0
                     if (path.startsWith("{")) {
                         /** This is a JSON object, let's convert and see what we find */
                         val json = JSObject(path)
                         url = json.getString("uri") ?: return@let
+                        if (json.has("scale")) {
+                            scale = json.getDouble("scale")
+                        }
                     }
                     if (url.startsWith("data:")) {
-                        val decodedBytes = Base64.decode(path.substringAfter("base64,"),Base64.DEFAULT)
+                        val decodedBytes = Base64.decode(url.substringAfter("base64,"),Base64.DEFAULT)
                         val bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
-
+                        bitmap.setDensityFromScale(scale)
                         ImageRequest.Builder(requireContext())
                             .data(bitmap)
                             .target { resource ->

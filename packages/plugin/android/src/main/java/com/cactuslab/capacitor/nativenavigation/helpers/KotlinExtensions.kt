@@ -1,8 +1,10 @@
 package com.cactuslab.capacitor.nativenavigation.helpers
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.Build
+import android.util.DisplayMetrics
 import android.util.TypedValue
 import android.view.View
 import android.view.ViewTreeObserver
@@ -197,4 +199,17 @@ fun Boolean.Companion.updateFromContainer(jsObject: JSObject, key: String, exist
     return checkNullOrUndefined(jsObject, key, existingValue) {
         jsObject.getBool(key)
     }
+}
+
+fun Bitmap.setDensityFromScale(scale: Double) {
+    val density: Int = when (scale) {
+        0.75 -> DisplayMetrics.DENSITY_LOW
+        1.0 -> DisplayMetrics.DENSITY_MEDIUM
+        1.5 -> DisplayMetrics.DENSITY_HIGH
+        2.0 -> DisplayMetrics.DENSITY_XHIGH
+        3.0 -> DisplayMetrics.DENSITY_XXHIGH
+        4.0 -> DisplayMetrics.DENSITY_XXXHIGH
+        else -> DisplayMetrics.DENSITY_MEDIUM
+    }
+    this.density = density
 }

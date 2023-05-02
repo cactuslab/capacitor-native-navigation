@@ -96,13 +96,11 @@ public class NativeNavigationPlugin: CAPPlugin {
                 var componentSpec = try implementation.findComponent(id: id).spec
                 try componentSpec.update(options)
                 let updatedSpec = componentSpec
-                Task {
-                    do {
-                        try await implementation.update(updateOptions, updatedSpec: updatedSpec)
-                        call.resolve()
-                    } catch {
-                        call.reject("Failed to update: \(error.localizedDescription)")
-                    }
+                do {
+                    try implementation.update(updateOptions, updatedSpec: updatedSpec)
+                    call.resolve()
+                } catch {
+                    call.reject("Failed to update: \(error.localizedDescription)")
                 }
             }
         } catch {

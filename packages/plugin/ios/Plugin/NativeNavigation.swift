@@ -313,23 +313,25 @@ class NativeNavigation: NSObject {
         }
     }
         
-    @MainActor
-    func update(_ options: UpdateOptions, updatedSpec: any ComponentSpec) async throws {
+    func update(_ options: UpdateOptions, updatedSpec: any ComponentSpec) throws {
         let component = try self.component(options.id)
         
         switch (component, updatedSpec) {
         case let (model as TabsModel, spec as TabsSpec):
-            try self.configureViewController(model, options: spec, animated: options.animated)
+            Task {
+                try await self.configureViewController(model, options: spec, animated: options.animated)
+            }
             model.spec = spec
-            try self.updateComponent(model)
         case let (model as ViewModel, spec as ViewSpec):
-            try self.configureViewController(model, options: spec, animated: options.animated)
+            Task {
+                try await self.configureViewController(model, options: spec, animated: options.animated)
+            }
             model.spec = spec
-            try self.updateComponent(model)
         case let (model as StackModel, spec as StackSpec):
-            try self.configureViewController(model, options: spec, animated: options.animated)
+            Task {
+                try await self.configureViewController(model, options: spec, animated: options.animated)
+            }
             model.spec = spec
-            try self.updateComponent(model)
         default:
             throw NativeNavigatorError.illegalState(message: "Component and Spec did not match types \(component.self), \(updatedSpec.self)")
         }
@@ -713,6 +715,7 @@ class NativeNavigation: NSObject {
         }
     }
     
+    @MainActor
     private func configureViewController(_ component: StackModel, options: StackSpec, animated: Bool) throws {
         let viewController = component.viewController
         viewController.title = options.title
@@ -736,6 +739,7 @@ class NativeNavigation: NSObject {
         }
     }
     
+    @MainActor
     private func configureViewController(_ component: TabsModel, options: TabsSpec, animated: Bool) throws {
         let viewController = component.viewController
         viewController.title = options.title
@@ -756,6 +760,7 @@ class NativeNavigation: NSObject {
 //        }
     }
 
+    @MainActor
     private func configureViewController(_ component: ViewModel, options: ViewSpec, animated: Bool) throws {
         let viewController = component.viewController
         viewController.title = options.title

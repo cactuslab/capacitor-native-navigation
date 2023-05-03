@@ -80,7 +80,7 @@ object FontManager {
         for (fileExtension in FILE_EXTENSIONS) {
             val fileName = StringBuilder()
                 .append(FONTS_ASSET_PATH)
-                .append(fontFamilyName.lowercase())
+                .append(fontFamilyName.lowercase().replace("-", "_"))
                 .append(extension)
                 .append(fileExtension)
                 .toString()

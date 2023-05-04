@@ -11,6 +11,7 @@ import { toNativeNavigationReactRootProps } from './types'
 
 export { useNativeNavigationContext, useNativeNavigationView, NativeNavigationContext } from './context'
 export { NativeNavigationReactRoot, NativeNavigationReactRootProps } from './types'
+export { default as NativeNavigationModal } from './NativeNavigationModal'
 
 interface Options {
 	plugin: NativeNavigationPlugin & Plugin

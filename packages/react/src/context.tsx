@@ -13,10 +13,13 @@ interface ContextInit {
 	stack?: ComponentId
 	plugin: NativeNavigationPlugin & Plugin
 	viewWindow: Window
+	findViewRootNode: FindViewRootNodeFunc
 }
 
+type FindViewRootNodeFunc = (id: string) => HTMLElement | undefined
+
 export function createReactContext(options: ContextInit): NativeNavigationContext {
-	const { componentId, pathname, search, hash, state, stack, viewWindow, plugin } = options
+	const { componentId, pathname, search, hash, state, stack, viewWindow, plugin, findViewRootNode } = options
 
 	function createPluginComponentListener(type: string, func: (...args: any[]) => any) {
 		const holder: { handle?: PluginListenerHandle | undefined, removed?: boolean } = {}
@@ -41,7 +44,7 @@ export function createReactContext(options: ContextInit): NativeNavigationContex
 		}
 	}
 
-	const context: NativeNavigationContext = {
+	const context: InternalNativeNavigationContext = {
 		componentId,
 		pathname,
 		search,
@@ -49,6 +52,7 @@ export function createReactContext(options: ContextInit): NativeNavigationContex
 		state,
 		stack,
 		viewWindow,
+		findViewRootNode,
 
 		updateView: async function(update) {
 			return plugin.update({
@@ -179,7 +183,11 @@ export interface NativeNavigationContext {
 	removeMessageListener: (type: string, listener: MessageListener) => void
 }
 
-const DEFAULT_CONTEXT: NativeNavigationContext = {
+interface InternalNativeNavigationContext extends NativeNavigationContext {
+	findViewRootNode: FindViewRootNodeFunc
+}
+
+const DEFAULT_CONTEXT: InternalNativeNavigationContext = {
 	pathname: '',
 	viewWindow: window,
 	updateView: async function() {
@@ -222,10 +230,22 @@ const DEFAULT_CONTEXT: NativeNavigationContext = {
 	removeMessageListener() {
 		/* noop */
 	},
+	findViewRootNode() {
+		return undefined
+	},
 }
 
 export const Context = React.createContext<NativeNavigationContext>(DEFAULT_CONTEXT)
 
 export function useNativeNavigationContext(): NativeNavigationContext {
 	return useContext(Context)
+}
+
+export function useNativeNavigationView(id?: string): HTMLElement | undefined {
+	if (!id) {
+		return undefined
+	}
+
+	const context = useContext(Context) as InternalNativeNavigationContext
+	return context.findViewRootNode(id)
 }

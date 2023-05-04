@@ -9,7 +9,7 @@ import { initSync, prepareWindowForSync } from './sync'
 import type { NativeNavigationReactRoot, NativeNavigationReactRootProps } from './types'
 import { toNativeNavigationReactRootProps } from './types'
 
-export { useNativeNavigationContext } from './context'
+export { useNativeNavigationContext, useNativeNavigationView, NativeNavigationContext } from './context'
 export { NativeNavigationReactRoot, NativeNavigationReactRootProps } from './types'
 
 interface Options {
@@ -107,6 +107,15 @@ export async function initReact(options: Options): Promise<void> {
 			stack,
 			viewWindow,
 			plugin,
+			findViewRootNode(id) {
+				const viewWindow = views[id]
+				if (viewWindow) {
+					const rootElement = viewWindow.document.getElementById(viewRootId)
+					return rootElement || undefined
+				} else {
+					return undefined
+				}
+			},
 		})
 
 		ReactDOM.render(

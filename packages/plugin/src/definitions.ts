@@ -98,7 +98,7 @@ export interface ComponentSpec {
 	options?: never
 }
 
-type ComponentSpecs = StackSpec | TabsSpec | ViewSpec
+export type AnyComponentSpec = StackSpec | TabsSpec | ViewSpec
 
 export interface StackSpec extends ComponentSpec {
 	type: 'stack'
@@ -149,7 +149,7 @@ export interface PresentOptions {
 	/**
 	 * The component to present.
 	 */
-	component: ComponentSpecs
+	component: AnyComponentSpec
 
 	/**
 	 * The presentation style.
@@ -491,7 +491,7 @@ export interface GetResult {
 	/**
 	 * The component, if any.
 	 */
-	component?: ComponentSpecs
+	component?: AnyComponentSpec
 
 	/**
 	 * The stack containing the component, if any.

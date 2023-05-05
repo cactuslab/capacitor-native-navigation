@@ -1,7 +1,7 @@
-import type { Plugin } from '@capacitor/core';
+import type { Plugin } from '@capacitor/core'
 
 import { NativeNavigationEvents } from './definitions'
-import type { MessageEventData , ComponentId, CreateViewEventData, DestroyViewEventData, NativeNavigationPlugin, UpdateViewEventData } from './definitions'
+import type { MessageEventData, ComponentId, CreateViewEventData, DestroyViewEventData, NativeNavigationPlugin, UpdateViewEventData } from './definitions'
 
 interface Options {
 	plugin: NativeNavigationPlugin & Plugin

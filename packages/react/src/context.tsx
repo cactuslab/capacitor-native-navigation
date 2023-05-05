@@ -1,4 +1,4 @@
-import type { ClickEventData, ComponentId, DismissOptions, DismissResult, MessageEventData, NativeNavigationPlugin , TabUpdate, ViewUpdate } from '@cactuslab/native-navigation'
+import type { ClickEventData, ComponentId, DismissOptions, DismissResult, MessageEventData, NativeNavigationPlugin, TabUpdate, ViewUpdate } from '@cactuslab/native-navigation'
 import type { Plugin, PluginListenerHandle } from '@capacitor/core'
 import React, { useContext } from 'react'
 
@@ -22,7 +22,7 @@ export function createReactContext(options: ContextInit): NativeNavigationContex
 	const { componentId, pathname, search, hash, state, stack, viewWindow, plugin, findViewRootNode } = options
 
 	function createPluginComponentListener(type: string, func: (...args: any[]) => any) {
-		const holder: { handle?: PluginListenerHandle | undefined, removed?: boolean } = {}
+		const holder: { handle?: PluginListenerHandle | undefined; removed?: boolean } = {}
 		
 		plugin.addListener(`${type}:${componentId}`, func).then(result => {
 			if (holder.removed) {

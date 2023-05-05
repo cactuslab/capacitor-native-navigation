@@ -177,7 +177,7 @@ Send a message to a component.
 
 | Prop              | Type                                                            | Description                                                                                                                                                              |
 | ----------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **`component`**   | <code><a href="#componentspecs">ComponentSpecs</a></code>       | The component to present.                                                                                                                                                |
+| **`component`**   | <code><a href="#anycomponentspec">AnyComponentSpec</a></code>   | The component to present.                                                                                                                                                |
 | **`style`**       | <code><a href="#presentationstyle">PresentationStyle</a></code> | The presentation style. Defaults to `'fullScreen'`                                                                                                                       |
 | **`cancellable`** | <code>boolean</code>                                            | Whether to allow the user to use system gestures or the back button to unwind the presentation. Useful to prevent the accidental dismissal of a form. Defaults to `true` |
 | **`animated`**    | <code>boolean</code>                                            | Whether to animate the presenting. Defaults to `true`                                                                                                                    |
@@ -436,11 +436,11 @@ Options for view components
 
 #### GetResult
 
-| Prop            | Type                                                      | Description                                 |
-| --------------- | --------------------------------------------------------- | ------------------------------------------- |
-| **`component`** | <code><a href="#componentspecs">ComponentSpecs</a></code> | The component, if any.                      |
-| **`stack`**     | <code><a href="#stackspec">StackSpec</a></code>           | The stack containing the component, if any. |
-| **`tabs`**      | <code><a href="#tabsspec">TabsSpec</a></code>             | The tabs containing the component, if any.  |
+| Prop            | Type                                                          | Description                                 |
+| --------------- | ------------------------------------------------------------- | ------------------------------------------- |
+| **`component`** | <code><a href="#anycomponentspec">AnyComponentSpec</a></code> | The component, if any.                      |
+| **`stack`**     | <code><a href="#stackspec">StackSpec</a></code>               | The stack containing the component, if any. |
+| **`tabs`**      | <code><a href="#tabsspec">TabsSpec</a></code>                 | The tabs containing the component, if any.  |
 
 
 #### GetOptions
@@ -467,7 +467,7 @@ Options for view components
 <code>string</code>
 
 
-#### ComponentSpecs
+#### AnyComponentSpec
 
 <code><a href="#stackspec">StackSpec</a> | <a href="#tabsspec">TabsSpec</a> | <a href="#viewspec">ViewSpec</a></code>
 

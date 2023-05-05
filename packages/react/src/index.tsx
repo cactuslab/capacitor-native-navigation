@@ -125,7 +125,7 @@ export async function initReact(options: Options): Promise<void> {
 				{
 					React.createElement(root, props)
 				}
-			</Context.Provider>
+			</Context.Provider>,
 		)
 
 		/* Wait a moment to allow the webview to render the DOM... it would be nice to find a signal we could use instead of just waiting */

@@ -1,4 +1,4 @@
-import type { ComponentId } from '@cactuslab/native-navigation';
+import type { ComponentId } from '@cactuslab/native-navigation'
 
 let copyNodeId = 1
 
@@ -41,7 +41,7 @@ export function initSync(views: Record<ComponentId, Window>): void {
 						console.warn(`Node to update did not have an id: ${node.nodeName}`)
 					}
 				}
-				continue;
+				continue
 			}
 
 			if (mutation.type !== 'childList') {
@@ -222,7 +222,7 @@ export function prepareWindowForSync(viewWindow: Window): void {
 	window.document.head.childNodes.forEach(function(node) {
 		if (shouldCopyNode(node)) {
 			if (!(node as HTMLElement).dataset['capacitorNativeNavigationId']) {
-				(node as HTMLElement).dataset['capacitorNativeNavigationId'] = nextNodeId();
+				(node as HTMLElement).dataset['capacitorNativeNavigationId'] = nextNodeId()
 			}
 			viewWindow.document.head.append(node.cloneNode(true))
 
@@ -250,7 +250,7 @@ function shouldCopyNode(node: Node): boolean {
 		return true
 	}
 	if (name === 'LINK') {
-		if (element.getAttribute("rel") === 'stylesheet') {
+		if (element.getAttribute('rel') === 'stylesheet') {
 			return true
 		}
 	}

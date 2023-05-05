@@ -10,7 +10,7 @@ export default function PageWithState(): JSX.Element {
 			<p>This page demonstrates that routing state is passed to a new screen.</p>
 			<p>State is:</p>
 			<pre>
-{location.state ? JSON.stringify(location.state) : 'NONE'}
+				{location.state ? JSON.stringify(location.state) : 'NONE'}
 			</pre>
 		</div>
 	)

@@ -60,10 +60,10 @@ export default function Stack1(): JSX.Element {
 		updateView({
 			stackItem: {
 				bar: {
-					visible: toolbarVisible
+					visible: toolbarVisible,
 				},
 			},
-			animated: true
+			animated: true,
 		})
 	}, [toolbarVisible])
 
@@ -72,7 +72,7 @@ export default function Stack1(): JSX.Element {
 			stackItem: {
 				backEnabled: backEnabled,
 			},
-			animated: true
+			animated: true,
 		})
 	}, [backEnabled])
 
@@ -85,15 +85,15 @@ export default function Stack1(): JSX.Element {
 
 	useEffect(function() {
 		updateView({
-			title: "Stack One",
+			title: 'Stack One',
 			stackItem: {
 				rightItems: [
 					{
 						id: 'reset',
 						title: 'Reset',
-					}
-				]
-			}
+					},
+				],
+			},
 		})
 
 		return addClickListener(function(data) {
@@ -109,11 +109,11 @@ export default function Stack1(): JSX.Element {
 			<p>This is the root of the stack. The title of this view was defined when the stack was created.</p>
 			<p><button onClick={handleChangeTitle}>Change Title</button> <button onClick={handleRemoveTitle}>Remove Title</button> </p>
 			<p><button onClick={handlePush}>Push New</button> <button onClick={handlePushSelf}>Push Same</button> <button onClick={handlePushWithState}>Push With State</button></p>
-			<p><button onClick={handleToolbarToggle}>{toolbarVisible ? "Hide Toolbar" : "Show Toolbar"}</button> <button onClick={handleBackEnabledToggle}>{backEnabled ? "Disable Back" : "Enable Back"}</button></p>
+			<p><button onClick={handleToolbarToggle}>{toolbarVisible ? 'Hide Toolbar' : 'Show Toolbar'}</button> <button onClick={handleBackEnabledToggle}>{backEnabled ? 'Disable Back' : 'Enable Back'}</button></p>
 			<h2>Replace</h2>
 			<p><button onClick={handleReplace1}>Replace 1</button></p>
 			<h2>Links</h2>
-			<p><Link to="/stack2">Push New</Link> <Link to="/stack1">Push Same</Link> <Link to="/state" state={{fromLink: true}}>Push With State</Link></p>
+			<p><Link to="/stack2">Push New</Link> <Link to="/stack1">Push Same</Link> <Link to="/state" state={{ fromLink: true }}>Push With State</Link></p>
 			<p><Link to="/modal/">Link to modal</Link></p>
 			
 			<p><button onClick={() => navigate(-1)}>Go Back</button></p>

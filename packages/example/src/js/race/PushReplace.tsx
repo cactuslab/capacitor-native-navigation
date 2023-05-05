@@ -24,9 +24,9 @@ function PushReplace1(): JSX.Element {
 					{
 						id: 'reset',
 						title: 'Reset',
-					}
-				]
-			}
+					},
+				],
+			},
 		})
 		navigate('/race/push-replace/two')
 

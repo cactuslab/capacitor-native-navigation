@@ -14,9 +14,9 @@ export default function StackImmediatePush(): JSX.Element {
 					{
 						id: 'reset',
 						title: 'Reset',
-					}
-				]
-			}
+					},
+				],
+			},
 		})
 		navigate('/stack2')
 

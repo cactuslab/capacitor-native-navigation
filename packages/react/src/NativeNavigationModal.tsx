@@ -1,7 +1,7 @@
-import { AnyComponentSpec, NativeNavigation, PresentationStyle } from "@cactuslab/native-navigation"
-import { useNativeNavigationView } from "./context"
-import { useEffect, useState } from "react"
-import { createPortal } from "react-dom"
+import { AnyComponentSpec, NativeNavigation, PresentationStyle } from '@cactuslab/native-navigation'
+import { useNativeNavigationView } from './context'
+import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 interface NativeNavigationModalProps {
 	component: AnyComponentSpec
@@ -15,7 +15,7 @@ export default function NativeNavigationModal(props: React.PropsWithChildren<Nat
 	const { children, component, presentationStyle: style } = props
 	const [viewId, setViewId] = useState<string>()
 
-	useEffect(function () {
+	useEffect(function() {
 		const state: {
 			presentedId?: string
 			unmounted?: boolean
@@ -29,9 +29,9 @@ export default function NativeNavigationModal(props: React.PropsWithChildren<Nat
 
 			let viewId: string | undefined
 			const got = await NativeNavigation.get({ id: result.id })
-			if (got.component && got.component.type === "stack") {
+			if (got.component && got.component.type === 'stack') {
 				viewId = got.component.components[got.component.components.length - 1].id
-			} else if (got.component && got.component.type === "view") {
+			} else if (got.component && got.component.type === 'view') {
 				viewId = got.component.id
 			}
 
@@ -48,7 +48,7 @@ export default function NativeNavigationModal(props: React.PropsWithChildren<Nat
 
 		createModal()
 
-		return function () {
+		return function() {
 			state.unmounted = true
 			if (state.presentedId) {
 				NativeNavigation.dismiss({

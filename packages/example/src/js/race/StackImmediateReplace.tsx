@@ -14,9 +14,9 @@ export default function StackImmediateReplace(): JSX.Element {
 					{
 						id: 'reset',
 						title: 'Reset',
-					}
-				]
-			}
+					},
+				],
+			},
 		})
 		navigate('/stack2', {
 			replace: true,

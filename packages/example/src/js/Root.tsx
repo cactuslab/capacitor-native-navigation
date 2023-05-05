@@ -28,20 +28,20 @@ export default function Root(props: NativeNavigationReactRootProps): JSX.Element
 							type: 'stack',
 							bar: {
 								background: {
-									color: "#23ABED"
+									color: '#23ABED',
 								},
 								title: {
 									color: '#223344',
 									font: {
 										name: 'Solway',
 										size: 26,
-									}
+									},
 								},
 								buttons: {
 									color: '#334455',
 									font: {
 										name: 'Solway',
-									}
+									},
 								},
 							},
 							components: [
@@ -62,11 +62,11 @@ export default function Root(props: NativeNavigationReactRootProps): JSX.Element
 							],
 						},
 						style: 'formSheet',
-						cancellable: true
+						cancellable: true,
 					}
 				},
 			},
-		]
+		],
 	})
 
 	return (

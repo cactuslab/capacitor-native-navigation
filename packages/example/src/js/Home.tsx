@@ -1,4 +1,4 @@
-import { NativeNavigation, StackOptions, StackSpec } from '@cactuslab/native-navigation'
+import { NativeNavigation, StackSpec } from '@cactuslab/native-navigation'
 
 import diamond from '../assets/imgs/diamond@2x.png'
 import flags from '../assets/imgs/flag.2.crossed@2x.png'
@@ -11,7 +11,7 @@ export default function Home(): React.ReactElement {
 			<p>This example app demonstrates the capabilities of Capacitor Native Navigation.</p>
 			<p>Choose one of the root options below:</p>
 			<dl>
-				<dd><button style={{fontSize: '2rem'}} onClick={() => setupStack({
+				<dd><button style={{ fontSize: '2rem' }} onClick={() => setupStack({
 					path: '/stack1',
 					title: 'Stack 1',
 					options: {
@@ -24,19 +24,19 @@ export default function Home(): React.ReactElement {
 								font: {
 									name: 'Solway',
 									size: 26,
-								}
+								},
 							},
 							buttons: {
 								color: '#DDEEFF',
 								font: {
 									name: 'Solway',
-								}
+								},
 							},
 						},
-					}
+					},
 				})}>Stack</button></dd>
-				<dd><button style={{fontSize: '2rem'}} onClick={setupTabs}>Tabs</button></dd>
-				<dd><button style={{fontSize: '2rem'}} onClick={setupView}>View</button></dd>
+				<dd><button style={{ fontSize: '2rem' }} onClick={setupTabs}>Tabs</button></dd>
+				<dd><button style={{ fontSize: '2rem' }} onClick={setupView}>View</button></dd>
 				<h2>Races</h2>
 				<dd><button onClick={() => setupStack({ path: '/race/stack-immediate-push', title: 'Stack Immediate Push' })}>Immediate push</button></dd>
 				<dd><button onClick={() => setupStack({ path: '/race/stack-immediate-replace', title: 'Stack Immediate Replace' })}>Immediate replace</button></dd>
@@ -51,7 +51,7 @@ export default function Home(): React.ReactElement {
 	)
 }
 
-async function setupStack(options: { path: string, title: string, options?: Partial<StackSpec> }) {
+async function setupStack(options: { path: string; title: string; options?: Partial<StackSpec> }) {
 	const stackRoot = await NativeNavigation.present({
 		component: {
 			id: 'rootStack',
@@ -61,9 +61,9 @@ async function setupStack(options: { path: string, title: string, options?: Part
 					type: 'view',
 					path: options?.path,
 					title: options?.title,
-				}
+				},
 			],
-			...options.options
+			...options.options,
 		},
 		animated: false,
 	})
@@ -86,7 +86,7 @@ async function setupTabs() {
 							{
 								type: 'view',
 								path: '/stack1',
-							}
+							},
 						],
 					},
 				},
@@ -122,7 +122,7 @@ async function setupView() {
 	const standaloneViewRoot = await NativeNavigation.present({
 		component: {
 			type: 'view',
-			path: '/view1'
+			path: '/view1',
 		},
 		animated: false,
 	})

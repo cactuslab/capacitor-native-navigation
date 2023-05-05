@@ -1,7 +1,7 @@
-import type { MessageEventData, PresentOptions, ViewState } from '@cactuslab/native-navigation';
-import { useNativeNavigationContext } from '@cactuslab/native-navigation-react';
-import type { NativeNavigationPlugin } from '@cactuslab/native-navigation/src/definitions';
-import { useCallback, useEffect } from 'react';
+import type { MessageEventData, PresentOptions, ViewState } from '@cactuslab/native-navigation'
+import { useNativeNavigationContext } from '@cactuslab/native-navigation-react'
+import type { NativeNavigationPlugin } from '@cactuslab/native-navigation/src/definitions'
+import { useCallback, useEffect } from 'react'
 import type { NavigateOptions, Navigator, To } from 'react-router-dom'
 
 interface Options {
@@ -81,7 +81,7 @@ export function useNativeNavigationNavigator(options: Options): Navigator {
 	
 	const navigator: Navigator = {
 
-		createHref: function (to: To): string {
+		createHref: function(to: To): string {
 			if (typeof to === 'string') {
 				return to
 			} else {
@@ -99,7 +99,7 @@ export function useNativeNavigationNavigator(options: Options): Navigator {
 			}
 		},
 
-		go: async function (delta: number): Promise<void> {
+		go: async function(delta: number): Promise<void> {
 			if (delta < 0) {
 				if (stack) {
 					try {
@@ -121,11 +121,11 @@ export function useNativeNavigationNavigator(options: Options): Navigator {
 					console.warn(`Failed to pop as component ${componentId} is not in a stack`)
 				}
 			} else if (delta > 0) {
-				throw new Error(`go(delta) is not implemented for going forward`)
+				throw new Error('go(delta) is not implemented for going forward')
 			}
 		},
 
-		push: async function (to: To, state?: any, opts?: NavigateOptions | undefined): Promise<void> {
+		push: async function(to: To, state?: any, opts?: NavigateOptions | undefined): Promise<void> {
 			const viewState = toViewState(state, opts?.state)
 			if (typeof viewState?.dismiss === 'string') {
 				try {
@@ -173,7 +173,7 @@ export function useNativeNavigationNavigator(options: Options): Navigator {
 						to,
 						state,
 						opts,
-					}
+					},
 				})
 				return
 			}
@@ -195,9 +195,9 @@ export function useNativeNavigationNavigator(options: Options): Navigator {
 			}
 		},
 
-		replace: async function (to: To, state?: any, opts?: NavigateOptions | undefined): Promise<void> {
+		replace: async function(to: To, state?: any, opts?: NavigateOptions | undefined): Promise<void> {
 			return navigator.push(to, state, opts ? { ...opts, replace: true } : { replace: true })
-		}
+		},
 	}
 
 	/* Handle navigate requests from closing modals */

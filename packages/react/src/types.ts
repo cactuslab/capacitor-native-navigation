@@ -1,5 +1,5 @@
-import type { ComponentId, CreateViewEventData, MessageEventData } from '@cactuslab/native-navigation';
-import type React from 'react';
+import type { ComponentId, CreateViewEventData, MessageEventData } from '@cactuslab/native-navigation'
+import type React from 'react'
 
 import { parsePath } from './utils'
 

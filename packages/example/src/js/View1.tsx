@@ -34,7 +34,7 @@ export default function View1(): JSX.Element {
 	useEffect(function() {
 		return addClickListener(function(data) {
 			if (data.buttonId === 'close-button') {
-				navigate("/stack1")
+				navigate('/stack1')
 			}
 		})
 	}, [])

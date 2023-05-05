@@ -242,10 +242,11 @@ export function useNativeNavigationContext(): NativeNavigationContext {
 }
 
 export function useNativeNavigationView(id?: string): HTMLElement | undefined {
+	const context = useContext(Context) as InternalNativeNavigationContext
+	
 	if (!id) {
 		return undefined
 	}
 
-	const context = useContext(Context) as InternalNativeNavigationContext
 	return context.findViewRootNode(id)
 }

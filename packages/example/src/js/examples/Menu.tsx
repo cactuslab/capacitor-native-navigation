@@ -20,9 +20,9 @@ export default function Menu() {
 					id: 'menu',
 					title: 'Menu',
 					image: menu64,
-				}
-			]
-		}
+				},
+			],
+		},
 	})
 
 	useEffect(function() {

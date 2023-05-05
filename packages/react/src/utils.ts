@@ -1,7 +1,7 @@
 interface Path {
-    pathname: string
-    search?: string
-    hash?: string
+	pathname: string
+	search?: string
+	hash?: string
 }
 
 export function parsePath(path: string): Path {

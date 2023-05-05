@@ -1,5 +1,12 @@
 # @cactuslab/native-navigation
 
+## 0.3.1
+
+### Patch Changes
+
+- ad0c767: Android: Fix font lookup to replace dash with underscore
+- e0dc757: Export AnyComponentSpec
+
 ## 0.3.0
 
 ### Minor Changes

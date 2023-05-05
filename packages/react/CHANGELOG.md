@@ -1,5 +1,18 @@
 # @cactuslab/native-navigation-react
 
+## 3.1.0
+
+### Minor Changes
+
+- ebcc558: Add useNativeNavigationView hook to support portaling
+- 7e78dd6: Add NativeNavigationModal component
+
+### Patch Changes
+
+- Updated dependencies [ad0c767]
+- Updated dependencies [e0dc757]
+  - @cactuslab/native-navigation@0.3.1
+
 ## 3.0.0
 
 ### Minor Changes

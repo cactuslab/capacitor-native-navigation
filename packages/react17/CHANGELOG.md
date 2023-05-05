@@ -1,5 +1,18 @@
 # @cactuslab/native-navigation-react17
 
+## 0.2.0
+
+### Minor Changes
+
+- ebcc558: Add useNativeNavigationView hook to support portaling
+
+### Patch Changes
+
+- fb7ec7b: Undo mistaken React upgrade!
+- Updated dependencies [ad0c767]
+- Updated dependencies [e0dc757]
+  - @cactuslab/native-navigation@0.3.1
+
 ## 0.1.2
 
 ### Patch Changes

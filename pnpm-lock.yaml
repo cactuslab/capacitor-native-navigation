@@ -149,7 +149,7 @@ importers:
         version: 18.2.0(react@18.2.0)
     devDependencies:
       '@cactuslab/native-navigation':
-        specifier: ^0.3.0
+        specifier: ^0.3.1
         version: link:../plugin
       '@capacitor/core':
         specifier: ^4.8.0
@@ -210,7 +210,7 @@ importers:
   packages/react17:
     dependencies:
       '@cactuslab/native-navigation':
-        specifier: ^0.3.0
+        specifier: ^0.3.1
         version: link:../plugin
       history:
         specifier: ^5.3.0

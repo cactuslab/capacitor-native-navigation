@@ -136,6 +136,8 @@ export interface ViewSpec extends ComponentSpec {
 	path: string
 
 	state?: ViewState
+	
+	title?: string
 
 	/**
 	 * Options for when the component is used in a stack

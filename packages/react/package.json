@@ -27,9 +27,6 @@
     "native"
   ],
   "scripts": {
-    "lint": "pnpm run eslint && pnpm run prettier -- --check",
-    "fmt": "pnpm run eslint -- --fix && pnpm run prettier -- --write",
-    "eslint": "eslint . --ext ts",
     "prettier": "prettier \"**/*.{css,html,ts,js,java}\"",
     "build": "pnpm run clean && tsc && rollup -c rollup.config.mjs",
     "clean": "rimraf ./dist",
@@ -39,12 +36,8 @@
   "devDependencies": {
     "@cactuslab/native-navigation": "^0.3.0",
     "@capacitor/core": "^4.8.0",
-    "@ionic/eslint-config": "^0.3.0",
-    "@ionic/prettier-config": "^2.1.2",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.1",
-    "eslint": "^8.39.0",
-    "prettier": "~2.8.8",
     "rimraf": "^5.0.0",
     "rollup": "^3.21.3",
     "typescript": "~5.0.4"
@@ -54,9 +47,5 @@
     "@capacitor/core": "^4.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
-  },
-  "prettier": "@ionic/prettier-config",
-  "eslintConfig": {
-    "extends": "@ionic/eslint-config/recommended"
   }
 }

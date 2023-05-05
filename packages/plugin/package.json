@@ -52,9 +52,7 @@
     "verify:ios": "cd ios && bundle exec pod install && xcodebuild -workspace Plugin.xcworkspace -scheme Plugin -destination generic/platform=iOS && cd ..",
     "verify:android": "cd android && ./gradlew clean build test && cd ..",
     "verify:web": "pnpm run build",
-    "lint": "pnpm run eslint && pnpm run prettier -- --check && pnpm run swiftlint -- lint",
     "fmt": "pnpm run eslint -- --fix && pnpm run prettier -- --write && pnpm run swiftlint -- --fix --format",
-    "eslint": "eslint . --ext ts",
     "prettier": "prettier \"**/*.{css,html,ts,js,java}\"",
     "swiftlint": "node-swiftlint",
     "docgen": "docgen --api NativeNavigationPlugin --output-readme README.md --output-json dist/docs.json",
@@ -68,10 +66,8 @@
     "@capacitor/core": "^4.8.0",
     "@capacitor/docgen": "^0.2.1",
     "@capacitor/ios": "^4.8.0",
-    "@ionic/eslint-config": "^0.3.0",
     "@ionic/prettier-config": "^2.1.2",
     "@ionic/swiftlint-config": "^1.1.2",
-    "eslint": "^8.39.0",
     "prettier": "~2.8.8",
     "prettier-plugin-java": "~2.1.0",
     "rimraf": "^5.0.0",
@@ -84,9 +80,6 @@
   },
   "prettier": "@ionic/prettier-config",
   "swiftlint": "@ionic/swiftlint-config",
-  "eslintConfig": {
-    "extends": "@ionic/eslint-config/recommended"
-  },
   "capacitor": {
     "ios": {
       "src": "ios"

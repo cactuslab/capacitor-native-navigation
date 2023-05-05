@@ -1,10 +1,10 @@
 import { initViewHandler } from '@cactuslab/native-navigation'
-import type { ComponentId, NativeNavigationPluginInternal, NativeNavigationPlugin, CreateViewEventData, UpdateViewEventData, MessageEventData } from '@cactuslab/native-navigation';
-import type { Plugin } from '@capacitor/core';
-import React from 'react';
-import ReactDOM from 'react-dom'
+import type { ComponentId, CreateViewEventData, NativeNavigationPluginInternal, NativeNavigationPlugin, UpdateViewEventData, MessageEventData } from '@cactuslab/native-navigation'
+import type { Plugin } from '@capacitor/core'
+import React from 'react'
+import ReactDOM from 'react-dom/client'
 
-import { createReactContext, Context } from './context';
+import { createReactContext, Context } from './context'
 import { initSync, prepareWindowForSync } from './sync'
 import type { NativeNavigationReactRoot, NativeNavigationReactRootProps } from './types'
 import { toNativeNavigationReactRootProps } from './types'
@@ -51,7 +51,7 @@ export async function initReact(options: Options): Promise<void> {
 			destroyView,
 			messageView,
 			ready,
-		}
+		},
 	})
 
 	function reportError(source: string, error: unknown) {
@@ -120,9 +120,9 @@ export async function initReact(options: Options): Promise<void> {
 
 		ReactDOM.render(
 			<Context.Provider value={context}>
-			{
-				React.createElement(root, props)
-			}
+				{
+					React.createElement(root, props)
+				}
 			</Context.Provider>,
 			rootElement
 		)

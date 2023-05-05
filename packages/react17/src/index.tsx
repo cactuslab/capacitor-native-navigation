@@ -2,7 +2,7 @@ import { initViewHandler } from '@cactuslab/native-navigation'
 import type { ComponentId, CreateViewEventData, NativeNavigationPluginInternal, NativeNavigationPlugin, UpdateViewEventData, MessageEventData } from '@cactuslab/native-navigation'
 import type { Plugin } from '@capacitor/core'
 import React from 'react'
-import ReactDOM from 'react-dom/client'
+import ReactDOM from 'react-dom'
 
 import { createReactContext, Context } from './context'
 import { initSync, prepareWindowForSync } from './sync'

@@ -156,16 +156,16 @@ class NativeNavigation: NSObject {
             container.view.addSubview(component.viewController.view)
             component.viewController.didMove(toParent: container)
         } else {
-            guard let top = try self.currentRoot() else {
-                throw NativeNavigatorError.illegalState(message: "Cannot find top")
-            }
-
             roots.append(component.componentId)
             
             component.viewController.modalPresentationStyle = options.style.toUIModalPresentationStyle()
             
             component.viewController.presentationController?.delegate = self
-            top.viewController.present(component.viewController, animated: options.animated)
+            if let top = try self.currentRoot() {
+                top.viewController.present(component.viewController, animated: options.animated)
+            } else {
+                self.bridge.viewController!.present(component.viewController, animated: options.animated)
+            }
         }
 
         return PresentResult(id: component.componentId)

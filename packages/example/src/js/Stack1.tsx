@@ -1,12 +1,12 @@
 import { NativeNavigation } from '@cactuslab/native-navigation'
-import { useNativeNavigationContext } from '@cactuslab/native-navigation-react'
+import { useNativeNavigationViewContext } from '@cactuslab/native-navigation-react'
 import React, { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 let counter = 1
 
 export default function Stack1(): JSX.Element {
-	const { updateView, addClickListener } = useNativeNavigationContext()
+	const { updateView, addClickListener } = useNativeNavigationViewContext()
 	const navigate = useNavigate()
 
 	const [toolbarVisible, setToolbarVisible] = useState(true)

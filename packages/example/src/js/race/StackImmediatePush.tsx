@@ -1,11 +1,11 @@
 import { NativeNavigation } from '@cactuslab/native-navigation'
-import { useNativeNavigationContext } from '@cactuslab/native-navigation-react'
+import { useNativeNavigationViewContext } from '@cactuslab/native-navigation-react'
 import React, { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 export default function StackImmediatePush(): JSX.Element {
 	const navigate = useNavigate()
-	const { update, addClickListener } = useNativeNavigationContext()
+	const { update, addClickListener } = useNativeNavigationViewContext()
 
 	useEffect(function() {
 		update({

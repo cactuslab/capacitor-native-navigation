@@ -1,8 +1,8 @@
-import type { ClickEventData, ComponentId, DismissOptions, DismissResult, MessageEventData, NativeNavigationPlugin, TabUpdate, ViewUpdate } from '@cactuslab/native-navigation'
-import type { Plugin, PluginListenerHandle } from '@capacitor/core'
+import type { ClickEventData, ComponentId, DismissOptions, DismissResult, MessageEventData, TabUpdate, ViewUpdate } from '@cactuslab/native-navigation'
+import type { PluginListenerHandle } from '@capacitor/core'
 import React, { useContext } from 'react'
 
-import type { MessageListener } from './types'
+import type { MessageListener, NativeNavigationReact } from './types'
 
 interface ContextInit {
 	componentId: ComponentId
@@ -11,16 +11,16 @@ interface ContextInit {
 	hash?: string
 	state?: unknown
 	stack?: ComponentId
-	plugin: NativeNavigationPlugin & Plugin
+	
 	viewWindow: Window
-	findViewRootNode: FindViewRootNodeFunc
+	nativeNavigationReact: NativeNavigationReact
 }
 
-type FindViewRootNodeFunc = (id: string) => HTMLElement | undefined
+export function createReactContext(options: ContextInit): NativeNavigationViewContext {
+	const { componentId, pathname, search, hash, state, stack, viewWindow, nativeNavigationReact } = options
+	const { plugin } = nativeNavigationReact
 
-export function createReactContext(options: ContextInit): NativeNavigationContext {
-	const { componentId, pathname, search, hash, state, stack, viewWindow, plugin, findViewRootNode } = options
-
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	function createPluginComponentListener(type: string, func: (...args: any[]) => any) {
 		const holder: { handle?: PluginListenerHandle | undefined; removed?: boolean } = {}
 		
@@ -44,7 +44,7 @@ export function createReactContext(options: ContextInit): NativeNavigationContex
 		}
 	}
 
-	const context: InternalNativeNavigationContext = {
+	const context: NativeNavigationViewContext = {
 		componentId,
 		pathname,
 		search,
@@ -52,7 +52,6 @@ export function createReactContext(options: ContextInit): NativeNavigationContex
 		state,
 		stack,
 		viewWindow,
-		findViewRootNode,
 
 		updateView: async function(update) {
 			return plugin.update({
@@ -132,7 +131,7 @@ type ClickListenerFunc = (data: ClickEventData) => void
 type ViewTransitionListenerFunc = () => void
 type RemoveListenerFunction = () => void
 
-export interface NativeNavigationContext {
+export interface NativeNavigationViewContext {
 	/**
 	 * The component id. Will be undefined if not in a native context.
 	 */
@@ -183,11 +182,7 @@ export interface NativeNavigationContext {
 	removeMessageListener: (type: string, listener: MessageListener) => void
 }
 
-interface InternalNativeNavigationContext extends NativeNavigationContext {
-	findViewRootNode: FindViewRootNodeFunc
-}
-
-const DEFAULT_CONTEXT: InternalNativeNavigationContext = {
+const DEFAULT_CONTEXT: NativeNavigationViewContext = {
 	pathname: '',
 	viewWindow: window,
 	updateView: async function() {
@@ -230,23 +225,10 @@ const DEFAULT_CONTEXT: InternalNativeNavigationContext = {
 	removeMessageListener() {
 		/* noop */
 	},
-	findViewRootNode() {
-		return undefined
-	},
 }
 
-export const Context = React.createContext<NativeNavigationContext>(DEFAULT_CONTEXT)
+export const Context = React.createContext<NativeNavigationViewContext>(DEFAULT_CONTEXT)
 
-export function useNativeNavigationContext(): NativeNavigationContext {
+export function useNativeNavigationViewContext(): NativeNavigationViewContext {
 	return useContext(Context)
-}
-
-export function useNativeNavigationView(id?: string): HTMLElement | undefined {
-	const context = useContext(Context) as InternalNativeNavigationContext
-	
-	if (!id) {
-		return undefined
-	}
-
-	return context.findViewRootNode(id)
 }

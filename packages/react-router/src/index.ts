@@ -1,5 +1,5 @@
 import type { MessageEventData, PresentOptions, ViewState } from '@cactuslab/native-navigation'
-import { useNativeNavigationContext } from '@cactuslab/native-navigation-react'
+import { useNativeNavigationViewContext } from '@cactuslab/native-navigation-react'
 import type { NativeNavigationPlugin } from '@cactuslab/native-navigation/src/definitions'
 import { useCallback, useEffect } from 'react'
 import type { NavigateOptions, Navigator, To } from 'react-router-dom'
@@ -65,7 +65,7 @@ const NAVIGATOR_NAVIGATE_MESSAGE_TYPE = '@cactuslab/native-navigation-react-rout
 export function useNativeNavigationNavigator(options: Options): Navigator {
 	const { plugin } = options
 
-	const { componentId, stack, pathname: currentPathname, addMessageListener, removeMessageListener } = useNativeNavigationContext()
+	const { componentId, stack, pathname: currentPathname, addMessageListener, removeMessageListener } = useNativeNavigationViewContext()
 	
 	const currentModal = findModalConfig(currentPathname, options)
 

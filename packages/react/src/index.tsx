@@ -1,21 +1,18 @@
 import { initViewHandler } from '@cactuslab/native-navigation'
 import type { ComponentId, CreateViewEventData, NativeNavigationPluginInternal, NativeNavigationPlugin, UpdateViewEventData, MessageEventData } from '@cactuslab/native-navigation'
 import type { Plugin } from '@capacitor/core'
-import React from 'react'
-import ReactDOM from 'react-dom/client'
 
-import { createReactContext, Context } from './context'
 import { initSync, prepareWindowForSync } from './sync'
-import type { NativeNavigationReactRoot, NativeNavigationReactRootProps } from './types'
-import { toNativeNavigationReactRootProps } from './types'
+import { NativeNavigationReact, NativeNavigationReactView, ReactViewListenerEvent, ReactViewListenerFunc, toNativeNavigationReactRootProps } from './types'
 
-export { useNativeNavigationContext, useNativeNavigationView, NativeNavigationContext } from './context'
+export { useNativeNavigationViewContext, NativeNavigationViewContext } from './context'
 export { NativeNavigationReactRoot, NativeNavigationReactRootProps } from './types'
 export { default as NativeNavigationModal } from './NativeNavigationModal'
+export { default as NativeNavigationViews } from './NativeNavigationViews'
+export { InternalContextProvider as NativeNavigationProvider } from './internal'
 
 interface Options {
 	plugin: NativeNavigationPlugin & Plugin
-	root: NativeNavigationReactRoot
 	
 	/**
 	 * The element id to use for the root in new windows.
@@ -35,12 +32,11 @@ export function alertErrorHandler(source: string, error: unknown): void {
 	alert(`Native navigation integration failed (${source}): ${error instanceof Error ? error.message : error}`)
 }
 
-export async function initReact(options: Options): Promise<void> {
-	const { plugin, root } = options
+export function initReact(options: Options): NativeNavigationReact {
+	const { plugin } = options
 	const viewRootId = options.viewRootId || 'root'
 	const internalPlugin = plugin as unknown as NativeNavigationPluginInternal
-	const views: Record<ComponentId, Window> = {}
-	const reactRoots: Record<ComponentId, ReactDOM.Root> = {}
+	const views: Record<ComponentId, NativeNavigationReactView> = {}
 
 	initSync(views)
 
@@ -71,12 +67,14 @@ export async function initReact(options: Options): Promise<void> {
 		const rootElement = viewWindow.document.getElementById(viewRootId)
 		if (rootElement) {
 			prepareWindowForSync(viewWindow)
-			views[id] = viewWindow
+			views[id] = {
+				data,
+				props: toNativeNavigationReactRootProps(data, viewWindow),
+				window: viewWindow,
+				element: rootElement,
+			}
 
-			const reactRoot = ReactDOM.createRoot(rootElement)
-			reactRoots[id] = reactRoot
-
-			render(viewWindow, reactRoot, toNativeNavigationReactRootProps(data, viewWindow))
+			fireViewDidChange(id, 'create')
 		} else {
 			reportError('createView', `Attempted to load view "${path}" but could not find root node: #${viewRootId}`)
 		}
@@ -85,51 +83,58 @@ export async function initReact(options: Options): Promise<void> {
 	function updateView(viewWindow: Window, data: UpdateViewEventData) {
 		const { id } = data
 
-		const reactRoot = reactRoots[id]
-		if (!reactRoot) {
-			reportError('updateView', `Attempted to update a React root that doesn't exist: ${id}`)
+		const view = views[id]
+		if (!view) {
+			reportError('updateView', `Attempted to update a view that doesn't exist: ${id}`)
 			return
 		}
 
-		render(viewWindow, reactRoot, toNativeNavigationReactRootProps(data, viewWindow))
+		view.data = data
+		view.props = toNativeNavigationReactRootProps(data, viewWindow)
+		view.reactElement = undefined /* So we recreate it */
+
+		fireViewDidChange(id, 'update')
 	}
 	
 	function messageView(viewWindow: Window, data: MessageEventData) {
 		viewWindow.dispatchEvent(new CustomEvent('nativenavigationmessage', { detail: data }))
 	}
 
-	function render(viewWindow: Window, reactRoot: ReactDOM.Root, props: NativeNavigationReactRootProps) {
-		const { id, pathname, search, hash, state, stack } = props
-		const context = createReactContext({
-			componentId: id,
-			pathname,
-			search,
-			hash,
-			state,
-			stack,
-			viewWindow,
-			plugin,
-			findViewRootNode(id) {
-				const viewWindow = views[id]
-				if (viewWindow) {
-					const rootElement = viewWindow.document.getElementById(viewRootId)
-					return rootElement || undefined
-				} else {
-					return undefined
-				}
-			},
-		})
+	function destroyView(id: ComponentId) {
+		const view = views[id]
+		if (view) {
+			delete views[id]
+			fireViewDidChange(id, 'remove')
+		}
+	}
 
-		reactRoot.render(
-			<Context.Provider value={context}>
-				{
-					React.createElement(root, props)
-				}
-			</Context.Provider>,
-		)
+	function ready(view: Window) {
+		return !!view.document.getElementById(viewRootId)
+	}
 
-		/* Wait a moment to allow the webview to render the DOM... it would be nice to find a signal we could use instead of just waiting */
-		setTimeout(function() {
+	const listeners: ReactViewListenerFunc[] = []
+
+	function fireViewDidChange(id: string, event: ReactViewListenerEvent) {
+		for (const listener of [...listeners]) {
+			listener(id, event)
+		}
+	}
+
+	return {
+		plugin,
+		addViewsListener(listener) {
+			listeners.push(listener)
+			return function() {
+				const i = listeners.indexOf(listener)
+				if (i !== -1) {
+					listeners.splice(i, 1)
+				}
+			}
+		},
+		views() {
+			return views
+		},
+		fireViewReady(id) {
 			try {
 				internalPlugin.viewReady({
 					id,
@@ -137,19 +142,6 @@ export async function initReact(options: Options): Promise<void> {
 			} catch (error) {
 				reportError('viewReady', error)
 			}
-		}, 20)
-	}
-
-	function destroyView(id: ComponentId) {
-		const reactRoot = reactRoots[id]
-		if (reactRoot) {
-			reactRoot.unmount()
-			delete reactRoots[id]
-			delete views[id]
-		}
-	}
-
-	function ready(view: Window) {
-		return !!view.document.getElementById(viewRootId)
+		},
 	}
 }

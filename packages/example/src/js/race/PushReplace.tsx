@@ -1,5 +1,5 @@
 import { NativeNavigation } from '@cactuslab/native-navigation'
-import { useNativeNavigationContext } from '@cactuslab/native-navigation-react'
+import { useNativeNavigationViewContext } from '@cactuslab/native-navigation-react'
 import React, { useEffect } from 'react'
 import { Route, useNavigate } from 'react-router-dom'
 
@@ -15,7 +15,7 @@ export default function PushReplace(): JSX.Element {
 
 function PushReplace1(): JSX.Element {
 	const navigate = useNavigate()
-	const { update, addClickListener } = useNativeNavigationContext()
+	const { update, addClickListener } = useNativeNavigationViewContext()
 
 	useEffect(function() {
 		update({

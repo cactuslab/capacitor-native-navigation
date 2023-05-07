@@ -1,4 +1,5 @@
 import type { ComponentId } from '@cactuslab/native-navigation'
+import { NativeNavigationReactView } from './types'
 
 let copyNodeId = 1
 
@@ -6,7 +7,7 @@ let copyNodeId = 1
  * Initialise syncing document.head node changes from `window` into the additional windows we create.
  * @param views the windows we've created; note that this collection is expected to change as new windows are created
  */
-export function initSync(views: Record<ComponentId, Window>): void {
+export function initSync(views: Record<ComponentId, NativeNavigationReactView>): void {
 	/*
 	 * Add a sentinel node to the window's head so we always have a previous sibling with an
 	 * id for future additions so we can put them in the right place.
@@ -29,7 +30,7 @@ export function initSync(views: Record<ComponentId, Window>): void {
 					if (nodeId) {
 						for (const viewId of Object.keys(views)) {
 							const view = views[viewId]
-							const target = view.document.head.querySelector(`[data-capacitor-native-navigation-id="${nodeId}"]`)
+							const target = view.window.document.head.querySelector(`[data-capacitor-native-navigation-id="${nodeId}"]`)
 							if (!target) {
 								console.warn(`Update target "${nodeId}" not found in head for view: ${viewId}`)
 								continue
@@ -66,7 +67,7 @@ export function initSync(views: Record<ComponentId, Window>): void {
 					/* Copy added nodes to each view */
 					for (const viewId of Object.keys(views)) {
 						const view = views[viewId]
-						const prevSibling = view.document.head.querySelector(`[data-capacitor-native-navigation-id="${prevSiblingId}"]`)
+						const prevSibling = view.window.document.head.querySelector(`[data-capacitor-native-navigation-id="${prevSiblingId}"]`)
 						if (!prevSibling) {
 							console.warn(`Marker "${prevSiblingId}" not found in head for view: ${viewId}`)
 							continue
@@ -89,7 +90,7 @@ export function initSync(views: Record<ComponentId, Window>): void {
 					if (nodeId) {
 						for (const viewId of Object.keys(views)) {
 							const view = views[viewId]
-							const nodeToRemove = view.document.head.querySelector(`[data-capacitor-native-navigation-id="${nodeId}"]`)
+							const nodeToRemove = view.window.document.head.querySelector(`[data-capacitor-native-navigation-id="${nodeId}"]`)
 							if (nodeToRemove) {
 								nodeToRemove.remove()
 							}
@@ -134,7 +135,7 @@ export function initSync(views: Record<ComponentId, Window>): void {
 					for (const viewId of Object.keys(views)) {
 						const view = views[viewId]
 
-						const targetStyleSheet = findMatchingStyleSheet(styleSheet, view)
+						const targetStyleSheet = findMatchingStyleSheet(styleSheet, view.window)
 						if (targetStyleSheet) {
 							try {
 								targetStyleSheet.insertRule(rule, index)
@@ -152,7 +153,7 @@ export function initSync(views: Record<ComponentId, Window>): void {
 			for (const viewId of Object.keys(views)) {
 				const view = views[viewId]
 
-				copyInitialCssRules(styleSheet, view)
+				copyInitialCssRules(styleSheet, view.window)
 			}
 		}
 	}

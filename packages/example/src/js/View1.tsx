@@ -1,10 +1,10 @@
 import { NativeNavigation } from '@cactuslab/native-navigation'
-import { useNativeNavigationContext } from '@cactuslab/native-navigation-react'
+import { useNativeNavigationViewContext } from '@cactuslab/native-navigation-react'
 import React, { useCallback, useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 export default function View1(): JSX.Element {
-	const { dismiss, addClickListener } = useNativeNavigationContext()
+	const { dismiss, addClickListener } = useNativeNavigationViewContext()
 	const location = useLocation()
 	const [got, setGot] = useState('')
 	const navigate = useNavigate()

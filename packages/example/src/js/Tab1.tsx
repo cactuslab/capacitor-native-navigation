@@ -1,10 +1,10 @@
-import { useNativeNavigationContext } from '@cactuslab/native-navigation-react'
+import { useNativeNavigationViewContext } from '@cactuslab/native-navigation-react'
 import React, { useCallback } from 'react'
 
 let badgeCounter = 1
 
 export default function Tab1(): JSX.Element {
-	const { updateTab } = useNativeNavigationContext()
+	const { updateTab } = useNativeNavigationViewContext()
 
 	const handleUpdateBadge = useCallback(function(evt: React.MouseEvent) {
 		evt.preventDefault()

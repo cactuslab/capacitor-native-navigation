@@ -1,5 +1,5 @@
 import { AnyComponentSpec, NativeNavigation, PresentationStyle } from '@cactuslab/native-navigation'
-import { useNativeNavigationView } from './context'
+import { useNativeNavigationView } from './internal'
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 

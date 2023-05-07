@@ -1,12 +1,12 @@
 import { NativeNavigation } from '@cactuslab/native-navigation'
-import { useNativeNavigationContext } from '@cactuslab/native-navigation-react'
+import { useNativeNavigationViewContext } from '@cactuslab/native-navigation-react'
 import { useEffect } from 'react'
 
 /**
  * Add a reset button to the stack bar.
  */
 export default function ResetButton() {
-	const { update, addClickListener } = useNativeNavigationContext()
+	const { update, addClickListener } = useNativeNavigationViewContext()
 
 	useEffect(function() {
 		update({

@@ -18,6 +18,12 @@ export default function NativeNavigationViews(props: NativeNavigationViewsProps)
 	const [, setCounter] = useState(0)
 
 	useEffect(function() {
+		/* Fire viewReady for any native views that were created before this component is rendered */
+		const views = nativeNavigationReact.views()
+		for (const id in views) {
+			nativeNavigationReact.fireViewReady(id)
+		}
+
 		return nativeNavigationReact.addViewsListener(function(id, event) {
 			setCounter(counter => counter + 1)
 

@@ -6,13 +6,15 @@ import { createPortal } from 'react-dom'
 interface NativeNavigationModalProps {
 	component: AnyComponentSpec
 	presentationStyle?: PresentationStyle
+	animated?: boolean
+	cancellable?: boolean
 }
 
 /**
  * A component that renders its children inside a native modal view.
  */
 export default function NativeNavigationModal(props: React.PropsWithChildren<NativeNavigationModalProps>) {
-	const { children, component, presentationStyle: style } = props
+	const { children, component, presentationStyle: style, animated, cancellable } = props
 	const [viewId, setViewId] = useState<string>()
 
 	useEffect(function() {
@@ -25,6 +27,8 @@ export default function NativeNavigationModal(props: React.PropsWithChildren<Nat
 			const result = await NativeNavigation.present({
 				component,
 				style,
+				animated,
+				cancellable,
 			})
 
 			let viewId: string | undefined

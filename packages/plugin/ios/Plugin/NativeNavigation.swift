@@ -141,33 +141,16 @@ class NativeNavigation: NSObject {
         
         await waitForViewsReady(component.viewController)
 
-        if !options.animated && options.style == PresentationStyle.fullScreen {
-            guard let window = self.window else {
-                throw NativeNavigatorError.illegalState(message: "No window")
-            }
-            
-            roots.append(component.componentId)
-
-            let container = window.rootViewController!
-
-            /* Add new root */
-            container.addChild(component.viewController)
-            component.viewController.view.frame = container.view.bounds
-            container.view.addSubview(component.viewController.view)
-            component.viewController.didMove(toParent: container)
+        let top = try self.currentRoot()
+        roots.append(component.componentId)
+        
+        component.viewController.modalPresentationStyle = options.style.toUIModalPresentationStyle()
+        
+        component.viewController.presentationController?.delegate = self
+        if let top = top {
+            top.viewController.present(component.viewController, animated: options.animated)
         } else {
-            let top = try self.currentRoot()
-            
-            roots.append(component.componentId)
-            
-            component.viewController.modalPresentationStyle = options.style.toUIModalPresentationStyle()
-            
-            component.viewController.presentationController?.delegate = self
-            if let top = top {
-                top.viewController.present(component.viewController, animated: options.animated)
-            } else {
-                self.bridge.viewController!.present(component.viewController, animated: options.animated)
-            }
+            self.bridge.viewController!.present(component.viewController, animated: options.animated)
         }
 
         return PresentResult(id: component.componentId)
@@ -188,8 +171,7 @@ class NativeNavigation: NSObject {
             presentingViewController.dismiss(animated: options.animated)
             return DismissResult(id: root.componentId)
         } else {
-            removeRoot(root, animated: options.animated)
-            return DismissResult(id: root.componentId)
+            throw NativeNavigatorError.illegalState(message: "Component \(root.componentId) not presented?")
         }
     }
 
@@ -948,15 +930,7 @@ class NativeNavigation: NSObject {
     
     private func removeRoot(_ root: any ComponentModel, animated: Bool) {
         let viewController = root.viewController
-        if viewController.presentingViewController != nil {
-            viewController.dismiss(animated: animated)
-        } else {
-            viewController.willMove(toParent: nil)
-            if let rootView = viewController.viewIfLoaded {
-                rootView.removeFromSuperview()
-            }
-            viewController.removeFromParent()
-        }
+        viewController.dismiss(animated: animated)
     }
     
 }

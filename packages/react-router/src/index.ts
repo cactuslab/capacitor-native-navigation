@@ -4,7 +4,7 @@ import type { NativeNavigationPlugin } from '@cactuslab/native-navigation/src/de
 import { useCallback, useEffect } from 'react'
 import type { NavigateOptions, Navigator, To } from 'react-router-dom'
 
-interface Options {
+export interface NativeNavigationNavigatorOptions {
 	plugin: NativeNavigationPlugin
 	modals?: ModalConfig[]
 
@@ -14,7 +14,7 @@ interface Options {
 	errorHandler?: (source: string, error: unknown) => void
 }
 
-interface ModalConfig {
+export interface ModalConfig {
 	/**
 	 * The path prefix under which this modal lives.
 	 */
@@ -29,7 +29,7 @@ interface ViewStateSpecials extends ViewState {
 	dismiss?: string | boolean
 }
 
-function findModalConfig(path: string, options: Options): ModalConfig | undefined {
+function findModalConfig(path: string, options: NativeNavigationNavigatorOptions): ModalConfig | undefined {
 	const modals = options.modals
 	if (!modals) {
 		return undefined
@@ -62,7 +62,7 @@ const NAVIGATOR_NAVIGATE_MESSAGE_TYPE = '@cactuslab/native-navigation-react-rout
  * A Navigator implementation to provide to react-router that handles navigation requests
  * using Capacitor Native Navigation.
  */
-export function useNativeNavigationNavigator(options: Options): Navigator {
+export function useNativeNavigationNavigator(options: NativeNavigationNavigatorOptions): Navigator {
 	const { plugin } = options
 
 	const { componentId, stack, pathname: currentPathname, addMessageListener, removeMessageListener } = useNativeNavigationViewContext()

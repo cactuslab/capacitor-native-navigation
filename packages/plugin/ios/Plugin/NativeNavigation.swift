@@ -948,7 +948,7 @@ class NativeNavigation: NSObject {
     
     private func removeRoot(_ root: any ComponentModel, animated: Bool) {
         let viewController = root.viewController
-        if viewController.presentedViewController != nil {
+        if viewController.presentingViewController != nil {
             viewController.dismiss(animated: animated)
         } else {
             viewController.willMove(toParent: nil)

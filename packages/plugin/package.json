@@ -15,23 +15,7 @@
   ],
   "exports": {
     ".": "./dist/esm/index.js",
-    "./react": "./dist/esm/react/index.js",
-    "./react16": "./dist/esm/react/compat.js",
-    "./react-router": "./dist/esm/react/router/index.js",
     "./package.json": "./package.json"
-  },
-  "typesVersions": {
-    "*": {
-      "react": [
-        "./dist/esm/react/index.d.ts"
-      ],
-      "react16": [
-        "./dist/esm/react/compat.d.ts"
-      ],
-      "react-router": [
-        "./dist/esm/react/router/index.d.ts"
-      ]
-    }
   },
   "author": "",
   "license": "MIT",

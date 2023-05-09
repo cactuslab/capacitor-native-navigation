@@ -10,6 +10,7 @@ interface NativeNavigationModalProps {
 	presentationStyle?: PresentationStyle
 	animated?: boolean
 	cancellable?: boolean
+	debounce?: number
 }
 
 let nextModalId = 0
@@ -63,7 +64,7 @@ function updateLeafComponentId<T extends AnyComponentSpec>(spec: T, id: string):
  * A component that renders its children inside a native modal view.
  */
 export default function NativeNavigationModal(props: React.PropsWithChildren<NativeNavigationModalProps>) {
-	const { children, component, presentationStyle: style, animated, cancellable } = props
+	const { children, component, presentationStyle: style, animated, cancellable, debounce } = props
 	const viewId = useMemo(function() {
 		return leafComponentId(component) || `_modal${nextModalId++}` 
 	// eslint-disable-next-line react-hooks/exhaustive-deps
@@ -93,10 +94,20 @@ export default function NativeNavigationModal(props: React.PropsWithChildren<Nat
 			}
 		}
 
-		createModal()
+		let debounceTimer: NodeJS.Timeout | undefined
+		if (debounce) {
+			debounceTimer = setTimeout(createModal, debounce)
+		} else {
+			createModal()
+		}
 
 		return function() {
 			state.unmounted = true
+
+			if (debounceTimer) {
+				clearTimeout(debounceTimer)
+			}
+
 			if (state.presentedId) {
 				NativeNavigation.dismiss({
 					id: state.presentedId,

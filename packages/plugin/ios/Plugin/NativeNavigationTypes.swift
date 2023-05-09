@@ -213,7 +213,9 @@ struct ViewSpec: TabableSpec, JSObjectDecodable {
     
     func toPluginResult() -> PluginCallResultData {
         var result = componentSpecToPluginResult(self)
-        result["path"] = self.path
+        if let path = self.path {
+            result["path"] = path
+        }
         if let state = self.state {
             result["state"] = state
         }

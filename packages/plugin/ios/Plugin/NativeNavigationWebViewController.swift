@@ -53,7 +53,7 @@ class NativeNavigationWebViewController: UIViewController, NativeNavigationViewC
     }
 
     override var debugDescription: String {
-        return "\(super.debugDescription) componentId=\(componentId) path=\(path)"
+        return "\(super.debugDescription) componentId=\(componentId) path=\(path ?? "<none>")"
     }
 
     /**
@@ -67,7 +67,10 @@ class NativeNavigationWebViewController: UIViewController, NativeNavigationViewC
         await withCheckedContinuation { continuation in
             self.viewReadyContinuations.append(continuation)
 
-            var notificationData: [String : Any] = ["path": self.path, "id": self.componentId]
+            var notificationData: [String : Any] = ["id": self.componentId]
+            if let path = self.path {
+                notificationData["path"] = path
+            }
             if let state = self.state {
                 notificationData["state"] = state
             }

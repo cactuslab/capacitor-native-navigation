@@ -1,10 +1,10 @@
 import { NativeNavigation, StackSpec } from '@cactuslab/native-navigation'
-import { NativeNavigationModal, NativeNavigationProvider, initReact } from '@cactuslab/native-navigation-react'
+import { NativeNavigationModal, NativeNavigationProvider } from '@cactuslab/native-navigation-react'
 
 import diamond from '../assets/imgs/diamond@2x.png'
 import flags from '../assets/imgs/flag.2.crossed@2x.png'
 import star from '../assets/imgs/star@2x.png'
-import { NativeNavigationNavigatorOptions, NativeNavigationRouter } from '@cactuslab/native-navigation-react-router'
+import { NativeNavigationRouter } from '@cactuslab/native-navigation-react-router'
 import { useState } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import Stack1 from './Stack1'
@@ -18,61 +18,7 @@ import Stack2 from './Stack2'
 import Examples from './examples'
 import Container from './Container'
 import { ModalContent } from './ModalContent'
-
-const nativeNavigationReact = initReact({
-	plugin: NativeNavigation,
-})
-
-const nativeNavigationNavigatorOptions: NativeNavigationNavigatorOptions = {
-	modals: [
-		{
-			path: '/modal/',
-			presentOptions(path, state) {
-				return {
-					component: {
-						type: 'stack',
-						bar: {
-							background: {
-								color: '#23ABED',
-							},
-							title: {
-								color: '#223344',
-								font: {
-									name: 'Solway',
-									size: 26,
-								},
-							},
-							buttons: {
-								color: '#334455',
-								font: {
-									name: 'Solway',
-								},
-							},
-						},
-						components: [
-							{
-								type: 'view',
-								path,
-								state,
-								title: 'Test',
-								stack: {
-									rightItems: [
-										{
-											id: 'close-button',
-											title: 'Close',
-										},
-									],
-								},
-							},
-						],
-					},
-					style: 'formSheet',
-					cancellable: true,
-				}
-			},
-		},
-	],
-}
+import { nativeNavigationNavigatorOptions, nativeNavigationReact } from './init'
 
 export default function Home(): React.ReactElement {
 	const [showModal, setShowModal] = useState(false)

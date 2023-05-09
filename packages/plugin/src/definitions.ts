@@ -133,7 +133,7 @@ export interface ViewSpec extends ComponentSpec {
 	/**
 	 * The path representing the view.
 	 */
-	path: string
+	path?: string
 
 	state?: ViewState
 	
@@ -445,7 +445,7 @@ export enum NativeNavigationEvents {
 
 export interface CreateViewEventData {
 	id: ComponentId
-	path: string
+	path?: string
 	state?: unknown
 	stack?: ComponentId
 }

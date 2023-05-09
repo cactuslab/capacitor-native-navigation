@@ -185,15 +185,12 @@ struct ViewSpec: TabableSpec, JSObjectDecodable {
     var title: String?
     var stackItem: StackItemSpec?
     
-    var path: String
+    var path: String?
     var state: JSObject?
     
     static func fromJSObject(_ object: JSObjectLike) throws -> ViewSpec {
-        
-        guard let path = object.getString("path") else {
-            throw NativeNavigatorError.missingParameter(name: "path")
-        }
-        var spec = ViewSpec(path: path)
+        var spec = ViewSpec()
+        spec.path = object.getString("path")
         spec.id = object.getString("id")
         spec.title = object.getString("title")
         

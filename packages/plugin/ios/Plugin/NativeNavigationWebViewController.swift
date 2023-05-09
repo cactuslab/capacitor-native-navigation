@@ -6,7 +6,7 @@ class NativeNavigationWebViewController: UIViewController, NativeNavigationViewC
     private weak var plugin: CAPPlugin!
     
     let componentId: String
-    var path: String {
+    var path: String? {
         didSet {
             webViewNeedsUpdate = true
         }
@@ -39,7 +39,7 @@ class NativeNavigationWebViewController: UIViewController, NativeNavigationViewC
     private var webViewNeedsUpdate = false
     private let stackId: ComponentId?
 
-    init(componentId: String, path: String, state: JSObject?, stackId: ComponentId?, plugin: CAPPlugin) {
+    init(componentId: String, path: String?, state: JSObject?, stackId: ComponentId?, plugin: CAPPlugin) {
         self.componentId = componentId
         self.path = path
         self.state = state

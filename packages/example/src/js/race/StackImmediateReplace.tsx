@@ -18,7 +18,7 @@ export default function StackImmediateReplace(): JSX.Element {
 				],
 			},
 		})
-		navigate('/stack2', {
+		navigate('/race/stack-immediate-replace2', {
 			replace: true,
 		})
 
@@ -33,6 +33,25 @@ export default function StackImmediateReplace(): JSX.Element {
 		<div>
 			<h1>Stack immediate replace</h1>
 			<p>This view immediately replaces itself with a new view when it first appears, which tests race conditions on creation of a stack.</p>
+		</div>
+	)
+}
+
+export function StackImmediateReplace2() {
+	const { updateView, addClickListener } = useNativeNavigationViewContext()
+
+	useEffect(function() {
+		return addClickListener(function({ buttonId }) {
+			if (buttonId === 'reset') {
+				NativeNavigation.reset()
+			}
+		})
+	}, [addClickListener, updateView])
+
+	return (
+		<div>
+			<h1>Stack immediate replace</h1>
+			<p>This is the view you should see.</p>
 		</div>
 	)
 }

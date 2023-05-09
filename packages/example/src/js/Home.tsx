@@ -13,7 +13,7 @@ import PageWithState from './PageWithState'
 import Tab1 from './Tab1'
 import PushReplace from './race/PushReplace'
 import StackImmediatePush from './race/StackImmediatePush'
-import StackImmediateReplace from './race/StackImmediateReplace'
+import StackImmediateReplace, { StackImmediateReplace2 } from './race/StackImmediateReplace'
 import Stack2 from './Stack2'
 import Examples from './examples'
 import Container from './Container'
@@ -77,6 +77,7 @@ export default function Home(): React.ReactElement {
 						<Route path="race">
 							{PushReplace()}
 							<Route path="stack-immediate-push" element={<StackImmediatePush />} />
+							<Route path="stack-immediate-replace2" element={<StackImmediateReplace2 />} />
 							<Route path="stack-immediate-replace" element={<StackImmediateReplace />} />
 						</Route>
 						<Route path="examples/*" element={<Examples />} />

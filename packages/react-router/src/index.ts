@@ -1,52 +1,18 @@
-import type { MessageEventData, PresentOptions, ViewState } from '@cactuslab/native-navigation'
-import { useNativeNavigationViewContext } from '@cactuslab/native-navigation-react'
-import type { NativeNavigationPlugin } from '@cactuslab/native-navigation/src/definitions'
-import { useCallback, useEffect } from 'react'
+import type { MessageEventData, ViewState } from '@cactuslab/native-navigation'
+import { useNativeNavigation, useNativeNavigationViewContext } from '@cactuslab/native-navigation-react'
+import { useCallback, useEffect, useMemo } from 'react'
 import type { NavigateOptions, Navigator, To } from 'react-router-dom'
+import { NativeNavigationNavigatorOptions } from './types'
+import { findModalConfig } from './utils'
 
-export interface NativeNavigationNavigatorOptions {
-	plugin: NativeNavigationPlugin
-	modals?: ModalConfig[]
-
-	/**
-	 * An optional error handler to receive unexpected errors from the NativeNavigation plugin
-	 */
-	errorHandler?: (source: string, error: unknown) => void
-}
-
-export interface ModalConfig {
-	/**
-	 * The path prefix under which this modal lives.
-	 */
-	path: string | RegExp
-	presentOptions(path: string, state?: ViewState): PresentOptions
-}
+export { NativeNavigationNavigatorOptions, ModalConfig } from './types'
+export { default as NativeNavigationRouter } from './NativeNavigationRouter'
 
 interface ViewStateSpecials extends ViewState {
 	root?: boolean
 	navigation?: boolean
 	target?: string
 	dismiss?: string | boolean
-}
-
-function findModalConfig(path: string, options: NativeNavigationNavigatorOptions): ModalConfig | undefined {
-	const modals = options.modals
-	if (!modals) {
-		return undefined
-	}
-
-	for (const aModal of modals) {
-		if (typeof aModal.path === 'string') {
-			if (path.startsWith(aModal.path)) {
-				return aModal
-			}
-		} else if (aModal.path instanceof RegExp) {
-			if (aModal.path.test(path)) {
-				return aModal
-			}
-		}
-	}
-	return undefined
 }
 
 /**
@@ -63,13 +29,13 @@ const NAVIGATOR_NAVIGATE_MESSAGE_TYPE = '@cactuslab/native-navigation-react-rout
  * using Capacitor Native Navigation.
  */
 export function useNativeNavigationNavigator(options: NativeNavigationNavigatorOptions): Navigator {
-	const { plugin } = options
+	const { plugin } = useNativeNavigation()
 
-	const { componentId, stack, pathname: currentPathname, addMessageListener, removeMessageListener } = useNativeNavigationViewContext()
+	const { componentId, stack, path: currentPath, addMessageListener, removeMessageListener } = useNativeNavigationViewContext()
 	
-	const currentModal = findModalConfig(currentPathname, options)
+	const currentModal = currentPath !== undefined ? findModalConfig(currentPath, options) : undefined
 
-	function reportError(source: string, error: unknown) {
+	const reportError = useCallback(function(source: string, error: unknown) {
 		if (error instanceof Error) {
 			console.error(`NativeNavigation Navigator: ${source}`, error)
 		} else {
@@ -77,9 +43,9 @@ export function useNativeNavigationNavigator(options: NativeNavigationNavigatorO
 		}
 
 		options.errorHandler?.(source, error)
-	}
+	}, [options])
 	
-	const navigator: Navigator = {
+	const navigator: Navigator = useMemo(() => ({
 
 		createHref: function(to: To): string {
 			if (typeof to === 'string') {
@@ -125,6 +91,7 @@ export function useNativeNavigationNavigator(options: NativeNavigationNavigatorO
 			}
 		},
 
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		push: async function(to: To, state?: any, opts?: NavigateOptions | undefined): Promise<void> {
 			const viewState = toViewState(state, opts?.state)
 			if (typeof viewState?.dismiss === 'string') {
@@ -195,30 +162,31 @@ export function useNativeNavigationNavigator(options: NativeNavigationNavigatorO
 			}
 		},
 
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		replace: async function(to: To, state?: any, opts?: NavigateOptions | undefined): Promise<void> {
 			return navigator.push(to, state, opts ? { ...opts, replace: true } : { replace: true })
 		},
-	}
+	}), [componentId, currentModal, options, plugin, reportError, stack])
 
 	/* Handle navigate requests from closing modals */
-	const navigateMessageListener = useCallback(function(data: MessageEventData<NavigateMessageData>) {
-		const targetPath = navigator.createHref(data.value.to)
-
-		/* Decide whether to replace what's already here, or to push */
-		if (currentPathname === targetPath) {
-			navigator.replace(data.value.to, data.value.state, data.value.opts)
-		} else {
-			navigator.push(data.value.to, data.value.state, data.value.opts)
-		}
-	}, [])
-
 	useEffect(function() {
+		function navigateMessageListener(data: MessageEventData<NavigateMessageData>) {
+			const targetPath = navigator.createHref(data.value.to)
+	
+			/* Decide whether to replace what's already here, or to push */
+			if (currentPath === targetPath) {
+				navigator.replace(data.value.to, data.value.state, data.value.opts)
+			} else {
+				navigator.push(data.value.to, data.value.state, data.value.opts)
+			}
+		}
+
 		addMessageListener(NAVIGATOR_NAVIGATE_MESSAGE_TYPE, navigateMessageListener)
 
 		return function() {
 			removeMessageListener(NAVIGATOR_NAVIGATE_MESSAGE_TYPE, navigateMessageListener)
 		}
-	}, [])
+	}, [addMessageListener, currentPath, navigator, removeMessageListener])
 
 	return navigator
 }

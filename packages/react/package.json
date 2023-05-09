@@ -10,7 +10,15 @@
     "dist/"
   ],
   "exports": {
-    ".": "./dist/esm/index.js"
+    ".": "./dist/esm/index.js",
+    "./context": "./dist/esm/context.js"
+  },
+  "typesVersions": {
+    "*": {
+      "context": [
+        "./dist/esm/context.d.ts"
+      ]
+    }
   },
   "author": "",
   "license": "MIT",

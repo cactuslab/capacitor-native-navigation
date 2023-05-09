@@ -1,16 +1,77 @@
 import { NativeNavigation, StackSpec } from '@cactuslab/native-navigation'
-import Root from './Root'
 import { NativeNavigationModal, NativeNavigationProvider, initReact } from '@cactuslab/native-navigation-react'
 
 import diamond from '../assets/imgs/diamond@2x.png'
 import flags from '../assets/imgs/flag.2.crossed@2x.png'
 import star from '../assets/imgs/star@2x.png'
-import { NativeNavigationViews } from '@cactuslab/native-navigation-react'
+import { NativeNavigationNavigatorOptions, NativeNavigationRouter } from '@cactuslab/native-navigation-react-router'
 import { useState } from 'react'
+import { Route, Routes } from 'react-router-dom'
+import Stack1 from './Stack1'
+import View1 from './View1'
+import PageWithState from './PageWithState'
+import Tab1 from './Tab1'
+import PushReplace from './race/PushReplace'
+import StackImmediatePush from './race/StackImmediatePush'
+import StackImmediateReplace from './race/StackImmediateReplace'
+import Stack2 from './Stack2'
+import Examples from './examples'
+import Container from './Container'
 
 const nativeNavigationReact = initReact({
 	plugin: NativeNavigation,
 })
+
+const nativeNavigationNavigatorOptions: NativeNavigationNavigatorOptions = {
+	modals: [
+		{
+			path: '/modal/',
+			presentOptions(path, state) {
+				return {
+					component: {
+						type: 'stack',
+						bar: {
+							background: {
+								color: '#23ABED',
+							},
+							title: {
+								color: '#223344',
+								font: {
+									name: 'Solway',
+									size: 26,
+								},
+							},
+							buttons: {
+								color: '#334455',
+								font: {
+									name: 'Solway',
+								},
+							},
+						},
+						components: [
+							{
+								type: 'view',
+								path,
+								state,
+								title: 'Test',
+								stack: {
+									rightItems: [
+										{
+											id: 'close-button',
+											title: 'Close',
+										},
+									],
+								},
+							},
+						],
+					},
+					style: 'formSheet',
+					cancellable: true,
+				}
+			},
+		},
+	],
+}
 
 export default function Home(): React.ReactElement {
 	const [showModal, setShowModal] = useState(false)
@@ -59,7 +120,24 @@ export default function Home(): React.ReactElement {
 					<dd><button onClick={() => setupStack({ path: '/examples/tall-content', title: 'Tall Content', options: { bar: { background: { color: '#23ABED60' } } } })}>Transparent Menu</button></dd>
 					<dd><button onClick={() => setShowModal(m => !m)}>Show Modal</button></dd>
 				</dl>
-				<NativeNavigationViews root={Root} />
+				<NativeNavigationRouter navigation={nativeNavigationNavigatorOptions}>
+					<Routes>
+						<Route path="stack1" element={<Stack1 />} />
+						<Route path="stack2" element={<Stack2 />} />
+						<Route path="view1" element={<View1 />} />
+						<Route path="state" element={<PageWithState />} />
+						<Route path="tab1" element={<Tab1 />} />
+						<Route path="race">
+							{PushReplace()}
+							<Route path="stack-immediate-push" element={<StackImmediatePush />} />
+							<Route path="stack-immediate-replace" element={<StackImmediateReplace />} />
+						</Route>
+						<Route path="examples/*" element={<Examples />} />
+						<Route path="modal/*" element={<Container />}>
+							<Route path="" element={<View1 />} />
+						</Route>
+					</Routes>
+				</NativeNavigationRouter>
 				{showModal && (
 					<NativeNavigationModal component={{ type: 'view', path: '' }} presentationStyle='formSheet'>
 						<h1>Hello World</h1>

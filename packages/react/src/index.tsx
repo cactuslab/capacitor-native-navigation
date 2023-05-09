@@ -3,13 +3,12 @@ import type { ComponentId, CreateViewEventData, NativeNavigationPluginInternal, 
 import type { Plugin } from '@capacitor/core'
 
 import { initSync, prepareWindowForSync } from './sync'
-import { NativeNavigationReact, NativeNavigationReactView, ReactViewListenerEvent, ReactViewListenerFunc, toNativeNavigationReactRootProps } from './types'
+import { NativeNavigationReact, NativeNavigationReactView, ReactViewListenerEvent, ReactViewListenerFunc, toNativeNavigationViewProps } from './types'
 
 export { useNativeNavigationViewContext, NativeNavigationViewContext } from './context'
-export { NativeNavigationReactRoot, NativeNavigationReactRootProps } from './types'
+export { NativeNavigationViewProps } from './types'
 export { default as NativeNavigationModal } from './NativeNavigationModal'
-export { default as NativeNavigationViews } from './NativeNavigationViews'
-export { InternalContextProvider as NativeNavigationProvider } from './internal'
+export { useNativeNavigation, InternalContextProvider as NativeNavigationProvider } from './internal'
 
 interface Options {
 	plugin: NativeNavigationPlugin & Plugin
@@ -67,14 +66,16 @@ export function initReact(options: Options): NativeNavigationReact {
 		const rootElement = viewWindow.document.getElementById(viewRootId)
 		if (rootElement) {
 			prepareWindowForSync(viewWindow)
-			views[id] = {
+			const view: NativeNavigationReactView = {
+				id,
 				data,
-				props: toNativeNavigationReactRootProps(data, viewWindow),
+				props: toNativeNavigationViewProps(data, viewWindow),
 				window: viewWindow,
 				element: rootElement,
 			}
+			views[id] = view
 
-			fireViewDidChange(id, 'create')
+			fireViewDidChange(view, 'create')
 		} else {
 			reportError('createView', `Attempted to load view "${path}" but could not find root node: #${viewRootId}`)
 		}
@@ -90,10 +91,10 @@ export function initReact(options: Options): NativeNavigationReact {
 		}
 
 		view.data = data
-		view.props = toNativeNavigationReactRootProps(data, viewWindow)
+		view.props = toNativeNavigationViewProps(data, viewWindow)
 		view.reactElement = undefined /* So we recreate it */
 
-		fireViewDidChange(id, 'update')
+		fireViewDidChange(view, 'update')
 	}
 	
 	function messageView(viewWindow: Window, data: MessageEventData) {
@@ -104,7 +105,7 @@ export function initReact(options: Options): NativeNavigationReact {
 		const view = views[id]
 		if (view) {
 			delete views[id]
-			fireViewDidChange(id, 'remove')
+			fireViewDidChange(view, 'remove')
 		}
 	}
 
@@ -114,9 +115,9 @@ export function initReact(options: Options): NativeNavigationReact {
 
 	const listeners: ReactViewListenerFunc[] = []
 
-	function fireViewDidChange(id: string, event: ReactViewListenerEvent) {
+	function fireViewDidChange(view: NativeNavigationReactView, event: ReactViewListenerEvent) {
 		for (const listener of [...listeners]) {
-			listener(id, event)
+			listener(view, event)
 		}
 	}
 

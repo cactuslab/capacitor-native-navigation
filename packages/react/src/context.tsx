@@ -6,9 +6,7 @@ import type { MessageListener, NativeNavigationReact } from './types'
 
 interface ContextInit {
 	componentId: ComponentId
-	pathname: string
-	search?: string
-	hash?: string
+	path?: string
 	state?: unknown
 	stack?: ComponentId
 	
@@ -16,8 +14,8 @@ interface ContextInit {
 	nativeNavigationReact: NativeNavigationReact
 }
 
-export function createReactContext(options: ContextInit): NativeNavigationViewContext {
-	const { componentId, pathname, search, hash, state, stack, viewWindow, nativeNavigationReact } = options
+export function createViewContext(options: ContextInit): NativeNavigationViewContext {
+	const { componentId, path, state, stack, viewWindow, nativeNavigationReact } = options
 	const { plugin } = nativeNavigationReact
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -46,9 +44,7 @@ export function createReactContext(options: ContextInit): NativeNavigationViewCo
 
 	const context: NativeNavigationViewContext = {
 		componentId,
-		pathname,
-		search,
-		hash,
+		path,
 		state,
 		stack,
 		viewWindow,
@@ -137,10 +133,14 @@ export interface NativeNavigationViewContext {
 	 */
 	componentId?: string
 
-	pathname: string
-	search?: string
-	hash?: string
+	/**
+	 * The path the component is rendering, if any.
+	 */
+	path?: string
 
+	/**
+	 * The state the component is rendering, if any.
+	 */
 	state?: unknown
 
 	/**
@@ -183,7 +183,6 @@ export interface NativeNavigationViewContext {
 }
 
 const DEFAULT_CONTEXT: NativeNavigationViewContext = {
-	pathname: '',
 	viewWindow: window,
 	updateView: async function() {
 		return
@@ -227,7 +226,8 @@ const DEFAULT_CONTEXT: NativeNavigationViewContext = {
 	},
 }
 
-export const Context = React.createContext<NativeNavigationViewContext>(DEFAULT_CONTEXT)
+const Context = React.createContext<NativeNavigationViewContext>(DEFAULT_CONTEXT)
+export const NativeNavigationViewContextProvider = Context.Provider
 
 export function useNativeNavigationViewContext(): NativeNavigationViewContext {
 	return useContext(Context)

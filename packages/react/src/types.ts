@@ -1,7 +1,6 @@
 import type { ComponentId, CreateViewEventData, MessageEventData, NativeNavigationPlugin } from '@cactuslab/native-navigation'
 import type React from 'react'
 
-import { parsePath } from './utils'
 import { Plugin } from '@capacitor/core'
 
 export interface NativeNavigationReact {
@@ -31,14 +30,12 @@ export interface NativeNavigationReact {
 }
 
 export type ReactViewListenerEvent = 'create' | 'update' | 'remove'
-export type ReactViewListenerFunc = (id: string, event: ReactViewListenerEvent) => void
+export type ReactViewListenerFunc = (view: NativeNavigationReactView, event: ReactViewListenerEvent) => void
 export type ReactViewListenerUnsubscribeFunc = () => void
 
-export interface NativeNavigationReactRootProps {
+export interface NativeNavigationViewProps {
 	id: ComponentId
-	pathname: string
-	search?: string
-	hash?: string
+	path?: string
 	state?: unknown
 	stack?: ComponentId
 	/**
@@ -47,12 +44,10 @@ export interface NativeNavigationReactRootProps {
 	viewWindow: Window
 }
 
-export type NativeNavigationReactRoot = React.ComponentType<NativeNavigationReactRootProps>
-
-export function toNativeNavigationReactRootProps(data: CreateViewEventData, viewWindow: Window): NativeNavigationReactRootProps {
-	const props: NativeNavigationReactRootProps = {
+export function toNativeNavigationViewProps(data: CreateViewEventData, viewWindow: Window): NativeNavigationViewProps {
+	const props: NativeNavigationViewProps = {
 		id: data.id,
-		...parsePath(data.path),
+		path: data.path,
 		state: data.state,
 		stack: data.stack,
 		viewWindow,
@@ -64,6 +59,7 @@ export function toNativeNavigationReactRootProps(data: CreateViewEventData, view
  * A native view for a React route
  */
 export interface NativeNavigationReactView {
+	id: string
 	/**
 	 * The route data.
 	 */
@@ -79,7 +75,7 @@ export interface NativeNavigationReactView {
 	/**
 	 * The props used to render the React component.
 	 */
-	props: NativeNavigationReactRootProps
+	props: NativeNavigationViewProps
 	/**
 	 * The React component that has been created for this view.
 	 */

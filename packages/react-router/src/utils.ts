@@ -1,7 +1,23 @@
-interface Path {
-	pathname: string
-	search?: string
-	hash?: string
+import { ModalConfig, NativeNavigationNavigatorOptions, Path } from './types'
+
+export function findModalConfig(path: string, options: NativeNavigationNavigatorOptions): ModalConfig | undefined {
+	const modals = options.modals
+	if (!modals) {
+		return undefined
+	}
+
+	for (const aModal of modals) {
+		if (typeof aModal.path === 'string') {
+			if (path.startsWith(aModal.path)) {
+				return aModal
+			}
+		} else if (aModal.path instanceof RegExp) {
+			if (aModal.path.test(path)) {
+				return aModal
+			}
+		}
+	}
+	return undefined
 }
 
 export function parsePath(path: string): Path {

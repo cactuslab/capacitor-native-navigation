@@ -147,7 +147,7 @@ export class NativeNavigationHistory implements History {
 
 		let decision: NavigationDecision
 		if (current.stack) {
-			decision = defaultDecider(location, action, current.stack ? current.stack.components.map(s => toLocationDescriptorObject(s.path, s.state)) : [], this.options)
+			decision = defaultDecider(location, action, current.stack ? componentsToLocationDescriptorObjects(current.stack.components) : [], this.options)
 		} else {
 			decision = {
 				action,
@@ -210,4 +210,14 @@ export class NativeNavigationHistory implements History {
 		this.options.errorHandler?.(source, error)
 	}
 
+}
+
+function componentsToLocationDescriptorObjects(components: ViewSpec[]): LocationDescriptorObject[] {
+	const result: LocationDescriptorObject[] = []
+	for (const component of components) {
+		if (component.path !== undefined) {
+			result.push(toLocationDescriptorObject(component.path, component.state))
+		}
+	}
+	return result
 }

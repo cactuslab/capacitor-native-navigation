@@ -30,8 +30,8 @@ export function useNativeNavigationView(id?: string): HTMLElement | undefined {
 	/* Subscribe to changes */
 	useEffect(function() {
 		if (id) {
-			return nativeNavigationReact.addViewsListener(function(changedId) {
-				if (id === changedId) {
+			return nativeNavigationReact.addViewsListener(function(view) {
+				if (id === view.id) {
 					setCounter(counter => counter + 1)
 				}
 			})

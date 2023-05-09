@@ -33,28 +33,36 @@ export default function Stack2(): JSX.Element {
 		})
 	}, [])
 
-	const { addViewWillAppearListener, addViewDidAppearListener, addViewWillDisappearListener, addViewDidDisappearListener } = useNativeNavigationViewContext()
+	const { addClickListener, addViewWillAppearListener, addViewDidAppearListener, addViewWillDisappearListener, addViewDidDisappearListener } = useNativeNavigationViewContext()
+
+	useEffect(function() {
+		return addClickListener(function({ buttonId }) {
+			if (buttonId === 'reset') {
+				NativeNavigation.reset()
+			}
+		})
+	}, [addClickListener])
 
 	useEffect(function() {
 		return addViewWillAppearListener(() => {
 			console.log('Stack2 received viewWillAppear')
 		})
-	}, [])
+	}, [addViewWillAppearListener])
 	useEffect(function() {
 		return addViewDidAppearListener(() => {
 			console.log('Stack2 received viewDidAppear')
 		})
-	}, [])
+	}, [addViewDidAppearListener])
 	useEffect(function() {
 		return addViewWillDisappearListener(() => {
 			console.log('Stack2 received viewWillDisappear')
 		})
-	}, [])
+	}, [addViewWillDisappearListener])
 	useEffect(function() {
 		return addViewDidDisappearListener(() => {
 			console.log('Stack2 received viewDidDisappear')
 		})
-	}, [])
+	}, [addViewDidDisappearListener])
 
 	return (
 		<div>

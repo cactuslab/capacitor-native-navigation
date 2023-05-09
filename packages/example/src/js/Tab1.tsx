@@ -11,7 +11,7 @@ export default function Tab1(): JSX.Element {
 		updateTab({
 			badgeValue: `${badgeCounter++}`,
 		})
-	}, [])
+	}, [updateTab])
 
 	return (
 		<div>

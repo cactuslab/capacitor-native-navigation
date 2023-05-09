@@ -6,11 +6,11 @@ import { useEffect } from 'react'
  * Add a reset button to the stack bar.
  */
 export default function ResetButton() {
-	const { update, addClickListener } = useNativeNavigationViewContext()
+	const { updateView, addClickListener } = useNativeNavigationViewContext()
 
 	useEffect(function() {
-		update({
-			stack: {
+		updateView({
+			stackItem: {
 				rightItems: [
 					{
 						id: 'reset',
@@ -25,7 +25,7 @@ export default function ResetButton() {
 				NativeNavigation.reset()
 			}
 		})
-	}, [])
+	}, [addClickListener, updateView])
 
 	return null
 }

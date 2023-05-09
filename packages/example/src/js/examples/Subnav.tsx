@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { Link, Route, Routes, useLocation } from 'react-router-dom'
 import ResetButton from '../ResetButton'
 
 export default function Subnav() {

@@ -17,24 +17,24 @@ export default function Stack1(): JSX.Element {
 		updateView({
 			title: `Changed title ${counter++}`,
 		})
-	}, [])
+	}, [updateView])
 
 	const handleRemoveTitle = useCallback(function(evt: React.MouseEvent) {
 		evt.preventDefault()
 		updateView({
 			title: null,
 		})
-	}, [])
+	}, [updateView])
 
 	const handlePush = useCallback(function(evt: React.MouseEvent) {
 		evt.preventDefault()
 		navigate('/stack2')
-	}, [])
+	}, [navigate])
 
 	const handlePushSelf = useCallback(function(evt: React.MouseEvent) {
 		evt.preventDefault()
 		navigate('/stack1')
-	}, [])
+	}, [navigate])
 
 	const handlePushWithState = useCallback(function(evt: React.MouseEvent) {
 		evt.preventDefault()
@@ -43,7 +43,7 @@ export default function Stack1(): JSX.Element {
 				counter: counter++,
 			},
 		})
-	}, [])
+	}, [navigate])
 
 	const handleToolbarToggle = useCallback(function(evt: React.MouseEvent) {
 		evt.preventDefault()
@@ -65,7 +65,7 @@ export default function Stack1(): JSX.Element {
 			},
 			animated: true,
 		})
-	}, [toolbarVisible])
+	}, [toolbarVisible, updateView])
 
 	useEffect(() => {
 		updateView({
@@ -74,14 +74,14 @@ export default function Stack1(): JSX.Element {
 			},
 			animated: true,
 		})
-	}, [backEnabled])
+	}, [backEnabled, updateView])
 
 	const handleReplace1 = useCallback(function(evt: React.MouseEvent) {
 		evt.preventDefault()
 		navigate('/stack2', {
 			replace: true,
 		})
-	}, [])
+	}, [navigate])
 
 	useEffect(function() {
 		updateView({
@@ -101,7 +101,7 @@ export default function Stack1(): JSX.Element {
 				NativeNavigation.reset()
 			}
 		})
-	}, [])
+	}, [addClickListener, updateView])
 
 	return (
 		<div>

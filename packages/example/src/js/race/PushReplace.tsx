@@ -15,11 +15,11 @@ export default function PushReplace(): JSX.Element {
 
 function PushReplace1(): JSX.Element {
 	const navigate = useNavigate()
-	const { update, addClickListener } = useNativeNavigationViewContext()
+	const { updateView, addClickListener } = useNativeNavigationViewContext()
 
 	useEffect(function() {
-		update({
-			stack: {
+		updateView({
+			stackItem: {
 				rightItems: [
 					{
 						id: 'reset',
@@ -35,7 +35,7 @@ function PushReplace1(): JSX.Element {
 				NativeNavigation.reset()
 			}
 		})
-	}, [])
+	}, [addClickListener, navigate, updateView])
 
 	return (
 		<div>
@@ -52,7 +52,7 @@ function PushReplace2(): JSX.Element {
 		navigate('/race/push-replace/three', {
 			replace: true,
 		})
-	}, [])
+	}, [navigate])
 
 	return (
 		<div>

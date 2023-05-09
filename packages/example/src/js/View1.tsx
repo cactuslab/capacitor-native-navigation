@@ -12,7 +12,7 @@ export default function View1(): JSX.Element {
 	const handleDismiss = useCallback(function(evt: React.MouseEvent) {
 		evt.preventDefault()
 		dismiss({})
-	}, [])
+	}, [dismiss])
 
 	const handleReset = useCallback(function(evt: React.MouseEvent) {
 		evt.preventDefault()
@@ -37,7 +37,7 @@ export default function View1(): JSX.Element {
 				navigate('/stack1')
 			}
 		})
-	}, [])
+	}, [addClickListener, navigate])
 	
 	return (
 		<div>

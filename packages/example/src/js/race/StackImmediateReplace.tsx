@@ -5,11 +5,11 @@ import { useNavigate } from 'react-router-dom'
 
 export default function StackImmediateReplace(): JSX.Element {
 	const navigate = useNavigate()
-	const { update, addClickListener } = useNativeNavigationViewContext()
+	const { updateView, addClickListener } = useNativeNavigationViewContext()
 
 	useEffect(function() {
-		update({
-			stack: {
+		updateView({
+			stackItem: {
 				rightItems: [
 					{
 						id: 'reset',
@@ -27,7 +27,7 @@ export default function StackImmediateReplace(): JSX.Element {
 				NativeNavigation.reset()
 			}
 		})
-	}, [])
+	}, [addClickListener, navigate, updateView])
 
 	return (
 		<div>

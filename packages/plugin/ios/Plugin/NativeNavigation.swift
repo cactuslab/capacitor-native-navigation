@@ -4,7 +4,7 @@ import Capacitor
 
 
 protocol ComponentModel {
-    associatedtype T: UIViewController
+    associatedtype T: NativeNavigationViewController
     associatedtype S: ComponentSpec
     var componentId: ComponentId { get }
     var spec: S { get set }
@@ -135,6 +135,15 @@ class NativeNavigation: NSObject {
             top.viewController.present(component.viewController, animated: options.animated)
         } else {
             self.bridge.viewController!.present(component.viewController, animated: options.animated)
+        }
+        
+        /* Wait for the present to complete if it's animated */
+        if options.animated {
+            await withCheckedContinuation { continuation in
+                component.viewController.onViewDidAppear {
+                    continuation.resume()
+                }
+            }
         }
 
         return PresentResult(id: component.componentId)

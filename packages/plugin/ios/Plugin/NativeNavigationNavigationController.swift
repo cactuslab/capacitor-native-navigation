@@ -3,6 +3,7 @@ import Foundation
 class NativeNavigationNavigationController: UINavigationController, NativeNavigationViewController {
     
     let componentId: String
+    private var viewDidAppearCallbacks: [() -> ()] = []
     
     init(componentId: String) {
         self.componentId = componentId
@@ -16,6 +17,19 @@ class NativeNavigationNavigationController: UINavigationController, NativeNaviga
     
     override var shouldAutomaticallyForwardAppearanceMethods: Bool {
         return true
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        for callback in self.viewDidAppearCallbacks {
+            callback()
+        }
+        self.viewDidAppearCallbacks = []
+    }
+    
+    func onViewDidAppear(_ callback: @escaping () -> ()) {
+        viewDidAppearCallbacks.append(callback)
     }
 
 }

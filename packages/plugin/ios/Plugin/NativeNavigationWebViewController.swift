@@ -4,6 +4,7 @@ import Capacitor
 class NativeNavigationWebViewController: UIViewController, NativeNavigationViewController {
 
     private weak var plugin: CAPPlugin!
+    private var viewDidAppearCallbacks: [() -> ()] = []
     
     let componentId: String
     var path: String? {
@@ -104,6 +105,12 @@ class NativeNavigationWebViewController: UIViewController, NativeNavigationViewC
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        
+        for callback in self.viewDidAppearCallbacks {
+            callback()
+        }
+        self.viewDidAppearCallbacks = []
+        
         self.plugin.notifyListeners("viewDidAppear:\(self.componentId)", data: [:], retainUntilConsumed: true)
     }
     
@@ -115,6 +122,10 @@ class NativeNavigationWebViewController: UIViewController, NativeNavigationViewC
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         self.plugin.notifyListeners("viewDidDisappear:\(self.componentId)", data: [:], retainUntilConsumed: true)
+    }
+    
+    func onViewDidAppear(_ callback: @escaping () -> ()) {
+        viewDidAppearCallbacks.append(callback)
     }
 
 }

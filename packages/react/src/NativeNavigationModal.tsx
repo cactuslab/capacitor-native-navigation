@@ -1,7 +1,9 @@
+import React from 'react'
 import { AnyComponentSpec, NativeNavigation, PresentationStyle } from '@cactuslab/native-navigation'
-import { useNativeNavigationView } from './internal'
-import { useEffect, useState } from 'react'
+import { useNativeNavigation, useNativeNavigationView } from './internal'
+import { useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
+import { NativeNavigationViewContextProvider } from './context'
 
 interface NativeNavigationModalProps {
 	component: AnyComponentSpec
@@ -10,12 +12,62 @@ interface NativeNavigationModalProps {
 	cancellable?: boolean
 }
 
+let nextModalId = 0
+
+function leafComponentId(spec: AnyComponentSpec): string | undefined {
+	if (spec.type === 'stack') {
+		if (spec.components.length) {
+			return leafComponentId(spec.components[0])
+		}
+	} else if (spec.type === 'tabs') {
+		if (spec.tabs.length) {
+			return leafComponentId(spec.tabs[0].component)
+		}
+	}
+	return spec.id
+}
+
+function updateLeafComponentId<T extends AnyComponentSpec>(spec: T, id: string): T {
+	if (spec.type === 'stack') {
+		if (spec.components.length) {
+			return {
+				...spec,
+				components: [
+					updateLeafComponentId(spec.components[spec.components.length - 1], id),
+					...spec.components.slice(1),
+				],
+			}
+		}
+	} else if (spec.type === 'tabs') {
+		if (spec.tabs.length) {
+			return {
+				...spec,
+				tabs: [
+					{
+						...spec.tabs[0],
+						component: updateLeafComponentId(spec.tabs[0].component, id),
+					},
+					...spec.tabs.slice(1),
+				],
+			}
+		}
+	}
+
+	return {
+		...spec,
+		id,
+	}
+}
+
 /**
  * A component that renders its children inside a native modal view.
  */
 export default function NativeNavigationModal(props: React.PropsWithChildren<NativeNavigationModalProps>) {
 	const { children, component, presentationStyle: style, animated, cancellable } = props
-	const [viewId, setViewId] = useState<string>()
+	const viewId = useMemo(function() {
+		return leafComponentId(component) || `_modal${nextModalId++}` 
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []) /* We don't want to change the view id if the component changes as we ignore component changes in the useEffect */
 
 	useEffect(function() {
 		const state: {
@@ -25,21 +77,12 @@ export default function NativeNavigationModal(props: React.PropsWithChildren<Nat
 
 		async function createModal() {
 			const result = await NativeNavigation.present({
-				component,
+				component: updateLeafComponentId(component, viewId),
 				style,
 				animated,
 				cancellable,
 			})
 
-			let viewId: string | undefined
-			const got = await NativeNavigation.get({ id: result.id })
-			if (got.component && got.component.type === 'stack') {
-				viewId = got.component.components[got.component.components.length - 1].id
-			} else if (got.component && got.component.type === 'view') {
-				viewId = got.component.id
-			}
-
-			setViewId(viewId)
 			state.presentedId = result.id
 
 			if (state.unmounted) {
@@ -65,9 +108,23 @@ export default function NativeNavigationModal(props: React.PropsWithChildren<Nat
 	}, [])
 
 	const view = useNativeNavigationView(viewId)
-	if (!view) {
+	const { fireViewReady } = useNativeNavigation()
+
+	useEffect(function() {
+		if (view) {
+			fireViewReady(viewId)
+		}
+	}, [fireViewReady, view, viewId])
+
+	if (view) {
+		return createPortal(
+			(
+				<NativeNavigationViewContextProvider {...view.props}>
+					{children}
+				</NativeNavigationViewContextProvider>
+			),
+			view.element)
+	} else {
 		return null
 	}
-
-	return createPortal(children, view)
 }

@@ -1,21 +1,16 @@
-import type { ClickEventData, ComponentId, DismissOptions, DismissResult, MessageEventData, TabUpdate, ViewUpdate } from '@cactuslab/native-navigation'
+import type { ClickEventData, DismissOptions, DismissResult, MessageEventData, TabUpdate, ViewUpdate } from '@cactuslab/native-navigation'
 import type { PluginListenerHandle } from '@capacitor/core'
-import React, { useContext } from 'react'
+import React, { useContext, useMemo } from 'react'
 
-import type { MessageListener, NativeNavigationReact } from './types'
+import type { MessageListener, NativeNavigationReact, NativeNavigationViewProps } from './types'
+import { useNativeNavigation } from './internal'
 
-interface ContextInit {
-	componentId: ComponentId
-	path?: string
-	state?: unknown
-	stack?: ComponentId
-	
-	viewWindow: Window
+interface ContextInit extends NativeNavigationViewProps {
 	nativeNavigationReact: NativeNavigationReact
 }
 
-export function createViewContext(options: ContextInit): NativeNavigationViewContext {
-	const { componentId, path, state, stack, viewWindow, nativeNavigationReact } = options
+function createViewContext(options: ContextInit): NativeNavigationViewContext {
+	const { nativeNavigationReact, id: componentId, viewWindow, ...otherViewProps } = options
 	const { plugin } = nativeNavigationReact
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -44,10 +39,8 @@ export function createViewContext(options: ContextInit): NativeNavigationViewCon
 
 	const context: NativeNavigationViewContext = {
 		componentId,
-		path,
-		state,
-		stack,
 		viewWindow,
+		...otherViewProps,
 
 		updateView: async function(update) {
 			return plugin.update({
@@ -227,7 +220,19 @@ const DEFAULT_CONTEXT: NativeNavigationViewContext = {
 }
 
 const Context = React.createContext<NativeNavigationViewContext>(DEFAULT_CONTEXT)
-export const NativeNavigationViewContextProvider = Context.Provider
+
+export function NativeNavigationViewContextProvider(props: React.PropsWithChildren<NativeNavigationViewProps>) {
+	const { children, id, path, state, stack, viewWindow } = props
+	const nativeNavigationReact = useNativeNavigation()
+
+	const value: NativeNavigationViewContext = useMemo(
+		() => createViewContext({ id, path, state, stack, viewWindow, nativeNavigationReact }),
+		[nativeNavigationReact, id, path, state, stack, viewWindow],
+	)
+	return (
+		<Context.Provider value={value}>{children}</Context.Provider>
+	)
+}
 
 export function useNativeNavigationViewContext(): NativeNavigationViewContext {
 	return useContext(Context)

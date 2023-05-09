@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react'
-import { NativeNavigationReact } from './types'
+import { NativeNavigationReact, NativeNavigationReactView } from './types'
 
 const DEFAULT_CONTEXT: NativeNavigationReact = {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -23,7 +23,7 @@ export function useNativeNavigation(): NativeNavigationReact {
 	return useContext(InternalContext)
 }
 
-export function useNativeNavigationView(id?: string): HTMLElement | undefined {
+export function useNativeNavigationView(id?: string): NativeNavigationReactView | undefined {
 	const nativeNavigationReact = useNativeNavigation()
 	const [, setCounter] = useState(0)
 
@@ -42,6 +42,6 @@ export function useNativeNavigationView(id?: string): HTMLElement | undefined {
 		return undefined
 	} else {
 		const views = nativeNavigationReact.views()
-		return views[id]?.element
+		return views[id]
 	}
 }

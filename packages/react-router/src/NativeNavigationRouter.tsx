@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { NativeNavigationViewProps, useNativeNavigation } from '@cactuslab/native-navigation-react'
-import { NativeNavigationViewContextProvider, createViewContext } from '@cactuslab/native-navigation-react/context'
+import { NativeNavigationViewContextProvider } from '@cactuslab/native-navigation-react/context'
 import { NativeNavigationNavigatorOptions, useNativeNavigationNavigator } from './index'
 import { Router } from 'react-router-dom'
 import { parsePath } from './utils'
@@ -82,17 +82,10 @@ interface NativeNavigationReactRouterRootProps {
 }
 
 function NativeNavigationRootWrapper(props: React.PropsWithChildren<NativeNavigationReactRouterRootProps>) {
-	const nativeNavigationReact = useNativeNavigation()
-
 	const { viewProps, children } = props
-	const context = createViewContext({
-		componentId: viewProps.id,
-		...viewProps,
-		nativeNavigationReact,
-	})
 
 	return (
-		<NativeNavigationViewContextProvider value={context}>
+		<NativeNavigationViewContextProvider {...viewProps}>
 			<NativeNavigationRoot {...props}>
 				{children}
 			</NativeNavigationRoot>

@@ -17,6 +17,7 @@ import StackImmediateReplace from './race/StackImmediateReplace'
 import Stack2 from './Stack2'
 import Examples from './examples'
 import Container from './Container'
+import { ModalContent } from './ModalContent'
 
 const nativeNavigationReact = initReact({
 	plugin: NativeNavigation,
@@ -139,8 +140,8 @@ export default function Home(): React.ReactElement {
 					</Routes>
 				</NativeNavigationRouter>
 				{showModal && (
-					<NativeNavigationModal component={{ type: 'view', path: '' }} presentationStyle='formSheet'>
-						<h1>Hello World</h1>
+					<NativeNavigationModal component={{ type: 'view' }} presentationStyle='formSheet'>
+						<ModalContent />
 					</NativeNavigationModal>
 				)}
 			</div>

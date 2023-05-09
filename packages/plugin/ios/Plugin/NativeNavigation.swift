@@ -92,18 +92,6 @@ class NativeNavigation: NSObject {
         return self.bridge.webView?.window
     }
 
-    /** We need to let some asynchronous operations happen one-at-a-time so we don't get a race condition
-        between creating a component, and then manipultating it.
-
-        An example of such a situation is creating a stack with a view, and then
-        pushing on a view, and then replacing that view, all before the first view has finished creating.
-        That would mean that when we come to push and replace, we might be looking at a stack that hasn't
-        yet appeared, and in fact that might not yet have the pushed view added to it when we come to replace.
-        This is because we wait for a view's creation to complete, and the act of creating a view runs more
-        JavaScript that might interact with the plugin.
-     */
-    private let sync = OneAtATime()
-
     public init(bridge: CAPBridgeProtocol, plugin: CAPPlugin) {
         self.bridge = bridge
         self.plugin = plugin
@@ -130,12 +118,8 @@ class NativeNavigation: NSObject {
         }
     }
 
-    func present(_ options: PresentOptions) async throws -> PresentResult {
-        return try await sync.perform { try await _present(options) }
-    }
-
     @MainActor
-    private func _present(_ options: PresentOptions) async throws -> PresentResult {
+    func present(_ options: PresentOptions) async throws -> PresentResult {
         var component = try self.createComponent(options.component, container: nil)
         component.presentOptions = options
         
@@ -156,12 +140,8 @@ class NativeNavigation: NSObject {
         return PresentResult(id: component.componentId)
     }
 
-    func dismiss(_ options: DismissOptions) async throws -> DismissResult {
-        return try await sync.perform { try await _dismiss(options) }
-    }
-
     @MainActor
-    private func _dismiss(_ options: DismissOptions) async throws -> DismissResult {
+    func dismiss(_ options: DismissOptions) async throws -> DismissResult {
         let root = try findRoot(id: options.id)
         
         roots.removeAll { $0 == root.componentId }
@@ -175,19 +155,15 @@ class NativeNavigation: NSObject {
         }
     }
 
-    func push(_ options: PushOptions) async throws -> PushResult {
-        return try await sync.perform { try await _push(options) }
-    }
-
     @MainActor
-    private func _push(_ options: PushOptions) async throws -> PushResult {
+    func push(_ options: PushOptions) async throws -> PushResult {
         let container = try findStackOrView(id: options.target)
 
         if let stack = container as? StackModel {
             var popped = false
             if options.mode == PushMode.replace {
                 if let popCount = options.popCount, popCount > 0 {
-                    _ = try _pop(PopOptions(stack: options.target, count: popCount, animated: false))
+                    _ = try pop(PopOptions(stack: options.target, count: popCount, animated: false))
                     popped = true
                 }
                 
@@ -207,7 +183,7 @@ class NativeNavigation: NSObject {
             await waitForViewsReady(viewModel.viewController)
 
             if let popCount = options.popCount, popCount > 0, !popped {
-                _ = try _pop(PopOptions(stack: options.target, count: popCount, animated: false))
+                _ = try pop(PopOptions(stack: options.target, count: popCount, animated: false))
                 popped = true
             }
 
@@ -238,13 +214,9 @@ class NativeNavigation: NSObject {
             throw NativeNavigatorError.illegalState(message: "Cannot push to component: \(container.componentId)")
         }
     }
-
-    func pop(_ options: PopOptions) async throws -> PopResult {
-        return try await sync.perform { try await _pop(options) }
-    }
     
     @MainActor
-    private func _pop(_ options: PopOptions) throws -> PopResult {
+    func pop(_ options: PopOptions) throws -> PopResult {
         guard let stack = try findStackOrView(id: options.stack) as? StackModel else {
             throw NativeNavigatorError.illegalState(message: "Can only pop from a stack")
         }
@@ -321,12 +293,8 @@ class NativeNavigation: NSObject {
         }
     }
 
-    func reset(_ options: ResetOptions) async throws {
-        return try await sync.perform { try await _reset(options) }
-    }
-
     @MainActor
-    private func _reset(_ options: ResetOptions) async throws {
+    func reset(_ options: ResetOptions) async throws {
         /* Remove an existing root, if any */
         for componentId in self.roots {
             let root = try component(componentId)
@@ -336,13 +304,9 @@ class NativeNavigation: NSObject {
         self.roots.removeAll()
         self.removeComponents(Array(self.componentsById.keys))
     }
-
-    func get(_ options: GetOptions) async throws -> GetResult {
-        return try await sync.perform { try await _get(options) }
-    }
     
     @MainActor
-    private func _get(_ options: GetOptions) async throws -> GetResult {
+    func get(_ options: GetOptions) async throws -> GetResult {
         let component = try findComponent(id: options.id)
         
         var result = GetResult()
@@ -364,12 +328,8 @@ class NativeNavigation: NSObject {
         return result
     }
     
-    func message(_ options: MessageOptions) async throws {
-        return try await sync.perform { try await _message(options) }
-    }
-    
     @MainActor
-    private func _message(_ options: MessageOptions) async throws {
+    func message(_ options: MessageOptions) async throws {
         let component = try findComponent(id: options.target)
         
         var data: [String: Any] = [
@@ -1036,33 +996,6 @@ extension NativeNavigation: UIAdaptivePresentationControllerDelegate {
         return true
     }
     
-}
-
-/** Ensure one-at-a-time invocation of asynchronous operations. The next one starts when the previous one finishes. */
-private actor OneAtATime {
-    private var continuations: [CheckedContinuation<Void, Never>]? = nil
-
-    func perform<T>(_ operation: () async throws -> T) async throws -> T {
-        if continuations != nil {
-            await withCheckedContinuation { continuation in
-                continuations!.append(continuation)
-            }
-        } else {
-            continuations = []
-        }
-
-        defer {
-            if let next = continuations!.first {
-                continuations!.removeFirst()
-                next.resume()
-            } else {
-                continuations = nil
-            }
-        }
-
-        return try await operation()
-    }
-
 }
 
 class CaptureDataURLSchemeTask: NSObject, WKURLSchemeTask {

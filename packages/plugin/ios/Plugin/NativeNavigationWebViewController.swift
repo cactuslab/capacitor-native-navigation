@@ -109,7 +109,7 @@ class NativeNavigationWebViewController: UIViewController, NativeNavigationViewC
         for callback in self.viewDidAppearCallbacks {
             callback()
         }
-        self.viewDidAppearCallbacks = []
+        self.viewDidAppearCallbacks.removeAll()
         
         self.plugin.notifyListeners("viewDidAppear:\(self.componentId)", data: [:], retainUntilConsumed: true)
     }
@@ -126,6 +126,18 @@ class NativeNavigationWebViewController: UIViewController, NativeNavigationViewC
     
     func onViewDidAppear(_ callback: @escaping () -> ()) {
         viewDidAppearCallbacks.append(callback)
+    }
+    
+    func dismissed() {
+        for callback in self.viewDidAppearCallbacks {
+            callback()
+        }
+        self.viewDidAppearCallbacks.removeAll()
+        
+        for continuation in viewReadyContinuations {
+            continuation.resume()
+        }
+        self.viewReadyContinuations.removeAll()
     }
 
 }

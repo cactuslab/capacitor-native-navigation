@@ -4,20 +4,21 @@ enum NativeNavigatorError: LocalizedError {
     case missingParameter(name: String)
     case invalidParameter(name: String, value: Any)
     
-    case alreadyPresented(name: String)
-    case notARoot(name: String)
+    case componentAlreadyPresented(name: String)
+    case componentNotPresented(name: String)
     case componentAlreadyExists(name: String)
     case notAStack(name: String)
     case notTabs(name: String)
     case componentNotFound(name: String)
     case illegalState(message: String)
+    case componentDismissed(name: String)
 
     var errorDescription: String? {
         switch self {
-        case .alreadyPresented(name: let name):
-            return "Already presented: \(name)"
-        case .notARoot(name: let name):
-            return "Not a root: \(name)"
+        case .componentAlreadyPresented(name: let name):
+            return "Component already presented: \(name)"
+        case .componentNotPresented(name: let name):
+            return "Component has not been presented: \(name)"
         case .illegalState(message: let message):
             return "Illegal state: \(message)"
         case .missingParameter(name: let name):
@@ -32,6 +33,8 @@ enum NativeNavigatorError: LocalizedError {
             return "Component is not tabs: \(name)"
         case .componentNotFound(name: let name):
             return "Component not found: \(name)"
+        case .componentDismissed(name: let name):
+            return "Component has been dismissed: \(name)"
         }
     }
 }

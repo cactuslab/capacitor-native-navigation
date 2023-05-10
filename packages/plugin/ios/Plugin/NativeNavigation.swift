@@ -11,6 +11,9 @@ protocol ComponentModel {
     var viewController: T { get }
     var container: ComponentId? { get }
     var presentOptions: PresentOptions? { get set }
+    
+    var presented: Bool { get set }
+    var dismissed: Bool { get set }
 }
 
 class StackModel: ComponentModel {
@@ -20,6 +23,8 @@ class StackModel: ComponentModel {
     var views: [ComponentId]
     let container: ComponentId?
     var presentOptions: PresentOptions?
+    var presented: Bool
+    var dismissed: Bool
     
     init(componentId: ComponentId, spec: StackSpec, viewController: NativeNavigationNavigationController, views: [ComponentId], container: ComponentId? = nil, presentOptions: PresentOptions? = nil) {
         self.componentId = componentId
@@ -28,6 +33,8 @@ class StackModel: ComponentModel {
         self.views = views
         self.container = container
         self.presentOptions = presentOptions
+        self.presented = false
+        self.dismissed = false
     }
     
     func topComponentId() -> ComponentId? {
@@ -43,6 +50,8 @@ class TabsModel: ComponentModel {
     var selectedIndex: Int
     let container: ComponentId?
     var presentOptions: PresentOptions?
+    var presented: Bool
+    var dismissed: Bool
     
     init(componentId: ComponentId, spec: TabsSpec, viewController: NativeNavigationTabBarController, tabs: [ComponentId], selectedIndex: Int, container: ComponentId? = nil, presentOptions: PresentOptions? = nil) {
         self.componentId = componentId
@@ -52,6 +61,8 @@ class TabsModel: ComponentModel {
         self.selectedIndex = selectedIndex
         self.container = container
         self.presentOptions = presentOptions
+        self.presented = false
+        self.dismissed = false
     }
     
     func selectedComponentId() -> ComponentId? {
@@ -69,6 +80,8 @@ class ViewModel: ComponentModel {
     let viewController: NativeNavigationWebViewController
     let container: ComponentId?
     var presentOptions: PresentOptions?
+    var presented: Bool
+    var dismissed: Bool
     
     init(componentId: ComponentId, spec: ViewSpec, viewController: NativeNavigationWebViewController, container: ComponentId? = nil, presentOptions: PresentOptions? = nil) {
         self.componentId = componentId
@@ -76,6 +89,8 @@ class ViewModel: ComponentModel {
         self.viewController = viewController
         self.container = container
         self.presentOptions = presentOptions
+        self.presented = false
+        self.dismissed = false
     }
 }
 
@@ -121,10 +136,15 @@ class NativeNavigation: NSObject {
     @MainActor
     func present(_ options: PresentOptions) async throws -> PresentResult {
         var component = try self.createComponent(options.component, container: nil)
+        component.presented = true
         component.presentOptions = options
         
         await waitForViewsReady(component.viewController)
-
+        
+        if component.dismissed {
+            throw NativeNavigatorError.componentDismissed(name: component.componentId)
+        }
+        
         let top = try self.currentRoot()
         roots.append(component.componentId)
         
@@ -146,22 +166,42 @@ class NativeNavigation: NSObject {
             }
         }
 
+        if component.dismissed {
+            throw NativeNavigatorError.componentDismissed(name: component.componentId)
+        }
+        
         return PresentResult(id: component.componentId)
     }
 
     @MainActor
     func dismiss(_ options: DismissOptions) async throws -> DismissResult {
-        let root = try findRoot(id: options.id)
+        var root: (any ComponentModel)
+        if let componentId = options.id {
+            root = try findComponent(id: componentId)
+        } else {
+            guard let component = try currentRoot() else {
+                throw NativeNavigatorError.illegalState(message: "No presented components")
+            }
+            root = component
+        }
+        
+        guard root.presented else {
+            throw NativeNavigatorError.componentNotPresented(name: root.componentId)
+        }
         
         roots.removeAll { $0 == root.componentId }
         removeComponent(root.componentId)
         
         if let presentingViewController = root.viewController.presentingViewController {
+            root.dismissed = true
             presentingViewController.dismiss(animated: options.animated)
-            return DismissResult(id: root.componentId)
         } else {
-            throw NativeNavigatorError.illegalState(message: "Component \(root.componentId) not presented?")
+            /* Component not yet presented */
+            root.dismissed = true
         }
+        
+        root.viewController.dismissed()
+        return DismissResult(id: root.componentId)
     }
 
     @MainActor
@@ -304,10 +344,13 @@ class NativeNavigation: NSObject {
 
     @MainActor
     func reset(_ options: ResetOptions) async throws {
-        /* Remove an existing root, if any */
-        for componentId in self.roots {
-            let root = try component(componentId)
-            removeRoot(root, animated: options.animated)
+        /* Remove existing roots, if any */
+        for componentId in self.roots.reversed() {
+            do {
+                _ = try await self.dismiss(DismissOptions(id: componentId, animated: options.animated))
+            } catch {
+                print("NativeNavigation.reset: failed to dismiss \(componentId): \(error)")
+            }
         }
         
         self.roots.removeAll()
@@ -425,22 +468,6 @@ class NativeNavigation: NSObject {
         view.viewController.webView = newWebView
         
         return newWebView
-    }
-    
-    /** Find the root component with the given id, or if no id is given, find the current root component. A root is a component that has been presented. */
-    func findRoot(id: ComponentId?) throws -> any ComponentModel {
-        if let id = id {
-            guard self.roots.contains(id) else {
-                throw NativeNavigatorError.notARoot(name: id)
-            }
-            return try self.component(id)
-        }
-        
-        if let root = try self.currentRoot() {
-            return root
-        }
-        
-        throw NativeNavigatorError.illegalState(message: "No current root component found")
     }
     
     /** Find the component with the given id, or if no id is given, find the current leaf component. */
@@ -897,11 +924,6 @@ class NativeNavigation: NSObject {
         self.html = sanitizedContent
     }
     
-    private func removeRoot(_ root: any ComponentModel, animated: Bool) {
-        let viewController = root.viewController
-        viewController.dismiss(animated: animated)
-    }
-    
 }
 
 extension NativeNavigation: UINavigationControllerDelegate {
@@ -998,7 +1020,7 @@ extension NativeNavigation: UIAdaptivePresentationControllerDelegate {
     func presentationControllerShouldDismiss(_ presentationController: UIPresentationController) -> Bool {
         let viewController = presentationController.presentedViewController
         if let viewController = viewController as? NativeNavigationViewController {
-            if let root = try? findRoot(id: viewController.componentId), let presentOptions = root.presentOptions {
+            if let component = try? findComponent(id: viewController.componentId), let presentOptions = component.presentOptions {
                 return presentOptions.cancellable
             }
         }

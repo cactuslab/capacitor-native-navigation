@@ -20,11 +20,18 @@ class NativeNavigationTabBarController: UITabBarController, NativeNavigationView
         for callback in self.viewDidAppearCallbacks {
             callback()
         }
-        self.viewDidAppearCallbacks = []
+        self.viewDidAppearCallbacks.removeAll()
     }
     
     func onViewDidAppear(_ callback: @escaping () -> ()) {
         viewDidAppearCallbacks.append(callback)
+    }
+    
+    func dismissed() {
+        for callback in self.viewDidAppearCallbacks {
+            callback()
+        }
+        self.viewDidAppearCallbacks.removeAll()
     }
     
 }

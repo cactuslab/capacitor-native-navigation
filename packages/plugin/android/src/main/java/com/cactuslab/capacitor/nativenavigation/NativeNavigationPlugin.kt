@@ -188,9 +188,9 @@ class NativeNavigationPlugin : Plugin() {
         }
     }
 
-    fun notifyCreateView(path: String, id: String, state: JSObject?, stack: String?) {
+    fun notifyCreateView(path: String?, id: String, state: JSObject?, stack: String?) {
         val obj = JSObject()
-        obj.put("path", path)
+        path?.let { obj.put("path", it) }
         obj.put("id", id)
         state?.let {
             obj.put("state", it)
@@ -204,9 +204,9 @@ class NativeNavigationPlugin : Plugin() {
         notifyListeners("createView", obj, true)
     }
 
-    fun notifyUpdateView(path: String, id: String, state: JSObject?, stack: String?) {
+    fun notifyUpdateView(path: String?, id: String, state: JSObject?, stack: String?) {
         val obj = JSObject()
-        obj.put("path", path)
+        path?.let { obj.put("path", it) }
         obj.put("id", id)
         state?.let {
             obj.put("state", it)

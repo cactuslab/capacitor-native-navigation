@@ -7,7 +7,7 @@ import com.getcapacitor.JSObject
 import java.util.*
 
 class ViewSpec(id: String? = null,
-               var path: String,
+               var path: String? = null,
                var state: JSObject?,
 
                var title: String? = null,
@@ -18,7 +18,7 @@ class ViewSpec(id: String? = null,
 
     override fun toJSObject(): JSObject {
         val obj = super.toJSObject()
-        obj.put("path", path)
+        path?.let { obj.put("path", it)  }
         state?.let { obj.put("state", it) }
         return obj
     }
@@ -45,7 +45,7 @@ class ViewSpec(id: String? = null,
                 throw InvalidParameterException("type", "Type $type is incorrect for ViewOptions")
             }
 
-            val path = jsObject.getString("path") ?: throw MissingParameterException("path")
+            val path = jsObject.getString("path")
             val state = jsObject.getJSObject("state")
 
             val stackItem = jsObject.getJSObject("stackItem")?.let { StackItemSpec.fromJSObject(it) }

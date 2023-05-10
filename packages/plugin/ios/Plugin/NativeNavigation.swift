@@ -157,12 +157,10 @@ class NativeNavigation: NSObject {
             self.bridge.viewController!.present(component.viewController, animated: options.animated)
         }
         
-        /* Wait for the present to complete if it's animated */
-        if options.animated {
-            await withCheckedContinuation { continuation in
-                component.viewController.onViewDidAppear {
-                    continuation.resume()
-                }
+        /* Wait for the present to complete to avoid race conditions */
+        await withCheckedContinuation { continuation in
+            component.viewController.onViewDidAppear {
+                continuation.resume()
             }
         }
 

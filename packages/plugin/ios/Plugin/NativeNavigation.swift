@@ -165,6 +165,10 @@ class NativeNavigation: NSObject {
         }
 
         if component.dismissed {
+            if let presentingViewController = component.viewController.presentingViewController {
+                presentingViewController.dismiss(animated: options.animated)
+                component.viewController.dismissed()
+            }
             throw NativeNavigatorError.componentDismissed(name: component.componentId)
         }
         
@@ -190,15 +194,17 @@ class NativeNavigation: NSObject {
         roots.removeAll { $0 == root.componentId }
         removeComponent(root.componentId)
         
+        root.viewController.cancel()
+        
         if let presentingViewController = root.viewController.presentingViewController {
             root.dismissed = true
             presentingViewController.dismiss(animated: options.animated)
+            root.viewController.dismissed()
         } else {
             /* Component not yet presented */
             root.dismissed = true
         }
         
-        root.viewController.dismissed()
         return DismissResult(id: root.componentId)
     }
 

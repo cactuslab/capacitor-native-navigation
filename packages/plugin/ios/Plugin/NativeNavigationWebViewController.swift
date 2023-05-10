@@ -128,16 +128,18 @@ class NativeNavigationWebViewController: UIViewController, NativeNavigationViewC
         viewDidAppearCallbacks.append(callback)
     }
     
+    func cancel() {
+        for continuation in viewReadyContinuations {
+            continuation.resume()
+        }
+        self.viewReadyContinuations.removeAll()
+    }
+    
     func dismissed() {
         for callback in self.viewDidAppearCallbacks {
             callback()
         }
         self.viewDidAppearCallbacks.removeAll()
-        
-        for continuation in viewReadyContinuations {
-            continuation.resume()
-        }
-        self.viewReadyContinuations.removeAll()
     }
 
 }

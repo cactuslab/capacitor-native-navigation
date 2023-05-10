@@ -32,6 +32,10 @@ class NativeNavigationNavigationController: UINavigationController, NativeNaviga
         viewDidAppearCallbacks.append(callback)
     }
     
+    func cancel() {
+        
+    }
+    
     func dismissed() {
         for callback in self.viewDidAppearCallbacks {
             callback()

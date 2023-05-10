@@ -27,11 +27,11 @@ class NativeNavigationTabBarController: UITabBarController, NativeNavigationView
         viewDidAppearCallbacks.append(callback)
     }
     
-    func cancel() {
+    func willDismiss() {
         
     }
     
-    func dismissed() {
+    func didDismiss() {
         for callback in self.viewDidAppearCallbacks {
             callback()
         }

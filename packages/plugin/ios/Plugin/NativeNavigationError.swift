@@ -11,7 +11,7 @@ enum NativeNavigatorError: LocalizedError {
     case notTabs(name: String)
     case componentNotFound(name: String)
     case illegalState(message: String)
-    case componentDismissed(name: String)
+    case componentPresentCancelled(name: String)
 
     var errorDescription: String? {
         switch self {
@@ -33,8 +33,8 @@ enum NativeNavigatorError: LocalizedError {
             return "Component is not tabs: \(name)"
         case .componentNotFound(name: let name):
             return "Component not found: \(name)"
-        case .componentDismissed(name: let name):
-            return "Component has been dismissed: \(name)"
+        case .componentPresentCancelled(name: let name):
+            return "Component presentation has been cancelled: \(name)"
         }
     }
 }

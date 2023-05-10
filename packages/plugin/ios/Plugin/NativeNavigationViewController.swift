@@ -7,11 +7,11 @@ protocol NativeNavigationViewController: UIViewController {
     /** Add a callback for when the view has appeared */
     func onViewDidAppear(_ callback: @escaping () -> ())
     
-    /** The presentation of this view has been cancelled */
-    func cancel()
+    /** The view controller is about to be, or wants to be, dismissed */
+    func willDismiss()
     
-    /** The view has been dismissed */
-    func dismissed()
+    /** The view controller has been dismissed */
+    func didDismiss()
     
 }
 

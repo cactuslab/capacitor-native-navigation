@@ -168,10 +168,11 @@ class NativeNavigation: NSObject {
             throw NativeNavigatorError.componentNotPresented(name: root.componentId)
         }
         
-        removeComponent(root.componentId)
         root.cancelled = true
         
         try await self.rootManager.dismiss(root, animated: options.animated)
+
+        removeComponent(root.componentId)
         
         return DismissResult(id: root.componentId)
     }

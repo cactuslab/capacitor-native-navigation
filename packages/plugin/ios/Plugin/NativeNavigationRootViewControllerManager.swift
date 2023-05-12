@@ -92,7 +92,7 @@ class NativeNavigationRootViewControllerManager {
         }
 
         await withCheckedContinuation { continuation in
-            presentingViewController.dismiss(animated: animated) {
+            presentingViewController.dismiss(animated: presentedViewControllers.isEmpty && animated) {
                 continuation.resume()
             }
         }

@@ -33,11 +33,11 @@
     "prepublishOnly": "pnpm run build"
   },
   "devDependencies": {
-    "@cactuslab/native-navigation": "^0.3.0",
-    "@capacitor/core": "^4.8.0",
+    "@cactuslab/native-navigation": "^0.3.1",
+    "@capacitor/core": "^5.0.3",
     "@types/history": "^4.7.11",
     "rimraf": "^5.0.0",
-    "rollup": "^3.21.3",
+    "rollup": "^3.21.6",
     "typescript": "~5.0.4"
   },
   "peerDependencies": {

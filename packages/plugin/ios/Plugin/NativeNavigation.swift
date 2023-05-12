@@ -148,7 +148,7 @@ class NativeNavigation: NSObject {
             throw NativeNavigatorError.componentPresentCancelled(name: component.componentId)
         }
         
-        try await self.rootManager.present(component, animated: options.animated)
+        await self.rootManager.present(component, animated: options.animated)
         return PresentResult(id: component.componentId)
     }
 
@@ -156,12 +156,11 @@ class NativeNavigation: NSObject {
     func dismiss(_ options: DismissOptions) async throws -> DismissResult {
         var root: (any ComponentModel)
         if let componentId = options.id {
-            root = try findComponent(id: componentId)
+            root = try self.component(componentId)
+        } else if let componentId = self.rootManager.topComponentId() {
+            root = try self.component(componentId)
         } else {
-            guard let component = self.rootManager.currentRoot() else {
-                throw NativeNavigatorError.illegalState(message: "No presented components")
-            }
-            root = component
+            throw NativeNavigatorError.illegalState(message: "No presented components")
         }
         
         guard root.presented else {
@@ -170,7 +169,7 @@ class NativeNavigation: NSObject {
         
         root.cancelled = true
         
-        try await self.rootManager.dismiss(root, animated: options.animated)
+        await self.rootManager.dismiss(root, animated: options.animated)
 
         removeComponent(root.componentId)
         
@@ -318,14 +317,7 @@ class NativeNavigation: NSObject {
     @MainActor
     func reset(_ options: ResetOptions) async throws {
         /* Remove existing roots, if any */
-        for component in self.rootManager.roots.reversed() {
-            do {
-                _ = try await self.dismiss(DismissOptions(id: component.componentId, animated: options.animated))
-            } catch {
-                print("NativeNavigation.reset: failed to dismiss \(component.componentId): \(error)")
-            }
-        }
-        
+        await self.rootManager.dismissAll(animated: options.animated)
         self.removeComponents(Array(self.componentsById.keys))
     }
     
@@ -448,7 +440,8 @@ class NativeNavigation: NSObject {
             return try self.component(id)
         }
         
-        if let root = self.rootManager.currentRoot() {
+        if let id = self.rootManager.topComponentId() {
+            let root = try self.component(id)
             return try findLeaf(root)
         }
         
@@ -479,7 +472,8 @@ class NativeNavigation: NSObject {
             return try self.component(id)
         }
         
-        if let root = self.rootManager.currentRoot() {
+        if let id = self.rootManager.topComponentId() {
+            let root = try self.component(id)
             if let stack = root as? StackModel {
                 return stack
             } else if let tabs = root as? TabsModel {
@@ -549,14 +543,13 @@ class NativeNavigation: NSObject {
     private func removeComponent(_ id: ComponentId) {
         if let component = componentsById[id] {
             if let view = component as? ViewModel {
+                view.viewController.cancel()
                 self.plugin.notifyListeners("destroyView", data: ["id": view.componentId], retainUntilConsumed: true)
             } else if let stack = component as? StackModel {
                 removeComponents(stack.views)
             } else if let tabs = component as? TabsModel {
                 removeComponents(tabs.tabs)
             }
-            
-            self.rootManager.didDismiss(component)
         }
         
         componentsById[id] = nil

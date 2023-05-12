@@ -24,62 +24,85 @@ class NativeNavigationRootViewControllerManager {
      */
     private let sync = OneAtATime()
     
-    private (set) var roots: [any ComponentModel] = []
-    
     private let baseViewController: UIViewController
     
     init(baseViewController: UIViewController) {
         self.baseViewController = baseViewController
     }
     
-    func present(_ component: any ComponentModel, animated: Bool) async throws {
-        try await sync.perform { await _present(component, animated: animated) }
+    func present(_ component: any ComponentModel, animated: Bool) async {
+        await sync.perform { await _present(component, animated: animated) }
     }
     
     /**
      Dismiss the view controller. Returns `true` if the view controller could be dismissed, or `false` if it has not been presented.
      */
-    func dismiss(_ component: any ComponentModel, animated: Bool) async throws {
-        try await sync.perform { await _dismiss(component, animated: animated) }
+    func dismiss(_ component: any ComponentModel, animated: Bool) async {
+        await sync.perform { await _dismiss(component, animated: animated) }
     }
-    
-    @MainActor
-    func didDismiss(_ component: any ComponentModel) {
-        roots.removeAll(where: { $0.componentId == component.componentId })
+
+    func dismissAll(animated: Bool) async {
+        await sync.perform { await _dismissAll(animated: animated) }
     }
-    
-    func currentRoot() -> (any ComponentModel)? {
-        return self.roots.last
+
+    /**
+     Returns the component id of the top-most component, if there is one.
+     */
+    func topComponentId() -> ComponentId? {
+        var currentViewController = self.baseViewController
+        var lastComponentId: ComponentId?
+        while let presentedViewController = currentViewController.presentedViewController {
+            if let nativeNavigationViewController = presentedViewController as? NativeNavigationViewController {
+                lastComponentId = nativeNavigationViewController.componentId
+            }
+
+            currentViewController = presentedViewController
+        }
+        return lastComponentId
     }
     
     @MainActor
     private func _present(_ component: any ComponentModel, animated: Bool) async {
-        if let top = roots.last {
-            top.viewController.present(component.viewController, animated: animated)
-        } else {
-            self.baseViewController.present(component.viewController, animated: animated)
-        }
-        
-        /* Wait for the present to complete to avoid race conditions */
+        /* Wait for the present to complete to avoid race conditions, as iOS gets
+           into a confused state if multiple things are presented and dismissed at once.
+         */
         await withCheckedContinuation { continuation in
-            component.viewController.onViewDidAppear {
+            self.topViewController().present(component.viewController, animated: animated) {
                 continuation.resume()
             }
         }
-        
-        roots.append(component)
     }
     
     @MainActor
     private func _dismiss(_ component: any ComponentModel, animated: Bool) async {
-        component.viewController.willDismiss()
-        
-        if let presentingViewController = component.viewController.presentingViewController {
-            presentingViewController.dismiss(animated: animated)
-            
-            didDismiss(component)
-            component.viewController.didDismiss()
+        guard let presentingViewController = component.viewController.presentingViewController else {
+            return
         }
+
+        await withCheckedContinuation { continuation in
+            presentingViewController.dismiss(animated: animated) {
+                continuation.resume()
+            }
+        }
+    }
+
+    @MainActor
+    private func _dismissAll(animated: Bool) async {
+        if let _ = self.baseViewController.presentedViewController {
+            await withCheckedContinuation { continuation in
+                self.baseViewController.dismiss(animated: animated) {
+                    continuation.resume()
+                }
+            }
+        }
+    }
+
+    private func topViewController() -> UIViewController {
+        var currentViewController = self.baseViewController
+        while let presentedViewController = currentViewController.presentedViewController {
+            currentViewController = presentedViewController
+        }
+        return currentViewController
     }
     
 }
@@ -88,7 +111,7 @@ class NativeNavigationRootViewControllerManager {
 private actor OneAtATime {
     private var continuations: [CheckedContinuation<Void, Never>]? = nil
 
-    func perform<T>(_ operation: () async throws -> T) async throws -> T {
+    func perform<T>(_ operation: () async throws -> T) async rethrows -> T {
         if continuations != nil {
             await withCheckedContinuation { continuation in
                 continuations!.append(continuation)

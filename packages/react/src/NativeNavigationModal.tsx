@@ -1,5 +1,5 @@
-import React from 'react'
-import { AnyComponentSpec, NativeNavigation, PresentationStyle } from '@cactuslab/native-navigation'
+import React, { useRef } from 'react'
+import { AnyComponentSpec, NativeNavigation, PresentResult, PresentationStyle } from '@cactuslab/native-navigation'
 import { useNativeNavigation, useNativeNavigationView } from './internal'
 import { useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
@@ -60,6 +60,11 @@ function updateLeafComponentId<T extends AnyComponentSpec>(spec: T, id: string):
 	}
 }
 
+interface InternalModalState {
+	presentedId?: string
+	unmounted?: boolean
+}
+
 /**
  * A component that renders its children inside a native modal view.
  */
@@ -71,18 +76,21 @@ export default function NativeNavigationModal(props: React.PropsWithChildren<Nat
 	}, []) /* We don't want to change the view id if the component changes as we ignore component changes in the useEffect */
 
 	useEffect(function() {
-		const state: {
-			presentedId?: string
-			unmounted?: boolean
-		} = {}
+		const state: InternalModalState = {}
 
 		async function createModal() {
-			const result = await NativeNavigation.present({
-				component: updateLeafComponentId(component, viewId),
-				style,
-				animated,
-				cancellable,
-			})
+			let result: PresentResult
+			try {
+				result = await NativeNavigation.present({
+					component: updateLeafComponentId(component, viewId),
+					style,
+					animated,
+					cancellable,
+				})
+			} catch (error) {
+				console.log('NativeNavigationModal failed to present', viewId, error)
+				return
+			}
 
 			state.presentedId = result.id
 
@@ -90,9 +98,13 @@ export default function NativeNavigationModal(props: React.PropsWithChildren<Nat
 				/* We have been unmounted before presenting the modal completed */
 				NativeNavigation.dismiss({
 					id: result.id,
+				}).catch(function(reason) {
+					console.log('NativeNavigationModal failed to dismiss', viewId, reason)
 				})
 			}
 		}
+
+		state.unmounted = false
 
 		let debounceTimer: NodeJS.Timeout | undefined
 		if (debounce) {
@@ -108,9 +120,13 @@ export default function NativeNavigationModal(props: React.PropsWithChildren<Nat
 				clearTimeout(debounceTimer)
 			}
 
-			if (state.presentedId) {
+			// eslint-disable-next-line react-hooks/exhaustive-deps
+			const presentedId = state.presentedId
+			if (presentedId) {
 				NativeNavigation.dismiss({
-					id: state.presentedId,
+					id: presentedId,
+				}).catch(function(reason) {
+					console.log('NativeNavigationModal failed to dismiss on unmount', viewId, reason)
 				})
 			}
 		}

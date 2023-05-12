@@ -8,8 +8,6 @@
     "module": "esnext",
     "moduleResolution": "node",
     "noFallthroughCasesInSwitch": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
     "outDir": "dist/esm",
     "pretty": true,
     "sourceMap": true,

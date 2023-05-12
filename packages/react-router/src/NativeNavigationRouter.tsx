@@ -55,20 +55,18 @@ export default function NativeNavigationRouter(props: React.PropsWithChildren<Na
 				}
 
 				/* Memoise the react element to prevent unncessary re-renders */
-				const reactElement = view.reactElement || (view.reactElement = React.createElement(
-					NativeNavigationRootWrapper,
-					{
-						viewProps: {
+				const reactElement = view.reactElement || (view.reactElement = 
+					<NativeNavigationRootWrapper 
+						viewProps={{
 							...viewProps,
 							path,
-						},
-						routerProps: {
+						}} 
+						routerProps={{
 							navigation,
-						},
-					},
-					children,
-				))
-				return createPortal(reactElement, view.element, id)
+						}}
+						children={children}
+					/>
+				)
 			})}
 		</>
 	)

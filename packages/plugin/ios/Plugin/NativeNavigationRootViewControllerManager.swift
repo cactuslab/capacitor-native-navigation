@@ -79,10 +79,33 @@ class NativeNavigationRootViewControllerManager {
             return
         }
 
+        /* If the dismissing component itself presents some components, we need to fix the presentation
+           hierarchy
+         */
+        let presentedViewControllers = self.presentedViewControllers(component.viewController)
+        if !presentedViewControllers.isEmpty {
+            await withCheckedContinuation { continuation in
+                component.viewController.dismiss(animated: false) {
+                    continuation.resume()
+                }
+            }
+        }
+
         await withCheckedContinuation { continuation in
             presentingViewController.dismiss(animated: animated) {
                 continuation.resume()
             }
+        }
+
+        /* Re-present any view controllers that were presented by the dismissed view controller */
+        var topViewController = self.topViewController()
+        for toPresent in presentedViewControllers {
+            await withCheckedContinuation { continuation in
+                topViewController.present(toPresent, animated: false) {
+                    continuation.resume()
+                }
+            }
+            topViewController = toPresent
         }
     }
 
@@ -103,6 +126,15 @@ class NativeNavigationRootViewControllerManager {
             currentViewController = presentedViewController
         }
         return currentViewController
+    }
+
+    private func presentedViewControllers(_ viewController: UIViewController) -> [UIViewController] {
+        var result: [UIViewController] = []
+        if let presentedViewController = viewController.presentedViewController {
+            result.append(presentedViewController)
+            result.append(contentsOf: self.presentedViewControllers(presentedViewController))
+        }
+        return result
     }
     
 }

@@ -11,7 +11,7 @@
     "link": "pnpm --recursive exec pnpm link --global",
     "release": "pnpm clean && pnpm build && pnpm test && pnpm exec changeset publish && pnpm install",
     "release:version": "pnpm changeset version && pnpm install",
-    "sync": "pnpm --filter '@cactuslab/*' --parallel exec npm-sync --watch --yes --dest",
+    "sync": "pnpm --filter '@cactuslab/native-navigation-*' --parallel exec npm-sync --watch --yes --dest",
     "test": "pnpm --recursive test",
     "watch": "(pnpm --recursive build || true) && pnpm --parallel watch"
   },

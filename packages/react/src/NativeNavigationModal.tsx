@@ -62,7 +62,7 @@ function updateLeafComponentId<T extends AnyComponentSpec>(spec: T, id: string):
 
 interface InternalModalState {
 	presentedId?: string
-	unmounted?: boolean
+	shouldDismiss?: boolean
 }
 
 /**
@@ -75,8 +75,13 @@ export default function NativeNavigationModal(props: React.PropsWithChildren<Nat
 	// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []) /* We don't want to change the view id if the component changes as we ignore component changes in the useEffect */
 
+	/* Our internal state is a ref so that multiple invocations of useEffect (which happens in development https://react.dev/reference/react/useEffect#examples-dependencies)
+	   can record that we're no longer unmounted.
+	 */
+	const stateHolder = useRef<InternalModalState>({})
+
 	useEffect(function() {
-		const state: InternalModalState = {}
+		const state = stateHolder.current
 
 		async function createModal() {
 			let result: PresentResult
@@ -94,17 +99,16 @@ export default function NativeNavigationModal(props: React.PropsWithChildren<Nat
 
 			state.presentedId = result.id
 
-			if (state.unmounted) {
-				/* We have been unmounted before presenting the modal completed */
+			if (state.shouldDismiss) {
 				NativeNavigation.dismiss({
 					id: result.id,
-				}).catch(function(reason) {
+				}).catch(function(reason: unknown) {
 					console.log('NativeNavigationModal failed to dismiss', viewId, reason)
 				})
 			}
 		}
 
-		state.unmounted = false
+		state.shouldDismiss = false
 
 		let debounceTimer: NodeJS.Timeout | undefined
 		if (debounce) {
@@ -114,7 +118,7 @@ export default function NativeNavigationModal(props: React.PropsWithChildren<Nat
 		}
 
 		return function() {
-			state.unmounted = true
+			state.shouldDismiss = true
 
 			if (debounceTimer) {
 				clearTimeout(debounceTimer)
@@ -125,7 +129,7 @@ export default function NativeNavigationModal(props: React.PropsWithChildren<Nat
 			if (presentedId) {
 				NativeNavigation.dismiss({
 					id: presentedId,
-				}).catch(function(reason) {
+				}).catch(function(reason: unknown) {
 					console.log('NativeNavigationModal failed to dismiss on unmount', viewId, reason)
 				})
 			}

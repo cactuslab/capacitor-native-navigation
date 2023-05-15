@@ -67,6 +67,8 @@ export default function NativeNavigationRouter(props: React.PropsWithChildren<Na
 						children={children}
 					/>
 				)
+
+				return createPortal(reactElement, view.element, id)
 			})}
 		</>
 	)

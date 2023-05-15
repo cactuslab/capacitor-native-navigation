@@ -31,7 +31,9 @@ class NativeNavigationRootViewControllerManager {
     }
     
     func present(_ component: any ComponentModel, animated: Bool) async {
-        await sync.perform { await _present(component, animated: animated) }
+        await sync.perform {
+            await _present(component, animated: animated)
+        }
     }
     
     /**
@@ -42,7 +44,9 @@ class NativeNavigationRootViewControllerManager {
     }
 
     func dismissAll(animated: Bool) async {
-        await sync.perform { await _dismissAll(animated: animated) }
+        await sync.perform {
+            await _dismissAll(animated: animated)
+        }
     }
 
     /**

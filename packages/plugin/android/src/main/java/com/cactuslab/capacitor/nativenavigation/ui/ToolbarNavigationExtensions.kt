@@ -19,9 +19,7 @@ import androidx.navigation.fragment.DialogFragmentNavigator
 import androidx.navigation.fragment.FragmentNavigator
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.navigateUp
 import androidx.transition.TransitionManager
-import com.cactuslab.capacitor.nativenavigation.R
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import java.util.regex.Pattern
 
@@ -135,7 +133,7 @@ private fun <T : ViewGroup> setupIcon(
         val mArrowDrawable = DrawerArrowDrawable(wrapper.toolbar.context)
         wrapper.setNavigationIcon(
             mArrowDrawable,
-            if (showAsDrawerIndicator) R.string.nav_app_bar_open_drawer_description else R.string.nav_app_bar_navigate_up_description
+            if (showAsDrawerIndicator) androidx.navigation.ui.R.string.nav_app_bar_open_drawer_description else androidx.navigation.ui.R.string.nav_app_bar_navigate_up_description
         )
         mArrowDrawable.progress = if (showAsDrawerIndicator) 0f else 1f
     }

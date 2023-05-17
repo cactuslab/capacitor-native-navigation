@@ -1,5 +1,32 @@
 # @cactuslab/native-navigation
 
+## 0.4.0
+
+### Minor Changes
+
+- bb4fc40: iOS: use present and dismiss callbacks
+- b6b815d: iOS: present API waits for animated components to appear before resolving
+- bc843cb: iOS: remove one-at-a-time plugin API limitation
+- 6c144ab: Paths are now optional for ViewSpec
+- 905e941: iOS: fix race conditions between present and dismiss
+- 2d8d41d: iOS: wait for animated and non-animated presents to complete
+- 72d857c: iOS: manager for root view controllers
+- 35f49ff: iOS: support dismissing a component that has itself presented components
+- ed67a32: Upgrade to Capacitor 5 and update other dependencies
+
+### Patch Changes
+
+- 2862c55: Capacitor: Fix peer dependency for Capacitor 5
+- f745451: Fix fault dismissing non-modal view controller
+- 51cec3b: iOS: fix race condition on dismissing
+- 7bef20b: Remove subview roots
+- 13a6e92: Add title back to ViewSpec
+- 52b7329: iOS: only animate the dismiss if it was the topmost controller
+- ec75c6c: Android: Allow path to be optional on ViewSpec
+- d0261dd: Allow modals to be presented without a root view
+- 2add2a5: iOS: Resolve reset race condition
+- a83dd7e: iOS: Fix delete of web view to occur after the view controller is dismissed
+
 ## 0.3.1
 
 ### Patch Changes

@@ -1,5 +1,54 @@
 # @cactuslab/native-navigation-react-router
 
+## 4.0.0
+
+### Major Changes
+
+- 4d741e8: Move NativeNavigationViews from native-navigation-react to native-navigation-react-router as NativeNavigationRouter
+- ea64a47: Change to using React portals from roots.
+
+  This is in order to be able to wrap contexts and providers around the whole application, as you would
+  usually do in a React application using routing.
+
+### Minor Changes
+
+- cd866e4: NativeNavigationModel now supports context and fires viewReady correctly
+- ed67a32: Upgrade to Capacitor 5 and update other dependencies
+
+### Patch Changes
+
+- 2862c55: Capacitor: Fix peer dependency for Capacitor 5
+- 6a76ab3: react-router: Export types with better names
+- Updated dependencies [2862c55]
+- Updated dependencies [f745451]
+- Updated dependencies [bb4fc40]
+- Updated dependencies [d17babb]
+- Updated dependencies [b6b815d]
+- Updated dependencies [bc843cb]
+- Updated dependencies [cd866e4]
+- Updated dependencies [51cec3b]
+- Updated dependencies [7bef20b]
+- Updated dependencies [6c144ab]
+- Updated dependencies [64a3844]
+- Updated dependencies [13a6e92]
+- Updated dependencies [52b7329]
+- Updated dependencies [ec75c6c]
+- Updated dependencies [905e941]
+- Updated dependencies [2d8d41d]
+- Updated dependencies [4d741e8]
+- Updated dependencies [ad8cd03]
+- Updated dependencies [72d857c]
+- Updated dependencies [d0261dd]
+- Updated dependencies [02b0af8]
+- Updated dependencies [35f49ff]
+- Updated dependencies [ea64a47]
+- Updated dependencies [2add2a5]
+- Updated dependencies [8cbf96b]
+- Updated dependencies [ed67a32]
+- Updated dependencies [a83dd7e]
+  - @cactuslab/native-navigation@0.4.0
+  - @cactuslab/native-navigation-react@4.0.0
+
 ## 3.0.0
 
 ### Patch Changes

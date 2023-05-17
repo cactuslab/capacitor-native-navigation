@@ -1,5 +1,35 @@
 # @cactuslab/native-navigation-history
 
+## 4.0.0
+
+### Minor Changes
+
+- ed67a32: Upgrade to Capacitor 5 and update other dependencies
+
+### Patch Changes
+
+- 2862c55: Capacitor: Fix peer dependency for Capacitor 5
+- Updated dependencies [2862c55]
+- Updated dependencies [f745451]
+- Updated dependencies [bb4fc40]
+- Updated dependencies [b6b815d]
+- Updated dependencies [bc843cb]
+- Updated dependencies [51cec3b]
+- Updated dependencies [7bef20b]
+- Updated dependencies [6c144ab]
+- Updated dependencies [13a6e92]
+- Updated dependencies [52b7329]
+- Updated dependencies [ec75c6c]
+- Updated dependencies [905e941]
+- Updated dependencies [2d8d41d]
+- Updated dependencies [72d857c]
+- Updated dependencies [d0261dd]
+- Updated dependencies [35f49ff]
+- Updated dependencies [2add2a5]
+- Updated dependencies [ed67a32]
+- Updated dependencies [a83dd7e]
+  - @cactuslab/native-navigation@0.4.0
+
 ## 3.0.0
 
 ### Patch Changes

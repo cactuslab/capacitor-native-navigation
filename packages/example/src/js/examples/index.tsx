@@ -4,6 +4,7 @@ import Links from './Links'
 import Menu from './Menu'
 import Subnav from './Subnav'
 import TallContent from './TallContent'
+import Modals from './Modals'
 
 export default function Examples() {
 	return (
@@ -12,6 +13,7 @@ export default function Examples() {
 			<Route path="menu" element={<Menu />} />
 			<Route path="tall-content" element={<TallContent />} />
 			<Route path="subnav/*" element={<Subnav />} />
+			<Route path="modals/*" element={<Modals />} />
 		</Routes>
 	)
 }

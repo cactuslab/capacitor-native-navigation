@@ -22,6 +22,7 @@ import { nativeNavigationNavigatorOptions, nativeNavigationReact } from './init'
 
 export default function Home(): React.ReactElement {
 	const [showModal, setShowModal] = useState(false)
+	const [showModal2, setShowModal2] = useState(false)
 
 	return (
 		<NativeNavigationProvider value={nativeNavigationReact}>
@@ -65,7 +66,10 @@ export default function Home(): React.ReactElement {
 					<dd><button onClick={() => setupStack({ path: '/examples/menu', title: 'Menu' })}>Menu</button></dd>
 					<dd><button onClick={() => setupStack({ path: '/examples/subnav/first', title: 'Subnav' })}>Subnav</button></dd>
 					<dd><button onClick={() => setupStack({ path: '/examples/tall-content', title: 'Tall Content', options: { bar: { background: { color: '#23ABED60' } } } })}>Transparent Menu</button></dd>
-					<dd><button onClick={() => setShowModal(m => !m)}>Show Modal</button></dd>
+					<dd><button onClick={() => setupStack({ path: '/examples/modals', title: 'Modals' })}>Modals</button></dd>
+					<h2>Modals</h2>
+					<dd><button onClick={() => setShowModal(m => !m)}>Show Modal 1</button></dd>
+					<dd><button onClick={() => setShowModal2(m => !m)}>Show Modal 2</button></dd>
 				</dl>
 				<NativeNavigationRouter navigation={nativeNavigationNavigatorOptions}>
 					<Routes>
@@ -86,8 +90,22 @@ export default function Home(): React.ReactElement {
 						</Route>
 					</Routes>
 				</NativeNavigationRouter>
-				{showModal && (
-					<NativeNavigationModal component={{ type: 'view' }} presentationStyle='formSheet'>
+
+				{/* Modals */}
+				{/* This modal is always mounted and its presentation is controlled by the open prop, so it retains the same modal component id */}
+				<NativeNavigationModal component={{ type: 'view' }} presentationStyle='formSheet' open={showModal} onClose={() => {
+					console.log('Close modal 1')
+					setShowModal(false)
+				}}>
+					<ModalContent />
+				</NativeNavigationModal>
+				
+				{/* This modal is only mounted when the state is true, so it gets a new modal component id each time */}
+				{showModal2 && (
+					<NativeNavigationModal component={{ type: 'view' }} presentationStyle='formSheet' onClose={() => {
+						console.log('Close modal 2')
+						setShowModal2(false)
+					}}>
 						<ModalContent />
 					</NativeNavigationModal>
 				)}

@@ -159,7 +159,7 @@ export interface NativeNavigationViewContext {
 	/**
 	 * Dismiss this component, if it was presented.
 	 */
-	dismiss: (options: Omit<DismissOptions, 'id'>) => Promise<DismissResult>
+	dismiss: (options?: Omit<DismissOptions, 'id'>) => Promise<DismissResult>
 
 	/**
 	 * Add a listener for native clicks in this component.

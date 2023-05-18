@@ -6,7 +6,7 @@ import { createPortal } from 'react-dom'
 import { NativeNavigationViewContextProvider } from './context'
 import { ReactViewListenerUnsubscribeFunc } from './types'
 
-interface NativeNavigationModalProps {
+export interface NativeNavigationModalProps {
 	open?: boolean
 	onClose?: () => void
 	component: AnyComponentSpec

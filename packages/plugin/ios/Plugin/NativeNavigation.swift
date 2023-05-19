@@ -788,7 +788,10 @@ class NativeNavigation: NSObject {
         }
 
         func setOrCreateBarButtonItem(_ stackItem: StackBarButtonItem, buttonItem: UIBarButtonItem?) throws -> UIBarButtonItem {
-            let action = UIAction(title: stackItem.title) { _ in
+            let action = UIAction(title: stackItem.title) { [weak component] _ in
+                guard let component = component else {
+                    return
+                }
                 let data = ["buttonId": stackItem.id, "componentId": component.componentId]
                 self.plugin.notifyListeners("click:\(component.componentId)", data: data, retainUntilConsumed: true)
                 self.plugin.notifyListeners("click", data: data, retainUntilConsumed: true)

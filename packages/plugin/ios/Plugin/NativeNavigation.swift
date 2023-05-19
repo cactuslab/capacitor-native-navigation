@@ -595,6 +595,7 @@ class NativeNavigation: NSObject {
         let nc = NativeNavigationNavigationController(componentId: componentId)
         
         let model = StackModel(componentId: componentId, spec: spec, viewController: nc, views: [], container: container?.componentId)
+        try storeComponent(model)
         
         /* So our webView doesn't disappear under the title bar */
 //        nc.navigationBar.scrollEdgeAppearance = nc.navigationBar.standardAppearance
@@ -610,7 +611,6 @@ class NativeNavigation: NSObject {
         nc.viewControllers = viewControllers
         nc.delegate = self
 
-        try storeComponent(model)
         return model
     }
 
@@ -644,10 +644,9 @@ class NativeNavigation: NSObject {
         
         let viewController = NativeNavigationWebViewController(componentId: componentId, path: spec.path, state: spec.state, stackId: stackId, plugin: plugin)
         let model = ViewModel(componentId: componentId, spec: spec, viewController: viewController, container: container?.componentId)
+        try storeComponent(model)
         
         try self.configureViewController(model, options: spec, animated: false)
-
-        try storeComponent(model)
         
         return model
     }

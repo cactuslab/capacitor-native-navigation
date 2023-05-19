@@ -181,49 +181,62 @@ class NativeNavigation: NSObject {
         let container = try findStackOrView(id: options.target)
 
         if let stack = container as? StackModel {
-            var popped = false
-            if options.mode == PushMode.replace {
-                if let popCount = options.popCount, popCount > 0 {
-                    _ = try pop(PopOptions(stack: options.target, count: popCount, animated: false))
-                    popped = true
-                }
+            var viewModel: ViewModel? = nil
+            
+            if options.mode == PushMode.replace, let topComponentId = stack.topComponentId() {
+                /* Try to reuse the existing view component */
+                viewModel = try component(topComponentId) as? ViewModel
                 
-                if let topComponentId = stack.topComponentId() {
-                    guard let topComponent = try component(topComponentId) as? ViewModel else {
-                        throw NativeNavigatorError.illegalState(message: "Top of stack is not a view: \(topComponentId)")
-                    }
-                    try await updateView(options.component, component: topComponent)
-                    
-                    await waitForViewsReady(topComponent.viewController)
-                    
-                    return PushResult(id: topComponent.componentId, stack: stack.componentId)
+                if let viewModel = viewModel {
+                    try await updateView(options.component, component: viewModel)
                 }
             }
             
-            let viewModel = try self.createView(options.component, container: stack)
+            if viewModel == nil {
+                viewModel = try self.createView(options.component, container: stack)
+            }
+            
+            guard let viewModel = viewModel else {
+                fatalError("Swift no longer works")
+            }
+
+            var views = stack.views
+            var popped: [ComponentId] = []
+            
+            if let popCount = options.popCount, popCount > 0 {
+                let range = max(0, views.count - popCount)...
+                popped = Array(views[range])
+                views.removeSubrange(range)
+            }
+            
+            var animated = options.animated
+            
+            if stack.views.isEmpty {
+                views = [viewModel.componentId]
+                animated = false
+            } else if options.mode == PushMode.replace {
+                popped.append(views.last!)
+                views[views.count - 1] = viewModel.componentId
+            } else if options.mode == PushMode.root {
+                popped.append(contentsOf: views)
+                views = [viewModel.componentId]
+            } else {
+                views.append(viewModel.componentId)
+            }
+            
+            /* The component we're pushing can end up in popped if we're replacing / updating */
+            popped.removeAll(where: { $0 == viewModel.componentId })
+            stack.views = views
+                
             await waitForViewsReady(viewModel.viewController)
 
-            if let popCount = options.popCount, popCount > 0, !popped {
-                _ = try pop(PopOptions(stack: options.target, count: popCount, animated: false))
-                popped = true
+            /* Check that another push or pop hasn't modified the model */
+            if stack.views == views {
+                let newViewControllers = try views.map { try component($0).viewController }
+                stack.viewController.setViewControllers(newViewControllers, animated: animated)
             }
-
-            /* Push onto a stack */
-            if stack.views.isEmpty {
-                stack.views = [viewModel.componentId]
-                stack.viewController.setViewControllers([viewModel.viewController], animated: false)
-            } else if options.mode == PushMode.replace {
-                var views = stack.views
-                views[views.count - 1] = viewModel.componentId
-                let viewControllers = try views.map { try component($0).viewController }
-                stack.viewController.setViewControllers(viewControllers, animated: options.animated)
-            } else if options.mode == PushMode.root {
-                stack.views = [viewModel.componentId]
-                stack.viewController.setViewControllers([viewModel.viewController], animated: options.animated)
-            } else {
-                stack.views.append(viewModel.componentId)
-                stack.viewController.pushViewController(viewModel.viewController, animated: options.animated)
-            }
+            
+            removeComponents(popped)
             return PushResult(id: viewModel.componentId, stack: stack.componentId)
         } else if let vc = container as? ViewModel {
             /* We can push without a UINavigationController; we just always replace the component's contents */

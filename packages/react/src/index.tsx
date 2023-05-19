@@ -136,13 +136,11 @@ export function initReact(options: Options): NativeNavigationReact {
 			return views
 		},
 		fireViewReady(id) {
-			try {
-				internalPlugin.viewReady({
-					id,
-				})
-			} catch (error) {
-				reportError('viewReady', error)
-			}
+			internalPlugin.viewReady({
+				id,
+			}).catch(function(reason) {
+				reportError('viewReady', reason)
+			})
 		},
 	}
 }

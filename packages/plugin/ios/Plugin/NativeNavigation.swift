@@ -582,7 +582,7 @@ class NativeNavigation: NSObject {
             }
         }
         
-        componentsById[id] = nil
+        componentsById.removeValue(forKey: id)
     }
     
     @MainActor

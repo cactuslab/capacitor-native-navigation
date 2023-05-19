@@ -50,19 +50,19 @@ class NativeNavigationRootViewControllerManager {
     }
 
     /**
-     Returns the component id of the top-most component, if there is one.
+     Returns the presented component ids from the first to last.
      */
-    func topComponentId() -> ComponentId? {
+    func presentedComponentIds() -> [ComponentId] {
         var currentViewController = self.baseViewController
-        var lastComponentId: ComponentId?
+        var result: [ComponentId] = []
         while let presentedViewController = currentViewController.presentedViewController {
             if let nativeNavigationViewController = presentedViewController as? NativeNavigationViewController {
-                lastComponentId = nativeNavigationViewController.componentId
+                result.append(nativeNavigationViewController.componentId)
             }
 
             currentViewController = presentedViewController
         }
-        return lastComponentId
+        return result
     }
     
     @MainActor

@@ -157,8 +157,8 @@ class NativeNavigation: NSObject {
         var root: (any ComponentModel)
         if let componentId = options.id {
             root = try self.component(componentId)
-        } else if let componentId = self.rootManager.topComponentId() {
-            root = try self.component(componentId)
+        } else if let component = try self.topComponent() {
+            root = component
         } else {
             throw NativeNavigatorError.illegalState(message: "No presented components")
         }
@@ -435,14 +435,28 @@ class NativeNavigation: NSObject {
         return newWebView
     }
     
+    // TODO we want to have a model of the presented components that is
+    // updated synchronously so we don't have to worry about concurrency
+    // when looking to the view controllers for who's on top
+    private func topComponent() throws -> (any ComponentModel)? {
+        let componentIds = self.rootManager.presentedComponentIds()
+        for componentId in componentIds.reversed() {
+            let component = try self.component(componentId)
+            if !component.cancelled {
+                return component
+            }
+        }
+        
+        return nil
+    }
+    
     /** Find the component with the given id, or if no id is given, find the current leaf component. */
     func findComponent(id: ComponentId?) throws -> any ComponentModel {
         if let id = id {
             return try self.component(id)
         }
         
-        if let id = self.rootManager.topComponentId() {
-            let root = try self.component(id)
+        if let root = try self.topComponent() {
             return try findLeaf(root)
         }
         
@@ -473,8 +487,7 @@ class NativeNavigation: NSObject {
             return try self.component(id)
         }
         
-        if let id = self.rootManager.topComponentId() {
-            let root = try self.component(id)
+        if let root = try self.topComponent() {
             if let stack = root as? StackModel {
                 return stack
             } else if let tabs = root as? TabsModel {

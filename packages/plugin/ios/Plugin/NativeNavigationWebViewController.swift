@@ -89,7 +89,7 @@ class NativeNavigationWebViewController: UIViewController, NativeNavigationViewC
 
     func webViewReady() throws {
         guard let continuation = viewReadyContinuations.first else {
-            throw NativeNavigatorError.illegalState(message: "View has already been reported as ready or has not been created")
+            throw NativeNavigatorError.illegalState(message: "View has already been reported as ready or has not been created: \(self.componentId)")
         }
 
         viewReadyContinuations.removeFirst()

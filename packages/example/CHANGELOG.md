@@ -1,5 +1,28 @@
 # capacitor-app
 
+## 2.1.0
+
+### Minor Changes
+
+- 4d7405b: Add open and onClose to NativeNavigationModal
+
+### Patch Changes
+
+- Updated dependencies [f2c453a]
+- Updated dependencies [136b67d]
+- Updated dependencies [4d7405b]
+- Updated dependencies [8840a5b]
+- Updated dependencies [06766a5]
+- Updated dependencies [58c59fa]
+- Updated dependencies [7ea0af6]
+- Updated dependencies [0af59f1]
+- Updated dependencies [209789b]
+- Updated dependencies [dfe3463]
+- Updated dependencies [a18842c]
+  - @cactuslab/native-navigation@0.4.1
+  - @cactuslab/native-navigation-react@4.1.0
+  - @cactuslab/native-navigation-react-router@4.0.1
+
 ## 2.0.0
 
 ### Major Changes

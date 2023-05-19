@@ -1,5 +1,16 @@
 # @cactuslab/native-navigation
 
+## 0.4.1
+
+### Patch Changes
+
+- f2c453a: Fix error presenting a view with stackItems
+- 8840a5b: iOS: fix race conditions in push()
+- 58c59fa: Improve error message when viewReady is fired multiple times
+- 0af59f1: iOS: resolve race condition between dismiss and finding the top component
+- 209789b: android: Fix issue with missing strings xml
+- a18842c: iOS: fix ComponentModel memory leak
+
 ## 0.4.0
 
 ### Minor Changes

@@ -1,5 +1,23 @@
 # @cactuslab/native-navigation-react
 
+## 4.1.0
+
+### Minor Changes
+
+- 4d7405b: Add open and onClose to NativeNavigationModal
+
+### Patch Changes
+
+- 136b67d: Catch errors from viewReady plugin call
+- 7ea0af6: Context dismiss function doesn't require options
+- Updated dependencies [f2c453a]
+- Updated dependencies [8840a5b]
+- Updated dependencies [58c59fa]
+- Updated dependencies [0af59f1]
+- Updated dependencies [209789b]
+- Updated dependencies [a18842c]
+  - @cactuslab/native-navigation@0.4.1
+
 ## 4.0.0
 
 ### Major Changes

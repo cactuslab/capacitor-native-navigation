@@ -131,6 +131,8 @@ export function useNativeNavigationNavigator(options: NativeNavigationNavigatorO
 				/* Close this modal */
 				plugin.dismiss({
 					id: stack || componentId,
+				}).catch(function(reason) {
+					reportError('dismiss', reason)
 				})
 
 				/* Then get the new top view to handle this navigation */

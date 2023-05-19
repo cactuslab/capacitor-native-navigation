@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { NativeNavigationViewProps, useNativeNavigation } from '@cactuslab/native-navigation-react'
 import { NativeNavigationViewContextProvider } from '@cactuslab/native-navigation-react/context'
@@ -8,6 +8,11 @@ import { parsePath } from './utils'
 
 interface NativeNavigationRouterProps {
 	navigation?: NativeNavigationNavigatorOptions
+}
+
+interface NativeNavigationRouterInternalState {
+	/** Track whether we have initialised and reported viewReady for existing views */
+	initialised: boolean
 }
 
 /**
@@ -20,12 +25,21 @@ export default function NativeNavigationRouter(props: React.PropsWithChildren<Na
 	const nativeNavigationReact = useNativeNavigation()
 	const [, setCounter] = useState(0)
 
+	/* Work around React double-firing useEffect in development mode */
+	const state = useRef<NativeNavigationRouterInternalState>({
+		initialised: false,
+	})
+
 	useEffect(function() {
-		/* Fire viewReady for any native views that were created before this component is rendered */
-		const views = nativeNavigationReact.views()
-		for (const id in views) {
-			if (typeof views[id].props.path !== 'undefined') {
-				nativeNavigationReact.fireViewReady(id)
+		if (!state.current.initialised) {
+			state.current.initialised = true
+
+			/* Fire viewReady for any native views that were created before this component is rendered */
+			const views = nativeNavigationReact.views()
+			for (const id in views) {
+				if (typeof views[id].props.path !== 'undefined') {
+					nativeNavigationReact.fireViewReady(id)
+				}
 			}
 		}
 

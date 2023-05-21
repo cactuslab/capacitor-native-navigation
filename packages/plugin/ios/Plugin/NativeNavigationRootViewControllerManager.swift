@@ -190,14 +190,6 @@ class NativeNavigationRootViewControllerManager {
         }
     }
 
-    private func topViewController() -> UIViewController {
-        var currentViewController = self.baseViewController
-        while let presentedViewController = currentViewController.presentedViewController {
-            currentViewController = presentedViewController
-        }
-        return currentViewController
-    }
-
     private func presentedViewControllers(_ viewController: UIViewController) -> [UIViewController] {
         var result: [UIViewController] = []
         if let presentedViewController = viewController.presentedViewController {

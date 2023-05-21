@@ -47,6 +47,10 @@ class NativeNavigationRootViewControllerManager {
     func removeAll() {
         roots.removeAll()
     }
+    
+    func topComponent() -> (any ComponentModel)? {
+        return roots.last
+    }
 
     @MainActor
     func present(_ component: any ComponentModel, animated: Bool) async {
@@ -67,22 +71,6 @@ class NativeNavigationRootViewControllerManager {
         await sync.perform {
             await _dismissAll(animated: animated)
         }
-    }
-
-    /**
-     Returns the presented component ids from the first to last.
-     */
-    func presentedComponentIds() -> [ComponentId] {
-        var currentViewController = self.baseViewController
-        var result: [ComponentId] = []
-        while let presentedViewController = currentViewController.presentedViewController {
-            if let nativeNavigationViewController = presentedViewController as? NativeNavigationViewController {
-                result.append(nativeNavigationViewController.componentId)
-            }
-
-            currentViewController = presentedViewController
-        }
-        return result
     }
 
     private func viewControllerToPresent(_ component: any ComponentModel) -> UIViewController? {

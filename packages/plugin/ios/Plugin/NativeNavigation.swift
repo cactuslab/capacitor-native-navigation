@@ -172,23 +172,17 @@ class NativeNavigation: NSObject {
         let container = try findStackOrView(id: options.target)
 
         if let stack = container as? StackModel {
-            var viewModel: ViewModel? = nil
-            
-            if options.mode == PushMode.replace, let topComponentId = stack.topComponentId() {
-                /* Try to reuse the existing view component */
-                viewModel = try component(topComponentId) as? ViewModel
-                
-                if let viewModel = viewModel {
-                    try updateView(options.component, component: viewModel)
-                }
-            }
-            
-            if viewModel == nil {
+            var viewModel: ViewModel
+
+            /* Try to reuse the existing view component if we're doing a replace */
+            if options.mode == PushMode.replace,
+               let topComponentId = stack.topComponentId(),
+               let viewModelToUpdate = try component(topComponentId) as? ViewModel
+            {
+                try updateView(options.component, component: viewModelToUpdate)
+                viewModel = viewModelToUpdate
+            } else {
                 viewModel = try self.createView(options.component, container: stack)
-            }
-            
-            guard let viewModel = viewModel else {
-                fatalError("Swift no longer works")
             }
 
             var views = stack.views

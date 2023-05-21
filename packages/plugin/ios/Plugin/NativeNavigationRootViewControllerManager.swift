@@ -113,6 +113,12 @@ class NativeNavigationRootViewControllerManager {
            hierarchy
          */
         let presentedViewControllers = self.presentedViewControllers(presentingViewController)
+        var savedPresentationControllerDelegates: [UIViewController : UIAdaptivePresentationControllerDelegate] = [:]
+        for viewController in presentedViewControllers {
+            savedPresentationControllerDelegates[viewController] = viewController.presentationController?.delegate
+        }
+        
+        /* Dismiss the currently presented view controllers that we need to insert this new view controller between */
         if !presentedViewControllers.isEmpty {
             await withCheckedContinuation { continuation in
                 presentingViewController.dismiss(animated: false) {
@@ -133,6 +139,11 @@ class NativeNavigationRootViewControllerManager {
         /* Re-present any view controllers that were presented by the dismissed view controller */
         var topViewController: UIViewController = component.viewController
         for toPresent in presentedViewControllers {
+            /* Restore presentation controller delegate */
+            if let presentationController = toPresent.presentationController {
+                presentationController.delegate = savedPresentationControllerDelegates[toPresent]
+            }
+            
             await withCheckedContinuation { continuation in
                 topViewController.present(toPresent, animated: false) {
                     continuation.resume()
@@ -152,6 +163,10 @@ class NativeNavigationRootViewControllerManager {
            hierarchy
          */
         let presentedViewControllers = self.presentedViewControllers(component.viewController)
+        var savedPresentationControllerDelegates: [UIViewController : UIAdaptivePresentationControllerDelegate] = [:]
+        for viewController in presentedViewControllers {
+            savedPresentationControllerDelegates[viewController] = viewController.presentationController?.delegate
+        }
 
         await withCheckedContinuation { continuation in
             presentingViewController.dismiss(animated: presentedViewControllers.isEmpty && animated) {
@@ -162,6 +177,11 @@ class NativeNavigationRootViewControllerManager {
         /* Re-present any view controllers that were presented by the dismissed view controller */
         var topViewController = presentingViewController
         for toPresent in presentedViewControllers {
+            /* Restore presentation controller delegate */
+            if let presentationController = toPresent.presentationController {
+                presentationController.delegate = savedPresentationControllerDelegates[toPresent]
+            }
+            
             await withCheckedContinuation { continuation in
                 topViewController.present(toPresent, animated: false) {
                     continuation.resume()

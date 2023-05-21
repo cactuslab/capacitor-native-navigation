@@ -19,6 +19,7 @@ import Examples from './examples'
 import Container from './Container'
 import { ModalContent } from './ModalContent'
 import { nativeNavigationNavigatorOptions, nativeNavigationReact } from './init'
+import ModalsRace from './race/ModalsRace'
 
 export default function Home(): React.ReactElement {
 	const [showModal, setShowModal] = useState(false)
@@ -61,6 +62,7 @@ export default function Home(): React.ReactElement {
 					<dd><button onClick={() => setupStack({ path: '/race/stack-immediate-push', title: 'Stack Immediate Push' })}>Immediate push</button></dd>
 					<dd><button onClick={() => setupStack({ path: '/race/stack-immediate-replace', title: 'Stack Immediate Replace' })}>Immediate replace</button></dd>
 					<dd><button onClick={() => setupStack({ path: '/race/push-replace/one', title: 'Push Replace' })}>Push replace</button></dd>
+					<dd><button onClick={() => setupStack({ path: '/race/modals', title: 'Modal Race' })}>Modal Race</button></dd>
 					<h2>Examples</h2>
 					<dd><button onClick={() => setupStack({ path: '/examples/links', title: 'Links' })}>Links</button></dd>
 					<dd><button onClick={() => setupStack({ path: '/examples/menu', title: 'Menu' })}>Menu</button></dd>
@@ -83,6 +85,7 @@ export default function Home(): React.ReactElement {
 							<Route path="stack-immediate-push" element={<StackImmediatePush />} />
 							<Route path="stack-immediate-replace2" element={<StackImmediateReplace2 />} />
 							<Route path="stack-immediate-replace" element={<StackImmediateReplace />} />
+							<Route path="modals" element={<ModalsRace />} />
 						</Route>
 						<Route path="examples/*" element={<Examples />} />
 						<Route path="modal/*" element={<Container />}>

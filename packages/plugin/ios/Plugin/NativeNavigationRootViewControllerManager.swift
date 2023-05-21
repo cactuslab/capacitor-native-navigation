@@ -26,10 +26,29 @@ class NativeNavigationRootViewControllerManager {
     
     private let baseViewController: UIViewController
     
+    private (set) var roots: [any ComponentModel] = []
+    
     init(baseViewController: UIViewController) {
         self.baseViewController = baseViewController
     }
-    
+
+    func append(root: any ComponentModel) {
+        roots.append(root)
+    }
+
+    func remove(root: any ComponentModel) {
+        roots.removeAll(where: { $0.componentId == root.componentId })
+    }
+
+    func remove(id: ComponentId) {
+        roots.removeAll(where: { $0.componentId == id })
+    }
+
+    func removeAll() {
+        roots.removeAll()
+    }
+
+    @MainActor
     func present(_ component: any ComponentModel, animated: Bool) async {
         await sync.perform {
             await _present(component, animated: animated)
@@ -39,6 +58,7 @@ class NativeNavigationRootViewControllerManager {
     /**
      Dismiss the view controller. Returns `true` if the view controller could be dismissed, or `false` if it has not been presented.
      */
+    @MainActor
     func dismiss(_ component: any ComponentModel, animated: Bool) async {
         await sync.perform { await _dismiss(component, animated: animated) }
     }
@@ -64,16 +84,61 @@ class NativeNavigationRootViewControllerManager {
         }
         return result
     }
+
+    private func viewControllerToPresent(_ component: any ComponentModel) -> UIViewController? {
+        /* Find the position in the hierarchy at which this component should be presented */
+        guard let componentIndex = roots.firstIndex(where: { $0.componentId == component.componentId }) else {
+            /* The component must have been dismissed */
+            return nil
+        }
+
+        for i in stride(from: componentIndex - 1, through: 0, by: -1) {
+            let candidate = roots[i].viewController
+            if candidate.presentingViewController != nil {
+                return candidate
+            }
+        }
+
+        return self.baseViewController
+    }
     
     @MainActor
     private func _present(_ component: any ComponentModel, animated: Bool) async {
+        guard let presentingViewController = self.viewControllerToPresent(component) else {
+            /* The component must have been dismissed */
+            return
+        }
+
+        /* If the presenting component itself presents some components, we need to fix the presentation
+           hierarchy
+         */
+        let presentedViewControllers = self.presentedViewControllers(presentingViewController)
+        if !presentedViewControllers.isEmpty {
+            await withCheckedContinuation { continuation in
+                presentingViewController.dismiss(animated: false) {
+                    continuation.resume()
+                }
+            }
+        }
+
         /* Wait for the present to complete to avoid race conditions, as iOS gets
            into a confused state if multiple things are presented and dismissed at once.
          */
         await withCheckedContinuation { continuation in
-            self.topViewController().present(component.viewController, animated: animated) {
+            presentingViewController.present(component.viewController, animated: presentedViewControllers.isEmpty && animated) {
                 continuation.resume()
             }
+        }
+
+        /* Re-present any view controllers that were presented by the dismissed view controller */
+        var topViewController: UIViewController = component.viewController
+        for toPresent in presentedViewControllers {
+            await withCheckedContinuation { continuation in
+                topViewController.present(toPresent, animated: false) {
+                    continuation.resume()
+                }
+            }
+            topViewController = toPresent
         }
     }
     

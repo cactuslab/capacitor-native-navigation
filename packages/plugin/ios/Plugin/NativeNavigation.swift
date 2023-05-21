@@ -132,6 +132,7 @@ class NativeNavigation: NSObject {
         component.presentOptions = options
         component.viewController.modalPresentationStyle = options.style.toUIModalPresentationStyle()
         component.viewController.presentationController?.delegate = self
+        rootManager.append(root: component)
         
         await waitForViewsReady(component.viewController)
         
@@ -157,7 +158,8 @@ class NativeNavigation: NSObject {
         guard root.presentOptions != nil else {
             throw NativeNavigatorError.componentNotPresented(name: root.componentId)
         }
-        
+
+        rootManager.remove(root: root)
         cancelComponent(root.componentId)
         
         await self.rootManager.dismiss(root, animated: options.animated)
@@ -318,6 +320,7 @@ class NativeNavigation: NSObject {
         self.cancelComponents(Array(self.componentsById.keys))
         await self.rootManager.dismissAll(animated: options.animated)
         self.removeComponents(Array(self.componentsById.keys))
+        self.rootManager.removeAll()
     }
     
     @MainActor
@@ -513,6 +516,7 @@ class NativeNavigation: NSObject {
         }
         
         componentsById.removeValue(forKey: id)
+        rootManager.remove(id: id)
     }
     
     @MainActor

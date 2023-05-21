@@ -1,6 +1,6 @@
 import { NativeNavigationModal } from '@cactuslab/native-navigation-react'
 import ResetButton from '../ResetButton'
-import { useState } from 'react'
+import React, { useState } from 'react'
 
 export default function ModalsRace() {
 	const [opens, setOpens] = useState(createOpens(3, false))
@@ -35,8 +35,9 @@ export default function ModalsRace() {
 		<>
 			<ResetButton />
 			<h1>Modals Race</h1>
-			<p>{opens.map((value, index) => (<>{index + 1} = {String(value)}<br /></>))}</p>
-			<p>{opens.map((_, index) => (<><button onClick={() => handleOpen(index)}>Open {index + 1}</button> </>))}</p>
+			<p>{opens.map((value, index) => (<React.Fragment key={index}>{index + 1} = {String(value)}<br /></React.Fragment>))}</p>
+			<p>{opens.map((_, index) => (<React.Fragment key={index}><button onClick={() => handleOpen(index)}>Open {index + 1}</button> </React.Fragment>))}</p>
+			<p>{opens.map((_, index) => (<React.Fragment key={index}><button onClick={() => handleClose(index)}>Close {index + 1}</button> </React.Fragment>))}</p>
 			<p><button onClick={handleOpenAll}>Open All</button></p>
 			<p><button onClick={handleDismissBehind}>Present then dismiss behind</button></p>
 			

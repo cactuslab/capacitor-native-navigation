@@ -518,23 +518,6 @@ class NativeNavigation: NSObject {
         
         throw NativeNavigatorError.illegalState(message: "No current stack or view found")
     }
-    
-    func findStackOrView(component: UIViewController) throws -> UIViewController {
-        if let stack = component as? UINavigationController {
-            return stack
-        }
-        if let view = component as? NativeNavigationWebViewController {
-            return view
-        }
-        if let tabs = component as? UITabBarController {
-            if let selectedViewController = tabs.selectedViewController {
-                return try findStackOrView(component: selectedViewController)
-            } else {
-                throw NativeNavigatorError.illegalState(message: "Tabs controller found with no tabs")
-            }
-        }
-        throw NativeNavigatorError.illegalState(message: "Non-component found: \(component)")
-    }
 
     private func generateId() -> String {
         let result = "_component\(self.idCounter)"

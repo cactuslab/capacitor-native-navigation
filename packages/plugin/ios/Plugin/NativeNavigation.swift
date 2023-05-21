@@ -134,6 +134,8 @@ class NativeNavigation: NSObject {
         }
     }
 
+    //MARK: - API
+
     @MainActor
     func present(_ options: PresentOptions) async throws -> PresentResult {
         var component = try self.createComponent(options.component, container: nil)
@@ -412,41 +414,8 @@ class NativeNavigation: NSObject {
         
         try component.viewController.webViewReady()
     }
-    
-    @MainActor
-    private func createComponent(_ spec: ComponentSpec, container: (any ComponentModel)?) throws -> any ComponentModel {
-        if let stackSpec = spec as? StackSpec {
-            return try createStack(stackSpec, container: container)
-        } else if let tabsSpec = spec as? TabsSpec {
-            return try createTabs(tabsSpec, container: container)
-        } else if let viewSpec = spec as? ViewSpec {
-            return try createView(viewSpec, container: container)
-        } else {
-            throw NativeNavigatorError.illegalState(message: "Unsupported component spec \(spec.type)")
-        }
-    }
-    
-    func webView(forComponent componentId: String, configuration: WKWebViewConfiguration) throws -> WKWebView? {
-        let view = try self.component(componentId)
-        guard let view = view as? ViewModel else {
-            throw NativeNavigatorError.illegalState(message: "Not a view: \(componentId)")
-        }
 
-        guard let webView = self.bridge.webView else {
-            throw NativeNavigatorError.illegalState(message: "Cannot find main webView")
-        }
-        guard let html = self.html else {
-            throw NativeNavigatorError.illegalState(message: "html not loaded")
-        }
-
-        let newWebView = WKWebView(frame: .zero, configuration: configuration)
-        newWebView.uiDelegate = self.webViewDelegate
-        newWebView.navigationDelegate = self.webViewDelegate
-        _ = newWebView.loadHTMLString(html, baseURL: webView.url!)
-        view.viewController.webView = newWebView
-        
-        return newWebView
-    }
+    //MARK: - Find components
     
     // TODO we want to have a model of the presented components that is
     // updated synchronously so we don't have to worry about concurrency
@@ -519,12 +488,9 @@ class NativeNavigation: NSObject {
         throw NativeNavigatorError.illegalState(message: "No current stack or view found")
     }
 
-    private func generateId() -> String {
-        let result = "_component\(self.idCounter)"
-        self.idCounter += 1
-        return result
-    }
+    //MARK: - Manage components
 
+    /** Get the component with the given id. Throws an error if the component is not found. */
     private func component(_ id: ComponentId) throws -> any ComponentModel {
         if let component = componentsById[id] {
             return component
@@ -533,6 +499,7 @@ class NativeNavigation: NSObject {
         }
     }
 
+    /** Store the given component model. */
     private func storeComponent(_ model: any ComponentModel) throws {
         guard self.componentsById[model.componentId] == nil else {
             throw NativeNavigatorError.componentAlreadyExists(name: model.componentId)
@@ -541,6 +508,11 @@ class NativeNavigation: NSObject {
         componentsById[model.componentId] = model
     }
 
+    /**
+     Remove the component with the given id from the list of known components.
+     If it's a view, destroy its view. If it's a container, also remove the components it contains.
+     This function is a noop if the component has already been removed.
+     */
     @MainActor
     private func removeComponent(_ id: ComponentId) {
         if let component = componentsById[id] {
@@ -566,7 +538,10 @@ class NativeNavigation: NSObject {
             self.removeComponent(id)
         }
     }
-    
+
+    /**
+     Cancel any in progress operations for the component with the given id.
+     */
     @MainActor
     private func cancelComponent(_ id: ComponentId) {
         if let component = componentsById[id] {
@@ -587,6 +562,21 @@ class NativeNavigation: NSObject {
     private func cancelComponents(_ ids: [ComponentId]) {
         for id in ids {
             self.cancelComponent(id)
+        }
+    }
+
+    //MARK: - Create components
+
+    @MainActor
+    private func createComponent(_ spec: ComponentSpec, container: (any ComponentModel)?) throws -> any ComponentModel {
+        if let stackSpec = spec as? StackSpec {
+            return try createStack(stackSpec, container: container)
+        } else if let tabsSpec = spec as? TabsSpec {
+            return try createTabs(tabsSpec, container: container)
+        } else if let viewSpec = spec as? ViewSpec {
+            return try createView(viewSpec, container: container)
+        } else {
+            throw NativeNavigatorError.illegalState(message: "Unsupported component spec \(spec.type)")
         }
     }
 
@@ -651,6 +641,12 @@ class NativeNavigation: NSObject {
         
         return model
     }
+
+    private func generateId() -> String {
+        let result = "_component\(self.idCounter)"
+        self.idCounter += 1
+        return result
+    }
     
     @MainActor
     private func updateView(_ spec: ViewSpec, component: ViewModel) async throws {
@@ -679,6 +675,8 @@ class NativeNavigation: NSObject {
             }
         }
     }
+
+    //MARK: - Configure UI
     
     @MainActor
     private func configureViewController(_ component: StackModel, options: StackSpec, animated: Bool) throws {
@@ -870,6 +868,31 @@ class NativeNavigation: NSObject {
             aa.doneButtonAppearance = navButtonAppearance
         }
         return aa
+    }
+
+    //MARK: - Internal
+    
+    /** Create a new WKWebView for the given component */
+    func webView(forComponent componentId: String, configuration: WKWebViewConfiguration) throws -> WKWebView? {
+        let view = try self.component(componentId)
+        guard let view = view as? ViewModel else {
+            throw NativeNavigatorError.illegalState(message: "Not a view: \(componentId)")
+        }
+
+        guard let webView = self.bridge.webView else {
+            throw NativeNavigatorError.illegalState(message: "Cannot find main webView")
+        }
+        guard let html = self.html else {
+            throw NativeNavigatorError.illegalState(message: "html not loaded")
+        }
+
+        let newWebView = WKWebView(frame: .zero, configuration: configuration)
+        newWebView.uiDelegate = self.webViewDelegate
+        newWebView.navigationDelegate = self.webViewDelegate
+        _ = newWebView.loadHTMLString(html, baseURL: webView.url!)
+        view.viewController.webView = newWebView
+
+        return newWebView
     }
 
     /**

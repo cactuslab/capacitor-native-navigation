@@ -540,14 +540,6 @@ class NativeNavigation: NSObject {
 
         componentsById[model.componentId] = model
     }
-    
-    private func updateComponent(_ model: any ComponentModel) throws {
-        guard self.componentsById[model.componentId] != nil else {
-            throw NativeNavigatorError.componentAlreadyExists(name: model.componentId)
-        }
-        
-        componentsById[model.componentId] = model
-    }
 
     @MainActor
     private func removeComponent(_ id: ComponentId) {

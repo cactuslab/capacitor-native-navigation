@@ -49,7 +49,7 @@ export default function NativeNavigationRouter(props: React.PropsWithChildren<Na
 			if (typeof view.props.path !== 'undefined' && (event === 'create' || event === 'update')) {
 				setTimeout(function() {
 					nativeNavigationReact.fireViewReady(view.id)
-				}, 0)
+				}, 1) /* A tiny timeout so any render-time calls to update view config happen first */
 			}
 		})
 	}, [nativeNavigationReact])

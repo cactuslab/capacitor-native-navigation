@@ -179,7 +179,7 @@ class NativeNavigation: NSObject {
                 viewModel = try component(topComponentId) as? ViewModel
                 
                 if let viewModel = viewModel {
-                    try await updateView(options.component, component: viewModel)
+                    try updateView(options.component, component: viewModel)
                 }
             }
             
@@ -231,7 +231,7 @@ class NativeNavigation: NSObject {
             return PushResult(id: viewModel.componentId, stack: stack.componentId)
         } else if let vc = container as? ViewModel {
             /* We can push without a UINavigationController; we just always replace the component's contents */
-            try await updateView(options.component, component: vc)
+            try updateView(options.component, component: vc)
             await waitForViewsReady(vc.viewController)
             
             return PushResult(id: vc.componentId)
@@ -638,7 +638,7 @@ class NativeNavigation: NSObject {
     }
     
     @MainActor
-    private func updateView(_ spec: ViewSpec, component: ViewModel) async throws {
+    private func updateView(_ spec: ViewSpec, component: ViewModel) throws {
         let viewController = component.viewController
         
         try self.configureViewController(component, options: spec, animated: false)

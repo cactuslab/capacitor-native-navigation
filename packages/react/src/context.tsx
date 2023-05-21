@@ -1,6 +1,7 @@
 import type { ClickEventData, DismissOptions, DismissResult, MessageEventData, TabUpdate, ViewUpdate } from '@cactuslab/native-navigation'
 import type { PluginListenerHandle } from '@capacitor/core'
-import React, { useContext, useMemo } from 'react'
+import React, { useContext, useLayoutEffect, useMemo, useRef } from 'react'
+import equal from 'fast-deep-equal'
 
 import type { MessageListener, NativeNavigationReact, NativeNavigationViewProps } from './types'
 import { useNativeNavigation } from './internal'
@@ -234,6 +235,17 @@ export function NativeNavigationViewContextProvider(props: React.PropsWithChildr
 	)
 }
 
-export function useNativeNavigationViewContext(): NativeNavigationViewContext {
-	return useContext(Context)
+export function useNativeNavigationViewContext(options?: ViewUpdate): NativeNavigationViewContext {
+	const context = useContext(Context)
+	const previousOptions = useRef<ViewUpdate>()
+
+	/* We want to update the options before layout occurs */
+	useLayoutEffect(function() {
+		if (options && !equal(options, previousOptions.current)) {
+			previousOptions.current = options
+			context.updateView({ ...options, animated: false })
+		}
+	}, [context, options])
+
+	return context
 }

@@ -1,6 +1,6 @@
 import { NativeNavigation } from '@cactuslab/native-navigation'
 import { useNativeNavigationViewContext } from '@cactuslab/native-navigation-react'
-import React, { useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 export default function Stack2(): JSX.Element {
@@ -33,7 +33,22 @@ export default function Stack2(): JSX.Element {
 		})
 	}, [])
 
-	const { addClickListener, addViewWillAppearListener, addViewDidAppearListener, addViewWillDisappearListener, addViewDidDisappearListener } = useNativeNavigationViewContext()
+	const [title, setTitle] = useState('Stack 2')
+	const { addClickListener, addViewWillAppearListener, addViewDidAppearListener, addViewWillDisappearListener, addViewDidDisappearListener } = useNativeNavigationViewContext({
+		title,
+	})
+
+	const [counter, setCounter] = useState(0)
+
+	function handleCounter(evt: React.MouseEvent) {
+		evt.preventDefault()
+		setCounter(c => c + 1)
+	}
+
+	function handleSyncTitle(evt: React.MouseEvent) {
+		evt.preventDefault()
+		setTitle(`Stack 2 - ${counter}`)
+	}
 
 	useEffect(function() {
 		return addClickListener(function({ buttonId }) {
@@ -70,6 +85,10 @@ export default function Stack2(): JSX.Element {
 			<p><button onClick={handleShowModal}>Show next in modal</button></p>
 			<p><button onClick={handlePush}>Push next</button></p>
 			<p><button onClick={() => navigate(-1)}>Go Back</button></p>
+			<h2>Update component</h2>
+			<p>These buttons test that the options passed to <code>useNativeNavigationViewContext</code> don't trigger unwanted calls to the plugin update method.</p>
+			<p><button onClick={handleCounter}>Increment ({counter})</button></p>
+			<p><button onClick={handleSyncTitle}>Sync title to counter</button></p>
 			<p><Link to="/view1">Link</Link></p>
 		</div>
 	)

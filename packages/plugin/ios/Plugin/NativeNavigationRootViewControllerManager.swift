@@ -152,13 +152,6 @@ class NativeNavigationRootViewControllerManager {
            hierarchy
          */
         let presentedViewControllers = self.presentedViewControllers(component.viewController)
-        if !presentedViewControllers.isEmpty {
-            await withCheckedContinuation { continuation in
-                component.viewController.dismiss(animated: false) {
-                    continuation.resume()
-                }
-            }
-        }
 
         await withCheckedContinuation { continuation in
             presentingViewController.dismiss(animated: presentedViewControllers.isEmpty && animated) {
@@ -167,7 +160,7 @@ class NativeNavigationRootViewControllerManager {
         }
 
         /* Re-present any view controllers that were presented by the dismissed view controller */
-        var topViewController = self.topViewController()
+        var topViewController = presentingViewController
         for toPresent in presentedViewControllers {
             await withCheckedContinuation { continuation in
                 topViewController.present(toPresent, animated: false) {

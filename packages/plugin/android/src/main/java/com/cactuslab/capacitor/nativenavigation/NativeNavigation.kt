@@ -8,12 +8,14 @@ import android.webkit.WebView
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
+import androidx.core.view.WindowCompat
 import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.*
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.fragment
 import com.cactuslab.capacitor.nativenavigation.databinding.ActivityNavigationBinding
+import com.cactuslab.capacitor.nativenavigation.helpers.isColorDark
 import com.cactuslab.capacitor.nativenavigation.helpers.parseRGBAColor
 import com.cactuslab.capacitor.nativenavigation.types.*
 import com.cactuslab.capacitor.nativenavigation.ui.ViewSpecFragment
@@ -311,6 +313,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                 val backgroundColor = spec.topBarSpec()?.background?.color ?: topNavContext.presentOptions?.component?.topBarSpec()?.background?.color
                 backgroundColor?.parseRGBAColor()?.let { statusColor ->
                     plugin.activity.window.statusBarColor = statusColor
+                    WindowCompat.getInsetsController(plugin.activity.window, plugin.activity.window.decorView).isAppearanceLightStatusBars = !statusColor.isColorDark()
                 }
             }
         }

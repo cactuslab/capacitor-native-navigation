@@ -456,7 +456,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         val component = options.component
         insertComponent(component)
 
-        Log.d(TAG, "present: ${component.id} for createOptions: $component")
+        Log.d(TAG, "⬆️ PRESENT: ${component.id} for createOptions: $component")
 
         val navContext = pushNavController(component.id, options.animated)
         navContext.presentOptions = options
@@ -548,7 +548,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
     }
 
     fun dismiss(options: DismissOptions, call: PluginCall) {
-        Log.d(TAG, "dismiss: ${options.componentId}")
+        Log.d(TAG, "⬇️ DISMISS: ${options.componentId}")
         if (options.componentId.isNullOrBlank() && navContexts.isNotEmpty()) {
             val navContext = navContexts.last()
             popNavContext()

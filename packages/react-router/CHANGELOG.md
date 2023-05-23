@@ -1,5 +1,19 @@
 # @cactuslab/native-navigation-react-router
 
+## 5.0.0
+
+### Patch Changes
+
+- 718859d: Fire viewReady with a timeout of 1 to allow useLayoutEffects to run and to update native view options
+- Updated dependencies [86e67e8]
+- Updated dependencies [9842b3f]
+- Updated dependencies [3a92a06]
+- Updated dependencies [90a909b]
+- Updated dependencies [10fe5f1]
+- Updated dependencies [991eceb]
+  - @cactuslab/native-navigation@0.5.0
+  - @cactuslab/native-navigation-react@5.0.0
+
 ## 4.0.1
 
 ### Patch Changes

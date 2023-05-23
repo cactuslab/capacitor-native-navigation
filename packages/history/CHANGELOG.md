@@ -1,5 +1,16 @@
 # @cactuslab/native-navigation-history
 
+## 5.0.0
+
+### Patch Changes
+
+- Updated dependencies [86e67e8]
+- Updated dependencies [9842b3f]
+- Updated dependencies [3a92a06]
+- Updated dependencies [10fe5f1]
+- Updated dependencies [991eceb]
+  - @cactuslab/native-navigation@0.5.0
+
 ## 4.0.0
 
 ### Minor Changes

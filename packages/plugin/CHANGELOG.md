@@ -1,5 +1,18 @@
 # @cactuslab/native-navigation
 
+## 0.5.0
+
+### Minor Changes
+
+- 3a92a06: iOS: ensure roots are presented in the correct order
+- 10fe5f1: iOS: use model of presented views rather than which is actually presented
+
+### Patch Changes
+
+- 86e67e8: iOS: save and restore UIAdaptivePresentationControllerDelegate
+- 9842b3f: iOS: fix dismissal of a root that isn't top
+- 991eceb: Android: handle modals race condition.
+
 ## 0.4.1
 
 ### Patch Changes

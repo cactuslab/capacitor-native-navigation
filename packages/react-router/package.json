@@ -27,7 +27,7 @@
     "native"
   ],
   "scripts": {
-    "build": "pnpm run clean && tsc && rollup -c rollup.config.mjs",
+    "build": "tsc && rollup -c rollup.config.mjs",
     "clean": "rimraf ./dist",
     "watch": "tsc --watch",
     "prepublishOnly": "pnpm run build"

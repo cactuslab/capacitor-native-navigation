@@ -43,6 +43,11 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
         var startRoute : String? = null
 
+        /* A flag to indicate if this nav context has been removed or requested to be removed from the view hierarchy */
+        private var isRemoved: Boolean = false
+        /* A flag to indicate if this nav context has been added to the view hierarchy */
+        private var isAdded: Boolean = false
+
         /**
          * The virtual stack exists to serve as an in-memory model of the expected stack after all operations are completed.
          * This stack allows us to inspect what a stack will look like before it is presented.
@@ -58,16 +63,27 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         }
 
         fun tryAddToActivity(transaction: FragmentTransaction) {
+            if (isRemoved) {
+                return
+            }
             if (!isAddedToActivity) {
                 addToActivityBlock(transaction)
+                isAdded = true
             }
         }
 
         fun tryRemoveFromActivity(transaction: FragmentTransaction) {
-            removeFromActivityBlock(transaction)
+            if (isAdded) {
+                removeFromActivityBlock(transaction)
+                isAdded = false
+            }
+            isRemoved = true
         }
 
         fun runSetup(startDestination: String) {
+            if (isRemoved) {
+                return
+            }
             val host = getBinding()?.navigationHost?.getFragment<NavHostFragment>() ?: throw Exception("The navigation host is null")
             val graph = host.createGraph(startDestination = "$contextId/{${nav_arguments.component_id}}", route = "$contextId/$startDestination") {
                 fragment<ViewSpecFragment>("$contextId/{${nav_arguments.component_id}}") {

@@ -110,7 +110,7 @@ export default function NativeNavigationModal(props: React.PropsWithChildren<Nat
 				dismissModal()
 			} else {
 				state.viewListenerUnsubscribe = addViewsListener(function(view, event) {
-					if (view.id === result.id && event === 'remove') {
+					if (view.id === viewId && event === 'remove') {
 						state.presentedId = undefined
 						onClose?.()
 					}

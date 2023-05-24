@@ -1,5 +1,5 @@
 import React, { useRef } from 'react'
-import { AnyComponentSpec, NativeNavigation, PresentResult, PresentationStyle } from '@cactuslab/native-navigation'
+import { AnyComponentSpec, NativeNavigation, PresentationStyle } from '@cactuslab/native-navigation'
 import { useNativeNavigation, useNativeNavigationView } from './internal'
 import { useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
@@ -63,8 +63,16 @@ function updateLeafComponentId<T extends AnyComponentSpec>(spec: T, id: string):
 	}
 }
 
+function updateModalComponentIds<T extends AnyComponentSpec>(spec: T, id: string): T {
+	const result = updateLeafComponentId(spec, id)
+	if (!result.id) {
+		result.id = `${id}_root`
+	}
+	return result
+}
+
 interface InternalModalState {
-	presentedId?: string
+	presented?: boolean
 	shouldDismiss?: boolean
 	viewListenerUnsubscribe?: ReactViewListenerUnsubscribeFunc
 }
@@ -79,6 +87,11 @@ export default function NativeNavigationModal(props: React.PropsWithChildren<Nat
 	// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []) /* We don't want to change the view id if the component changes as we ignore component changes in the useEffect */
 
+	const componentWithIds = useMemo(function() {
+		return updateModalComponentIds(component, viewId)
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [viewId])
+
 	const { fireViewReady, addViewsListener } = useNativeNavigation()
 
 	/* Our internal state is a ref so that multiple invocations of useEffect (which happens in development https://react.dev/reference/react/useEffect#examples-dependencies)
@@ -91,10 +104,11 @@ export default function NativeNavigationModal(props: React.PropsWithChildren<Nat
 		let debounceTimer: NodeJS.Timeout | undefined
 
 		async function createModal() {
-			let result: PresentResult
+			state.presented = true
+
 			try {
-				result = await NativeNavigation.present({
-					component: updateLeafComponentId(component, viewId),
+				await NativeNavigation.present({
+					component: componentWithIds,
 					style,
 					animated,
 					cancellable,
@@ -104,14 +118,12 @@ export default function NativeNavigationModal(props: React.PropsWithChildren<Nat
 				return
 			}
 
-			state.presentedId = result.id
-
 			if (state.shouldDismiss) {
 				dismissModal()
 			} else {
 				state.viewListenerUnsubscribe = addViewsListener(function(view, event) {
 					if (view.id === viewId && event === 'remove') {
-						state.presentedId = undefined
+						state.presented = false
 						onClose?.()
 					}
 				})
@@ -123,13 +135,11 @@ export default function NativeNavigationModal(props: React.PropsWithChildren<Nat
 				clearTimeout(debounceTimer)
 			}
 
-			// eslint-disable-next-line react-hooks/exhaustive-deps
-			const presentedId = state.presentedId
-			if (presentedId) {
-				state.presentedId = undefined
+			if (state.presented) {
+				state.presented = false
 
 				NativeNavigation.dismiss({
-					id: presentedId,
+					id: componentWithIds.id,
 				}).then(function() {
 					onClose?.()
 				}).catch(function(reason: unknown) {
@@ -146,7 +156,7 @@ export default function NativeNavigationModal(props: React.PropsWithChildren<Nat
 
 			if (debounce) {
 				debounceTimer = setTimeout(createModal, debounce)
-			} else if (!state.presentedId) {
+			} else if (!state.presented) {
 				createModal()
 			}
 		}
@@ -154,9 +164,7 @@ export default function NativeNavigationModal(props: React.PropsWithChildren<Nat
 		return function() {
 			state.shouldDismiss = true
 
-			if (state.presentedId) {
-				dismissModal()
-			}
+			dismissModal()
 			state.viewListenerUnsubscribe?.()
 			state.viewListenerUnsubscribe = undefined
 		}

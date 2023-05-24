@@ -59,6 +59,13 @@ class NativeNavigationRootViewControllerManager {
         }
     }
     
+    @MainActor
+    func present(_ viewController: UIViewController, animated: Bool) async {
+        await sync.perform {
+            await _present(viewController, animated: animated)
+        }
+    }
+    
     /**
      Dismiss the view controller. Returns `true` if the view controller could be dismissed, or `false` if it has not been presented.
      */
@@ -88,6 +95,17 @@ class NativeNavigationRootViewControllerManager {
         }
 
         return self.baseViewController
+    }
+    
+    @MainActor
+    private func _present(_ viewController: UIViewController, animated: Bool) async {
+        let presentingViewController = self.presentedViewControllers(self.baseViewController).last ?? self.baseViewController
+        
+        await withCheckedContinuation { continuation in
+            presentingViewController.present(viewController, animated: animated) {
+                continuation.resume()
+            }
+        }
     }
     
     @MainActor

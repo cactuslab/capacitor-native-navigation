@@ -401,6 +401,57 @@ class NativeNavigation: NSObject {
         try component.viewController.webViewReady()
     }
 
+    //MARK: - Alerts
+    
+    @MainActor
+    func alert(_ message: String, completionHandler: @escaping () -> Void) async {
+        let alertController = UIAlertController(title: nil, message: message, preferredStyle: .alert)
+
+        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: { (_) in
+            completionHandler()
+        }))
+
+        await self.rootManager.present(alertController, animated: true)
+    }
+    
+    @MainActor
+    func confirm(_ message: String, completionHandler: @escaping (Bool) -> Void) async {
+        let alertController = UIAlertController(title: nil, message: message, preferredStyle: .alert)
+
+        alertController.addAction(UIAlertAction(title: "Cancel", style: .default, handler: { (_) in
+            completionHandler(false)
+        }))
+
+        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: { (_) in
+            completionHandler(true)
+        }))
+
+        await self.rootManager.present(alertController, animated: true)
+    }
+    
+    @MainActor
+    func prompt(_ prompt: String, defaultText: String?, completionHandler: @escaping (String?) -> Void) async {
+        let alertController = UIAlertController(title: nil, message: prompt, preferredStyle: .alert)
+
+        alertController.addTextField { (textField) in
+            textField.text = defaultText
+        }
+
+        alertController.addAction(UIAlertAction(title: "Cancel", style: .default, handler: { (_) in
+            completionHandler(nil)
+        }))
+
+        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: { (_) in
+            if let text = alertController.textFields?.first?.text {
+                completionHandler(text)
+            } else {
+                completionHandler(defaultText)
+            }
+        }))
+
+        await self.rootManager.present(alertController, animated: true)
+    }
+    
     //MARK: - Find components
     
     /** Find the component with the given id, or if no id is given, find the current leaf component. */

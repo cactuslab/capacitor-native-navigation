@@ -819,6 +819,7 @@ class NativeNavigation: NSObject {
                     /* This controller is the topmost in this stack so apply options that may show or hide settings for the whole navigation controller */
                     if let barOptions = stackItem.bar {
                         navigationController.setNavigationBarHidden(barOptions.visible == false, animated: animated)
+//                        navigationController.setShadowHidden(hidden: barOptions.hideShadow)
                     }
                     
                 }
@@ -878,10 +879,14 @@ class NativeNavigation: NSObject {
         }
     }
     
+    private let cachedSystemShadowColor = UINavigationBarAppearance().shadowColor
+    
     private func customiseBarAppearance(_ a: UINavigationBarAppearance, options barOptions: BarSpec) -> UINavigationBarAppearance {
         let aa = UINavigationBarAppearance(barAppearance: a)
         if let color = barOptions.background?.color {
             aa.backgroundColor = color
+            aa.shadowColor = barOptions.hideShadow == true ? UIColor.clear : cachedSystemShadowColor
+            aa.shadowImage = barOptions.hideShadow == true ? UIImage() : nil
         }
         
         if let titleOptions = barOptions.title {
@@ -990,7 +995,13 @@ extension NativeNavigation: UINavigationControllerDelegate {
 
             let viewComponent = try self.component(viewController.componentId)
             if let viewModel = viewComponent as? ViewModel {
-                let barVisible = viewModel.spec.stackItem?.bar?.visible ?? true
+                
+                var barSpec = viewModel.spec.stackItem?.bar ?? BarSpec()
+                if let containerId = viewComponent.container, let stackModel = try? self.component(containerId) as? StackModel, let spec = stackModel.spec.bar {
+                    barSpec = barSpec.barSpecWithFallback(spec)
+                }
+                
+                let barVisible = barSpec.visible ?? true
 
                 if navigationController.isNavigationBarHidden == barVisible {
                     navigationController.setNavigationBarHidden(!barVisible, animated: animated)

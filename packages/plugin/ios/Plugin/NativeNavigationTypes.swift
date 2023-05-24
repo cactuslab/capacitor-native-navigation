@@ -504,6 +504,7 @@ struct BarSpec : PluginResultable, JSObjectUpdatable, JSObjectDecodable {
     var title: LabelSpec?
     var buttons: LabelSpec?
     var visible: Bool?
+    var hideShadow: Bool?
     
     /// Create a new bar spec that combines the fallback values where this instance is nil.
     /// This is useful for merging a view's `BarSpec` with it's container stack `BarSpec`
@@ -515,6 +516,7 @@ struct BarSpec : PluginResultable, JSObjectUpdatable, JSObjectDecodable {
         spec.title = title ?? fallback.title
         spec.buttons = buttons ?? fallback.buttons
         spec.visible = visible ?? fallback.visible
+        spec.hideShadow = hideShadow ?? fallback.hideShadow
         return spec
     }
     
@@ -530,6 +532,11 @@ struct BarSpec : PluginResultable, JSObjectUpdatable, JSObjectDecodable {
             result.buttons = try LabelSpec.fromJSObject(buttonsOptions)
         }
         result.visible = object.getBool("visible")
+        if let iOSOpts = object.getObject("iOS") {
+            if let hideShadow = iOSOpts.getBool("hideShadow") {
+                result.hideShadow = hideShadow
+            }
+        }
         return result
     }
     
@@ -540,6 +547,9 @@ struct BarSpec : PluginResultable, JSObjectUpdatable, JSObjectDecodable {
         try LabelSpec.updateOrCreate(object, key: "title", existingObject: &spec.title)
         try LabelSpec.updateOrCreate(object, key: "buttons", existingObject: &spec.buttons)
         try Nullable<Bool>.fromJSObjectOrNil(object, key: "visible")?.apply({spec.visible = $0})
+        if let iOSOpts = object.getObject("iOS") {
+            try Nullable<Bool>.fromJSObjectOrNil(iOSOpts, key: "hideShadow")?.apply({spec.hideShadow = $0})
+        }
         
         existingObj = spec
     }
@@ -557,6 +567,13 @@ struct BarSpec : PluginResultable, JSObjectUpdatable, JSObjectDecodable {
         }
         if let value = visible {
             result["visible"] = value
+        }
+        var iOSOpts: PluginCallResultData = [:]
+        if let value = hideShadow {
+            iOSOpts["hideShadow"] = value
+        }
+        if !iOSOpts.isEmpty {
+            result["iOS"] = iOSOpts
         }
         return result
     }

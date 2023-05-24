@@ -11,6 +11,7 @@ export default function Stack1(): JSX.Element {
 
 	const [toolbarVisible, setToolbarVisible] = useState(true)
 	const [backEnabled, setBackEnabled] = useState(true)
+	const [iOSShadowHidden, setIOSShadowHidden] = useState(false)
 
 	const handleChangeTitle = useCallback(function(evt: React.MouseEvent) {
 		evt.preventDefault()
@@ -25,6 +26,24 @@ export default function Stack1(): JSX.Element {
 			title: null,
 		})
 	}, [updateView])
+
+	const handleToggleShadow = useCallback(function(evt: React.MouseEvent) {
+		evt.preventDefault()
+		const newValue = !iOSShadowHidden
+		setIOSShadowHidden(newValue)
+		updateView({
+			stackItem: {
+				bar: {
+					background: {
+						color: "#DDFFEE",
+					},
+					iOS: {
+						hideShadow: newValue
+					}
+				}
+			}
+		})
+	}, [iOSShadowHidden])
 
 	const handlePush = useCallback(function(evt: React.MouseEvent) {
 		evt.preventDefault()
@@ -111,6 +130,7 @@ export default function Stack1(): JSX.Element {
 			<p><button onClick={handleChangeTitle}>Change Title</button> <button onClick={handleRemoveTitle}>Remove Title</button> </p>
 			<h2>Toolbar</h2>
 			<p><button onClick={handleToolbarToggle}>{toolbarVisible ? 'Hide Toolbar' : 'Show Toolbar'}</button> <button onClick={handleBackEnabledToggle}>{backEnabled ? 'Disable Back' : 'Enable Back'}</button></p>
+			<p><button onClick={handleToggleShadow}>{iOSShadowHidden ? 'Show iOS Shadow' : 'Hide iOS Shadow'}</button></p>
 			<h2>Navigation</h2>
 			<p><button onClick={handlePushSelf}>Push Stack 1 (this)</button> <button onClick={handlePush}>Push Stack 2 (new)</button> <button onClick={handlePushWithState}>Push with State</button></p>
 			<p><button onClick={handleReplace1}>Replace with Stack 2</button></p>

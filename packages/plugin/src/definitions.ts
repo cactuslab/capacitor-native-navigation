@@ -295,11 +295,20 @@ export interface StackUpdate extends ComponentOptions {
 	bar?: BarUpdate
 }
 
+interface BarSpecIOS {
+	/** 
+	 * Default behaviour is to show the shadow 
+	 */
+	hideShadow?: boolean | null
+}
+
+
 interface BarSpec {
 	background?: FillSpec
 	title?: LabelSpec
 	buttons?: LabelSpec
 	visible?: boolean
+	iOS?: BarSpecIOS
 }
 
 interface BarUpdate {
@@ -307,6 +316,7 @@ interface BarUpdate {
 	title?: LabelUpdate | null
 	buttons?: LabelUpdate | null
 	visible?: boolean | null
+	iOS?: BarSpecIOS
 }
 
 export interface FillSpec {

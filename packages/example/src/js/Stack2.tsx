@@ -21,6 +21,28 @@ export default function Stack2(): JSX.Element {
 			animated: true,
 		})
 	}, [])
+	
+	const handleShowModalWithStack = useCallback(function(evt: React.MouseEvent) {
+		evt.preventDefault()
+
+		NativeNavigation.present({
+			component: {
+				type: 'stack',
+				components: [
+					{
+						type: 'view',
+						path: '/view1',
+						title: 'View 1',
+						state: {
+							modal: true,
+						},
+					},
+				],
+			},
+			style: 'pageSheet',
+			animated: true,
+		})
+	}, [])
 
 	const handlePush = useCallback(function(evt: React.MouseEvent) {
 		evt.preventDefault()
@@ -81,15 +103,15 @@ export default function Stack2(): JSX.Element {
 
 	return (
 		<div>
-			<h1>Stack Screen 2</h1>
-			<p><button onClick={handleShowModal}>Show next in modal</button></p>
-			<p><button onClick={handlePush}>Push next</button></p>
+			<h1>Stack 2</h1>
+			<p><button onClick={handleShowModal}>Show View 1 in modal</button> <button onClick={handleShowModalWithStack}>Show View 1 in modal with Stack</button></p>
+			<p><button onClick={handlePush}>Push View 1</button></p>
 			<p><button onClick={() => navigate(-1)}>Go Back</button></p>
 			<h2>Update component</h2>
 			<p>These buttons test that the options passed to <code>useNativeNavigationViewContext</code> don't trigger unwanted calls to the plugin update method.</p>
 			<p><button onClick={handleCounter}>Increment ({counter})</button></p>
 			<p><button onClick={handleSyncTitle}>Sync title to counter</button></p>
-			<p><Link to="/view1">Link</Link></p>
+			<p><Link to="/view1">Link to View 1</Link></p>
 		</div>
 	)
 }

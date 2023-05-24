@@ -105,16 +105,21 @@ export default function Stack1(): JSX.Element {
 
 	return (
 		<div>
-			<h1>Stack root</h1>
+			<h1>Stack 1</h1>
 			<p>This is the root of the stack. The title of this view was defined when the stack was created.</p>
+			<h2>Title</h2>
 			<p><button onClick={handleChangeTitle}>Change Title</button> <button onClick={handleRemoveTitle}>Remove Title</button> </p>
-			<p><button onClick={handlePush}>Push New</button> <button onClick={handlePushSelf}>Push Same</button> <button onClick={handlePushWithState}>Push With State</button></p>
+			<h2>Toolbar</h2>
 			<p><button onClick={handleToolbarToggle}>{toolbarVisible ? 'Hide Toolbar' : 'Show Toolbar'}</button> <button onClick={handleBackEnabledToggle}>{backEnabled ? 'Disable Back' : 'Enable Back'}</button></p>
-			<h2>Replace</h2>
-			<p><button onClick={handleReplace1}>Replace 1</button></p>
-			<h2>Links</h2>
-			<p><Link to="/stack2">Push New</Link> <Link to="/stack1">Push Same</Link> <Link to="/state" state={{ fromLink: true }}>Push With State</Link></p>
-			<p><Link to="/modal/">Link to modal</Link></p>
+			<h2>Navigation</h2>
+			<p><button onClick={handlePushSelf}>Push Stack 1 (this)</button> <button onClick={handlePush}>Push Stack 2 (new)</button> <button onClick={handlePushWithState}>Push with State</button></p>
+			<p><button onClick={handleReplace1}>Replace with Stack 2</button></p>
+			<ul>
+				<li><Link to="/stack1">Push Stack 1</Link></li>
+				<li><Link to="/stack2">Push Stack 2</Link></li>
+				<li><Link to="/state" state={{ fromLink: true }}>Push with State</Link></li>
+				<li><Link to="/modal/">Link to modal</Link></li>
+			</ul>
 			
 			<p><button onClick={() => navigate(-1)}>Go Back</button></p>
 		</div>

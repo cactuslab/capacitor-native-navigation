@@ -20,6 +20,7 @@ import Container from './Container'
 import { ModalContent } from './ModalContent'
 import { nativeNavigationNavigatorOptions, nativeNavigationReact } from './init'
 import ModalsRace from './race/ModalsRace'
+import LinkModal, { LinkModalPage2 } from './LinkModal'
 
 export default function Home(): React.ReactElement {
 	const [showModal, setShowModal] = useState(false)
@@ -89,7 +90,8 @@ export default function Home(): React.ReactElement {
 						</Route>
 						<Route path="examples/*" element={<Examples />} />
 						<Route path="modal/*" element={<Container />}>
-							<Route path="" element={<View1 />} />
+							<Route path="page2" element={<LinkModalPage2 />} />
+							<Route path="" element={<LinkModal />} />
 						</Route>
 					</Routes>
 				</NativeNavigationRouter>

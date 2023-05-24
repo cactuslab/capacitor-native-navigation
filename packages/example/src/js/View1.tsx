@@ -55,8 +55,11 @@ export default function View1(): JSX.Element {
 			<h2>Unmounting</h2>
 			<p>Note that this view will show an alert when it is UNMOUNTED, so if it doesn't alert there is a fault!</p>
 			<p><button onClick={handleReset}>Reset</button></p>
-			<p><button onClick={handleGet}>Get state</button></p>
-			<p><Link to="/stack1">Go to Stack 1</Link></p>
+			<p><button onClick={handleGet}>Get view details from NN</button></p>
+			<ul>
+				<li><Link to="/stack1">Link to Stack 1</Link></li>
+				<li><Link to="/stack2">Link to Stack 2</Link></li>
+			</ul>
 			{got && (
 				<pre>{got}</pre>
 			)}

@@ -1,5 +1,17 @@
 # @cactuslab/native-navigation
 
+## 0.6.0
+
+### Minor Changes
+
+- ec8aadd: Allow dismiss to be called on a non-root component
+- d88b6ce: iOS: implement own support for alert, confirm, input / prompt to work around crashes when we have presented multiple view controllers
+
+### Patch Changes
+
+- aa9599f: iOS: to find unpresented view controllers as top component
+- c15bb76: Android: fix status bar color when navigating back
+
 ## 0.5.0
 
 ### Minor Changes

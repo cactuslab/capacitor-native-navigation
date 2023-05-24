@@ -1,5 +1,19 @@
 # @cactuslab/native-navigation-react-router
 
+## 6.0.0
+
+### Patch Changes
+
+- b73eacb: react-router: Forward animated option if it's specified in the state
+- Updated dependencies [aa9599f]
+- Updated dependencies [63e89de]
+- Updated dependencies [ec8aadd]
+- Updated dependencies [d88b6ce]
+- Updated dependencies [c15bb76]
+- Updated dependencies [65b9585]
+  - @cactuslab/native-navigation@0.6.0
+  - @cactuslab/native-navigation-react@6.0.0
+
 ## 5.0.0
 
 ### Patch Changes

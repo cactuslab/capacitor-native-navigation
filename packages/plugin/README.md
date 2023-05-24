@@ -56,7 +56,8 @@ Present a new native UI.
 dismiss(options?: DismissOptions | undefined) => Promise<DismissResult>
 ```
 
-Dismiss a native UI.
+Dismiss a native UI. The component id may be a component that was previously presented or
+a component within a previously presented component.
 
 | Param         | Type                                                      |
 | ------------- | --------------------------------------------------------- |

@@ -26,29 +26,29 @@ importers:
   packages/example:
     dependencies:
       '@cactuslab/native-navigation':
-        specifier: ^0.5.0
+        specifier: ^0.6.0
         version: link:../plugin
       '@cactuslab/native-navigation-react':
-        specifier: ^5.0.0
+        specifier: ^6.0.0
         version: link:../react
       '@cactuslab/native-navigation-react-router':
-        specifier: ^5.0.0
+        specifier: ^6.0.0
         version: link:../react-router
       '@capacitor/android':
         specifier: ^5.0.3
-        version: 5.0.3(@capacitor/core@5.0.3)
+        version: 5.0.3(@capacitor/core@5.0.4)
       '@capacitor/camera':
         specifier: latest
-        version: 5.0.2(@capacitor/core@5.0.3)
+        version: 5.0.2(@capacitor/core@5.0.4)
       '@capacitor/core':
         specifier: latest
-        version: 5.0.3
+        version: 5.0.4
       '@capacitor/ios':
         specifier: ^5.0.3
-        version: 5.0.3(@capacitor/core@5.0.3)
+        version: 5.0.3(@capacitor/core@5.0.4)
       '@capacitor/splash-screen':
         specifier: latest
-        version: 5.0.2(@capacitor/core@5.0.3)
+        version: 5.0.2(@capacitor/core@5.0.4)
       react:
         specifier: ^18.2.0
         version: 18.2.0
@@ -78,7 +78,7 @@ importers:
   packages/history:
     devDependencies:
       '@cactuslab/native-navigation':
-        specifier: ^0.5.0
+        specifier: ^0.6.0
         version: link:../plugin
       '@capacitor/core':
         specifier: ^5.0.3
@@ -142,7 +142,7 @@ importers:
         version: 3.1.3
     devDependencies:
       '@cactuslab/native-navigation':
-        specifier: ^0.5.0
+        specifier: ^0.6.0
         version: link:../plugin
       '@capacitor/core':
         specifier: ^5.0.3
@@ -166,11 +166,11 @@ importers:
   packages/react-router:
     dependencies:
       '@cactuslab/native-navigation-react':
-        specifier: ^5.0.0
+        specifier: ^6.0.0
         version: link:../react
     devDependencies:
       '@cactuslab/native-navigation':
-        specifier: ^0.5.0
+        specifier: ^0.6.0
         version: link:../plugin
       '@capacitor/core':
         specifier: ^5.0.3
@@ -1569,13 +1569,22 @@ packages:
       '@capacitor/core': ^5.0.0
     dependencies:
       '@capacitor/core': 5.0.3
+    dev: true
 
-  /@capacitor/camera@5.0.2(@capacitor/core@5.0.3):
+  /@capacitor/android@5.0.3(@capacitor/core@5.0.4):
+    resolution: {integrity: sha512-jPN6JJUbN2cCrAjP+0Q4gIwIxleFVChZWh+/gsbDDfSpogdpZNwZnriUNxSRTZayL58tUzLHuxpJxY6hsddDrA==}
+    peerDependencies:
+      '@capacitor/core': ^5.0.0
+    dependencies:
+      '@capacitor/core': 5.0.4
+    dev: false
+
+  /@capacitor/camera@5.0.2(@capacitor/core@5.0.4):
     resolution: {integrity: sha512-XX8fQltyAPtHxoNcf7pITmRD10ERemduzda97MRd+oND+6hEqJ3vVlNjNy0uK2qjnageolw+7zJhA9PhBqMWfQ==}
     peerDependencies:
       '@capacitor/core': ^5.0.0
     dependencies:
-      '@capacitor/core': 5.0.3
+      '@capacitor/core': 5.0.4
     dev: false
 
   /@capacitor/cli@5.0.3:
@@ -1608,6 +1617,13 @@ packages:
     resolution: {integrity: sha512-VxzSoFvoiGDmvlKQMbg7ZZh+w3Z223630kZINDOsbs7UZr5gZws7+m26Y9Oc8n2miI737hE6qOf2VU4H/8Tytg==}
     dependencies:
       tslib: 2.5.0
+    dev: true
+
+  /@capacitor/core@5.0.4:
+    resolution: {integrity: sha512-BFvziz9jM87pLHW2sXPNIzwrdmI5mAP0tBsBHgXoCO2+wVdpvIMYCpcst5BuTULaMz5JBFZZ6g6nqwgfs+SMCA==}
+    dependencies:
+      tslib: 2.5.0
+    dev: false
 
   /@capacitor/docgen@0.2.1:
     resolution: {integrity: sha512-COS5teC6n+EOSaBS7voHnIeIKH7owALnVoI1AhVArIWtBrc1JxSgkUuvLHpti4VGZdXdsrtp4yBPUwGm8WOZKA==}
@@ -1627,13 +1643,22 @@ packages:
       '@capacitor/core': ^5.0.0
     dependencies:
       '@capacitor/core': 5.0.3
+    dev: true
 
-  /@capacitor/splash-screen@5.0.2(@capacitor/core@5.0.3):
+  /@capacitor/ios@5.0.3(@capacitor/core@5.0.4):
+    resolution: {integrity: sha512-4U+mfiT0x2oYEJN9NAxcYKdrK4szROMe8SgIiG2lXDG7t7FK1OY4BnB1euZc8c+49VcBSk9x2EiYQg5Nshi5iQ==}
+    peerDependencies:
+      '@capacitor/core': ^5.0.0
+    dependencies:
+      '@capacitor/core': 5.0.4
+    dev: false
+
+  /@capacitor/splash-screen@5.0.2(@capacitor/core@5.0.4):
     resolution: {integrity: sha512-DJQQL3VfY7LfMH0FJgzrb0N1v3fZw0EVfBRB+xQjbI13jjoafS8WPRCQDvXxzoJqfh5hQyepDRyYxIdOCB2KEA==}
     peerDependencies:
       '@capacitor/core': ^5.0.0
     dependencies:
-      '@capacitor/core': 5.0.3
+      '@capacitor/core': 5.0.4
     dev: false
 
   /@changesets/apply-release-plan@6.1.3:

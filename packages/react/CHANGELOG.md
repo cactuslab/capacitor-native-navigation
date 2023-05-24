@@ -1,5 +1,17 @@
 # @cactuslab/native-navigation-react
 
+## 6.0.0
+
+### Patch Changes
+
+- 63e89de: navigation: Fix issue where modal is closed natively and remove listener missed it
+- 65b9585: Fix fault where a modal that never fired viewReady would never be dismissed
+- Updated dependencies [aa9599f]
+- Updated dependencies [ec8aadd]
+- Updated dependencies [d88b6ce]
+- Updated dependencies [c15bb76]
+  - @cactuslab/native-navigation@0.6.0
+
 ## 5.0.0
 
 ### Minor Changes

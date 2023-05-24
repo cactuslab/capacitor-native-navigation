@@ -49,7 +49,12 @@ class NativeNavigationRootViewControllerManager {
     }
     
     func topComponent() -> (any ComponentModel)? {
-        return roots.last
+        for component in roots.reversed() {
+            if component.presented {
+                return component
+            }
+        }
+        return nil
     }
 
     @MainActor

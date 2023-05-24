@@ -12,6 +12,7 @@ protocol ComponentModel {
     var container: ComponentId? { get }
     var presentOptions: PresentOptions? { get set }
 
+    var presented: Bool { get set }
     var cancelled: Bool { get set }
 }
 
@@ -22,7 +23,8 @@ class StackModel: ComponentModel {
     var views: [ComponentId]
     let container: ComponentId?
     var presentOptions: PresentOptions?
-    var cancelled: Bool
+    var cancelled = false
+    var presented = false
     
     init(componentId: ComponentId, spec: StackSpec, viewController: NativeNavigationNavigationController, views: [ComponentId], container: ComponentId? = nil) {
         self.componentId = componentId
@@ -30,7 +32,6 @@ class StackModel: ComponentModel {
         self.viewController = viewController
         self.views = views
         self.container = container
-        self.cancelled = false
     }
     
     func topComponentId() -> ComponentId? {
@@ -46,7 +47,8 @@ class TabsModel: ComponentModel {
     var selectedIndex: Int
     let container: ComponentId?
     var presentOptions: PresentOptions?
-    var cancelled: Bool
+    var cancelled = false
+    var presented = false
     
     init(componentId: ComponentId, spec: TabsSpec, viewController: NativeNavigationTabBarController, tabs: [ComponentId], selectedIndex: Int, container: ComponentId? = nil) {
         self.componentId = componentId
@@ -55,7 +57,6 @@ class TabsModel: ComponentModel {
         self.tabs = tabs
         self.selectedIndex = selectedIndex
         self.container = container
-        self.cancelled = false
     }
     
     func selectedComponentId() -> ComponentId? {
@@ -73,14 +74,14 @@ class ViewModel: ComponentModel {
     let viewController: NativeNavigationWebViewController
     let container: ComponentId?
     var presentOptions: PresentOptions?
-    var cancelled: Bool
+    var cancelled = false
+    var presented = false
     
     init(componentId: ComponentId, spec: ViewSpec, viewController: NativeNavigationWebViewController, container: ComponentId? = nil) {
         self.componentId = componentId
         self.spec = spec
         self.viewController = viewController
         self.container = container
-        self.cancelled = false
     }
 }
 
@@ -141,6 +142,8 @@ class NativeNavigation: NSObject {
         }
         
         await self.rootManager.present(component, animated: options.animated)
+        
+        component.presented = true
         return PresentResult(id: component.componentId)
     }
 
@@ -155,7 +158,7 @@ class NativeNavigation: NSObject {
             throw NativeNavigatorError.illegalState(message: "No presented components")
         }
         
-        guard let root = try self.findRoot(for: component) else {
+        guard var root = try self.findRoot(for: component) else {
             throw NativeNavigatorError.componentNotPresented(name: component.componentId)
         }
 
@@ -163,7 +166,8 @@ class NativeNavigation: NSObject {
         cancelComponent(root.componentId)
         
         await self.rootManager.dismiss(root, animated: options.animated)
-
+        
+        root.presented = false
         removeComponent(root.componentId)
         
         return DismissResult(id: root.componentId)

@@ -157,6 +157,7 @@ export function useNativeNavigationNavigator(options: NativeNavigationNavigatorO
 					},
 					mode: viewState?.root ? 'root' : replace ? 'replace' : undefined,
 					target: viewState?.target || stack || componentId,
+					animated: opts?.state?.animated,
 				})
 			} catch (error) {
 				reportError(replace ? 'replace' : 'push', error)

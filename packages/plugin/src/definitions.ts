@@ -7,7 +7,8 @@ export interface NativeNavigationPlugin {
 	present(options: PresentOptions): Promise<PresentResult>
 
 	/**
-	 * Dismiss a native UI.
+	 * Dismiss a native UI. The component id may be a component that was previously presented or
+	 * a component within a previously presented component.
 	 * @param options 
 	 */
 	dismiss(options?: DismissOptions): Promise<DismissResult>

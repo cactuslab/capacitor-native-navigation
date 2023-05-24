@@ -146,17 +146,17 @@ class NativeNavigation: NSObject {
 
     @MainActor
     func dismiss(_ options: DismissOptions) async throws -> DismissResult {
-        var root: (any ComponentModel)
+        var component: (any ComponentModel)
         if let componentId = options.id {
-            root = try self.component(componentId)
-        } else if let component = self.rootManager.topComponent() {
-            root = component
+            component = try self.component(componentId)
+        } else if let top = self.rootManager.topComponent() {
+            component = top
         } else {
             throw NativeNavigatorError.illegalState(message: "No presented components")
         }
         
-        guard root.presentOptions != nil else {
-            throw NativeNavigatorError.componentNotPresented(name: root.componentId)
+        guard let root = try self.findRoot(for: component) else {
+            throw NativeNavigatorError.componentNotPresented(name: component.componentId)
         }
 
         rootManager.remove(root: root)
@@ -508,6 +508,18 @@ class NativeNavigation: NSObject {
         }
         
         throw NativeNavigatorError.illegalState(message: "No current stack or view found")
+    }
+    
+    private func findRoot(for component: any ComponentModel) throws -> (any ComponentModel)? {
+        var candidate = component
+        while candidate.presentOptions == nil {
+            if let containerId = candidate.container {
+                candidate = try self.component(containerId)
+            } else {
+                return nil
+            }
+        }
+        return candidate
     }
 
     //MARK: - Manage components

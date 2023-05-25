@@ -235,12 +235,13 @@ Send a message to a component.
 
 #### BarSpec
 
-| Prop             | Type                                            |
-| ---------------- | ----------------------------------------------- |
-| **`background`** | <code><a href="#fillspec">FillSpec</a></code>   |
-| **`title`**      | <code><a href="#labelspec">LabelSpec</a></code> |
-| **`buttons`**    | <code><a href="#labelspec">LabelSpec</a></code> |
-| **`visible`**    | <code>boolean</code>                            |
+| Prop             | Type                                              |
+| ---------------- | ------------------------------------------------- |
+| **`background`** | <code><a href="#fillspec">FillSpec</a></code>     |
+| **`title`**      | <code><a href="#labelspec">LabelSpec</a></code>   |
+| **`buttons`**    | <code><a href="#labelspec">LabelSpec</a></code>   |
+| **`visible`**    | <code>boolean</code>                              |
+| **`iOS`**        | <code><a href="#barspecios">BarSpecIOS</a></code> |
 
 
 #### FillSpec
@@ -264,6 +265,13 @@ Send a message to a component.
 | ---------- | ------------------- |
 | **`name`** | <code>string</code> |
 | **`size`** | <code>number</code> |
+
+
+#### BarSpecIOS
+
+| Prop             | Type                         | Description                             |
+| ---------------- | ---------------------------- | --------------------------------------- |
+| **`hideShadow`** | <code>boolean \| null</code> | Default behaviour is to show the shadow |
 
 
 #### TabsSpec
@@ -365,6 +373,7 @@ Options for stack components
 | **`title`**      | <code><a href="#labelupdate">LabelUpdate</a> \| null</code> |
 | **`buttons`**    | <code><a href="#labelupdate">LabelUpdate</a> \| null</code> |
 | **`visible`**    | <code>boolean \| null</code>                                |
+| **`iOS`**        | <code><a href="#barspecios">BarSpecIOS</a></code>           |
 
 
 #### FillUpdate

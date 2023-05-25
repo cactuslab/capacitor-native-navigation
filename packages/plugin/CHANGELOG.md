@@ -1,5 +1,11 @@
 # @cactuslab/native-navigation
 
+## 0.6.1
+
+### Patch Changes
+
+- 9f72a06: iOS: Added option to hide the shadow on a navigation bar
+
 ## 0.6.0
 
 ### Minor Changes

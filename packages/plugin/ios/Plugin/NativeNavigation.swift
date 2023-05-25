@@ -819,7 +819,6 @@ class NativeNavigation: NSObject {
                     /* This controller is the topmost in this stack so apply options that may show or hide settings for the whole navigation controller */
                     if let barOptions = stackItem.bar {
                         navigationController.setNavigationBarHidden(barOptions.visible == false, animated: animated)
-//                        navigationController.setShadowHidden(hidden: barOptions.hideShadow)
                     }
                     
                 }

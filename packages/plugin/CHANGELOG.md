@@ -1,5 +1,11 @@
 # @cactuslab/native-navigation
 
+## 0.6.2
+
+### Patch Changes
+
+- 5203797: iOS: Use capacitor setting for webView inspectable
+
 ## 0.6.1
 
 ### Patch Changes

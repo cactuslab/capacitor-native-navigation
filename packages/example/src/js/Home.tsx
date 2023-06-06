@@ -70,6 +70,7 @@ export default function Home(): React.ReactElement {
 					<dd><button onClick={() => setupStack({ path: '/examples/subnav/first', title: 'Subnav' })}>Subnav</button></dd>
 					<dd><button onClick={() => setupStack({ path: '/examples/tall-content', title: 'Tall Content', options: { bar: { background: { color: '#23ABED60' } } } })}>Transparent Menu</button></dd>
 					<dd><button onClick={() => setupStack({ path: '/examples/modals', title: 'Modals' })}>Modals</button></dd>
+					<dd><button onClick={() => setupStack({ path: '/examples/modals', title: 'Modals', options: { bar: { visible: false } } })}>Hidden Navbar Stack</button></dd>
 					<h2>Modals</h2>
 					<dd><button onClick={() => setShowModal(m => !m)}>Show Modal 1</button></dd>
 					<dd><button onClick={() => setShowModal2(m => !m)}>Show Modal 2</button></dd>

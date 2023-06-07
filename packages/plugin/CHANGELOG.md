@@ -1,5 +1,11 @@
 # @cactuslab/native-navigation
 
+## 0.6.3
+
+### Patch Changes
+
+- c991ca8: android: prepend left items to right items so that they show in the menu
+
 ## 0.6.2
 
 ### Patch Changes

@@ -30,6 +30,7 @@ import com.cactuslab.capacitor.nativenavigation.NativeNavigationViewModel
 import com.cactuslab.capacitor.nativenavigation.databinding.FragmentBlankBinding
 import com.cactuslab.capacitor.nativenavigation.helpers.*
 import com.cactuslab.capacitor.nativenavigation.types.ComponentType
+import com.cactuslab.capacitor.nativenavigation.types.StackBarButtonItem
 import com.cactuslab.capacitor.nativenavigation.types.StackSpec
 import com.getcapacitor.JSObject
 import com.google.android.material.appbar.AppBarLayout
@@ -260,14 +261,17 @@ class ViewSpecFragment : Fragment(), MenuProvider {
 
         val stackItem = spec.stackItem
         if (stackItem != null) {
-            stackItem.rightItems?.forEach { item ->
+            val items: MutableList<StackBarButtonItem> = mutableListOf()
+            stackItem.leftItems?.let { items.addAll(it) }
+            stackItem.rightItems?.let { items.addAll(it) }
+            items.forEach { item ->
                 val spanString = SpannableString(item.title)
                 var tintColor: Int? = null
 
                 barSpec?.buttons?.let { labelOptions ->
                     labelOptions.color?.let { color ->
                         tintColor = color.parseRGBAColor()
-                        spanString.setSpan(ForegroundColorSpan(color.parseRGBAColor()), 0, spanString.length, 0)
+                        spanString.setSpan(ForegroundColorSpan(color.parseRGBAColor()), 0, spanString.length, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
                     }
                     labelOptions.font?.let { fontOptions ->
                         fontOptions.name?.let { fontName ->
@@ -374,13 +378,15 @@ class ViewSpecFragment : Fragment(), MenuProvider {
 
         val options = spec.stackItem ?: return false
         val componentId = componentId ?: return false
-        for (item in options.rightItems ?: listOf()) {
+        val items: MutableList<StackBarButtonItem> = mutableListOf()
+        options.leftItems?.let { items.addAll(it) }
+        options.rightItems?.let { items.addAll(it) }
+        for (item in items) {
             if (menuItem.itemId == item.id.hashCode()) {
                 viewModel.nativeNavigation?.notifyClick(item.id, componentId)
                 return true
             }
         }
-
         return false
     }
 }

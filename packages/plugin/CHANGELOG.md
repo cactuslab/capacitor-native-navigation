@@ -1,5 +1,11 @@
 # @cactuslab/native-navigation
 
+## 0.6.4
+
+### Patch Changes
+
+- c576b65: iOS: Crash fixed - Re-presentation of modals when lower modal is dismissed
+
 ## 0.6.3
 
 ### Patch Changes

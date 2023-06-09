@@ -193,6 +193,15 @@ class NativeNavigationRootViewControllerManager {
                 presentationController.delegate = savedPresentationControllerDelegates[toPresent]
             }
             
+            /* if the controller to present is presented on an existing controller, first dismiss it without animation */
+            if let presentingController = toPresent.presentingViewController {
+                await withCheckedContinuation { continuation in
+                    presentingController.dismiss(animated: false) {
+                        continuation.resume()
+                    }
+                }
+            }
+            
             await withCheckedContinuation { continuation in
                 topViewController.present(toPresent, animated: false) {
                     continuation.resume()

@@ -1,4 +1,4 @@
-import { ModalConfig, NativeNavigationNavigatorOptions, Path } from './types'
+import { ModalConfig, NativeNavigationNavigationState, NativeNavigationNavigatorOptions, Path } from './types'
 
 export function findModalConfig(path: string, options: NativeNavigationNavigatorOptions): ModalConfig | undefined {
 	const modals = options.modals
@@ -43,4 +43,25 @@ export function parsePath(path: string): Path {
 		}
 	}
 	return result
+}
+
+type StateWithNativeNavigationState = { nativeNavigation?: NativeNavigationNavigationState }
+
+/**
+ * Create a navigation state object containing 
+ * @param state 
+ * @returns 
+ */
+export function createNativeNavigationNavigationState(state: NativeNavigationNavigationState): StateWithNativeNavigationState {
+	return {
+		nativeNavigation: state,
+	}
+}
+
+export function toNativeNavigationNavigationState(state: unknown): NativeNavigationNavigationState | undefined {
+	if (state && typeof state === 'object' && (state as StateWithNativeNavigationState).nativeNavigation && typeof (state as StateWithNativeNavigationState).nativeNavigation === 'object') {
+		return (state as StateWithNativeNavigationState).nativeNavigation
+	} else {
+		return undefined
+	}
 }

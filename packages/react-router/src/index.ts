@@ -1,19 +1,13 @@
-import type { MessageEventData, ViewState } from '@cactuslab/native-navigation'
+import type { MessageEventData } from '@cactuslab/native-navigation'
 import { useNativeNavigation, useNativeNavigationViewContext } from '@cactuslab/native-navigation-react'
 import { useCallback, useEffect, useMemo } from 'react'
 import type { NavigateOptions, Navigator, To } from 'react-router-dom'
 import { NativeNavigationNavigatorOptions } from './types'
-import { findModalConfig } from './utils'
+import { findModalConfig, toNativeNavigationNavigationState } from './utils'
 
 export { NativeNavigationNavigatorOptions, ModalConfig } from './types'
 export { default as NativeNavigationRouter } from './NativeNavigationRouter'
-
-interface ViewStateSpecials extends ViewState {
-	root?: boolean
-	navigation?: boolean
-	target?: string
-	dismiss?: string | boolean
-}
+export { createNativeNavigationNavigationState } from './utils'
 
 /**
  * An error handler implementation that presents an alert with details of the error.
@@ -93,17 +87,19 @@ export function useNativeNavigationNavigator(options: NativeNavigationNavigatorO
 
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		push: async function(to: To, state?: any, opts?: NavigateOptions | undefined): Promise<void> {
-			const viewState = toViewState(state, opts?.state)
-			if (typeof viewState?.dismiss === 'string') {
+			const actualState = state || opts?.state
+			const navigationState = toNativeNavigationNavigationState(actualState)
+
+			if (typeof navigationState?.dismiss === 'string') {
 				try {
 					await plugin.dismiss({
-						id: viewState.dismiss,
+						id: navigationState.dismiss,
 					})
 				} catch (error) {
 					reportError('dismiss', error)
 					throw error
 				}
-			} else if (typeof viewState?.dismiss === 'boolean') {
+			} else if (typeof navigationState?.dismiss === 'boolean') {
 				try {
 					await plugin.dismiss()
 				} catch (error) {
@@ -147,17 +143,17 @@ export function useNativeNavigationNavigator(options: NativeNavigationNavigatorO
 				return
 			}
 
-			const replace = !!(opts?.replace || viewState?.replace)
+			const replace = !!(opts?.replace || navigationState?.replace)
 			try {
 				await plugin.push({
 					component: {
 						type: 'view',
 						path,
-						state: viewState,
+						state: actualState,
 					},
-					mode: viewState?.root ? 'root' : replace ? 'replace' : undefined,
-					target: viewState?.target || stack || componentId,
-					animated: opts?.state?.animated,
+					mode: navigationState?.root ? 'root' : replace ? 'replace' : undefined,
+					target: navigationState?.target || stack || componentId,
+					animated: navigationState?.animated,
 				})
 			} catch (error) {
 				reportError(replace ? 'replace' : 'push', error)
@@ -192,19 +188,6 @@ export function useNativeNavigationNavigator(options: NativeNavigationNavigatorO
 	}, [addMessageListener, currentPath, navigator, removeMessageListener])
 
 	return navigator
-}
-
-function toViewState(...args: unknown[]): ViewStateSpecials | undefined {
-	for (const arg of args) {
-		if (arg) {
-			if (typeof arg === 'object') {
-				return arg as ViewState
-			} else {
-				return undefined
-			}
-		}
-	}
-	return undefined
 }
 
 interface NavigateMessageData {

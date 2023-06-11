@@ -932,10 +932,9 @@ class NativeNavigation: NSObject {
         let newWebView = WKWebView(frame: .zero, configuration: configuration)
         newWebView.uiDelegate = self.webViewDelegate
         newWebView.navigationDelegate = self.webViewDelegate
-        if #available(iOS 16.4, *) {
-            if let webDebuggable = plugin.bridge?.config.isWebDebuggable {
-                newWebView.isInspectable = webDebuggable
-            }
+        
+        if let webDebuggable = plugin.bridge?.config.isWebDebuggable {
+            newWebView.setInspectableIfRequired(webDebuggable)
         }
 
         _ = newWebView.loadHTMLString(html, baseURL: webView.url!)

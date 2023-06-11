@@ -12,6 +12,14 @@ if [ -z "$target" ]; then
     exit 1
 fi
 
+if [ ! -d "$target" ]; then
+    echo "$target is not a directory" >&2
+    exit 1
+fi
+
+# Convert target to be absolute
+target=$(cd "$target" && pwd)
+
 if [ ! -d "$target/node_modules" ]; then
     echo "node_modules not found in $target" >&2
     exit 1

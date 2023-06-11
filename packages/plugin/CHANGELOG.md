@@ -1,5 +1,11 @@
 # @cactuslab/native-navigation
 
+## 0.6.5
+
+### Patch Changes
+
+- 726f2e9: iOS: Use backwards compatible setInspectable on webview
+
 ## 0.6.4
 
 ### Patch Changes

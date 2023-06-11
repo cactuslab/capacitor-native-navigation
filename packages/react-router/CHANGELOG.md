@@ -1,5 +1,13 @@
 # @cactuslab/native-navigation-react-router
 
+## 7.0.0
+
+### Major Changes
+
+- eab1bec: Make navigate() function special state values type-safe
+
+  This is a breaking change for existing usage as we've moved these special state values into a name-spaced key inside state.
+
 ## 6.0.0
 
 ### Patch Changes

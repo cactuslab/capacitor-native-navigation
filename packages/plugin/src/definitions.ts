@@ -127,7 +127,7 @@ export interface TabSpec {
 	component: StackSpec | ViewSpec
 }
 
-export type ViewState = Record<string, string | number | boolean | null | undefined>
+export type StateObject = Record<string, string | number | boolean | null | undefined>
 export interface ViewSpec extends ComponentSpec {
 	type: 'view'
 
@@ -136,7 +136,7 @@ export interface ViewSpec extends ComponentSpec {
 	 */
 	path?: string
 
-	state?: ViewState
+	state?: StateObject
 	
 	title?: string
 

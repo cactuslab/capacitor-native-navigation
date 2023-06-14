@@ -1,5 +1,5 @@
 import { NativeNavigation } from '@cactuslab/native-navigation'
-import type { GetResult, ViewSpec, ViewState } from '@cactuslab/native-navigation'
+import type { GetResult, ViewSpec, StateObject } from '@cactuslab/native-navigation'
 import type { Action, History, Location, LocationDescriptor, LocationDescriptorObject, UnregisterCallback } from 'history'
 
 import { defaultDecider } from './NavigationDecider'
@@ -158,7 +158,7 @@ export class NativeNavigationHistory implements History {
 
 		const component: ViewSpec = {
 			path: this.createHref(location),
-			state: location.state as ViewState | undefined,
+			state: location.state as StateObject | undefined,
 			type: 'view',
 		}
 		

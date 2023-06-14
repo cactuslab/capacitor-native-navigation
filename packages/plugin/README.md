@@ -200,7 +200,7 @@ Send a message to a component.
 | --------------- | ------------------------------------------------------- | ------------------------------------------------- |
 | **`type`**      | <code>'view'</code>                                     |                                                   |
 | **`path`**      | <code>string</code>                                     | The path representing the view.                   |
-| **`state`**     | <code><a href="#viewstate">ViewState</a></code>         |                                                   |
+| **`state`**     | <code><a href="#stateobject">StateObject</a></code>     |                                                   |
 | **`title`**     | <code>string</code>                                     |                                                   |
 | **`stackItem`** | <code><a href="#stackitemspec">StackItemSpec</a></code> | Options for when the component is used in a stack |
 
@@ -483,7 +483,7 @@ Options for view components
 <code><a href="#stackspec">StackSpec</a> | <a href="#tabsspec">TabsSpec</a> | <a href="#viewspec">ViewSpec</a></code>
 
 
-#### ViewState
+#### StateObject
 
 <code><a href="#record">Record</a>&lt;string, string | number | boolean | null&gt;</code>
 

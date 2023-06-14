@@ -1,4 +1,4 @@
-import type { PresentOptions, ViewState } from '@cactuslab/native-navigation'
+import type { PresentOptions, StateObject } from '@cactuslab/native-navigation'
 
 export interface NativeNavigationNavigatorOptions {
 	modals?: ModalConfig[]
@@ -53,7 +53,7 @@ export interface ModalConfig {
 	 * The path prefix under which this modal lives.
 	 */
 	path: string | RegExp
-	presentOptions(path: string, state?: ViewState): PresentOptions
+	presentOptions(path: string, state?: StateObject): PresentOptions
 }
 
 export interface Path {

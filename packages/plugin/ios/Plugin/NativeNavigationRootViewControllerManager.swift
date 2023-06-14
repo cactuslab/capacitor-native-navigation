@@ -36,10 +36,6 @@ class NativeNavigationRootViewControllerManager {
         roots.append(root)
     }
 
-    func remove(root: any ComponentModel) {
-        roots.removeAll(where: { $0.componentId == root.componentId })
-    }
-
     func remove(id: ComponentId) {
         roots.removeAll(where: { $0.componentId == id })
     }

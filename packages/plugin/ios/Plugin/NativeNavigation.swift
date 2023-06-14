@@ -163,13 +163,11 @@ class NativeNavigation: NSObject {
             throw NativeNavigatorError.componentNotPresented(name: component.componentId)
         }
 
-        rootManager.remove(root: root)
-        cancelComponent(root.componentId)
+        removeComponent(root.componentId)
         
         await self.rootManager.dismiss(root, animated: options.animated)
         
         root.presented = false
-        removeComponent(root.componentId)
         
         return DismissResult(id: root.componentId)
     }
@@ -322,9 +320,8 @@ class NativeNavigation: NSObject {
     @MainActor
     func reset(_ options: ResetOptions) async throws {
         /* Remove existing roots, if any */
-        self.cancelComponents(Array(self.componentsById.keys))
-        await self.rootManager.dismissAll(animated: options.animated)
         self.removeComponents(Array(self.componentsById.keys))
+        await self.rootManager.dismissAll(animated: options.animated)
         self.rootManager.removeAll()
     }
     
@@ -566,7 +563,6 @@ class NativeNavigation: NSObject {
             if let view = component as? ViewModel {
                 view.cancelled = true
                 view.viewController.cancel()
-                self.plugin.notifyListeners("destroyView", data: ["id": view.componentId], retainUntilConsumed: true)
             } else if let stack = component as? StackModel {
                 stack.cancelled = true
                 removeComponents(stack.views)
@@ -588,32 +584,6 @@ class NativeNavigation: NSObject {
     private func removeComponents(_ ids: [ComponentId]) {
         for id in ids {
             self.removeComponent(id)
-        }
-    }
-
-    /**
-     Cancel any in progress operations for the component with the given id.
-     */
-    @MainActor
-    private func cancelComponent(_ id: ComponentId) {
-        if let component = componentsById[id] {
-            if let view = component as? ViewModel {
-                view.cancelled = true
-                view.viewController.cancel()
-            } else if let stack = component as? StackModel {
-                stack.cancelled = true
-                cancelComponents(stack.views)
-            } else if let tabs = component as? TabsModel {
-                tabs.cancelled = true
-                cancelComponents(tabs.tabs)
-            }
-        }
-    }
-    
-    @MainActor
-    private func cancelComponents(_ ids: [ComponentId]) {
-        for id in ids {
-            self.cancelComponent(id)
         }
     }
 

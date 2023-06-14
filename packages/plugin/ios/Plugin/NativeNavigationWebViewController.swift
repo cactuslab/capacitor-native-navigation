@@ -53,6 +53,10 @@ class NativeNavigationWebViewController: UIViewController, NativeNavigationViewC
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    deinit {
+        self.plugin.notifyListeners("destroyView", data: ["id": self.componentId], retainUntilConsumed: true)
+    }
 
     override var debugDescription: String {
         return "\(super.debugDescription) componentId=\(componentId) path=\(path ?? "<none>")"

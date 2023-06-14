@@ -1,4 +1,4 @@
-import type { PresentOptions, StateObject } from '@cactuslab/native-navigation'
+import type { ComponentAlias, ComponentId, PresentOptions, StateObject } from '@cactuslab/native-navigation'
 
 export interface NativeNavigationNavigatorOptions {
 	modals?: ModalConfig[]
@@ -29,13 +29,13 @@ export interface NativeNavigationNavigationState {
 	 * A component id to target with this navigation. This could be the id of the stack that this navigation
 	 * should take place in. When no target is specified the current stack is targeted.
 	 */
-	target?: string
+	target?: ComponentId | ComponentAlias
 
 	/**
 	 * Set to `true` to dismiss the current root before navigating. Set to the component id of a root to dismiss
 	 * that root before navigating.
 	 */
-	dismiss?: string | boolean
+	dismiss?: boolean | ComponentId | ComponentAlias
 
 	/**
 	 * Set to control whether there is animation for the navigation. Defaults to `true`.

@@ -1,4 +1,4 @@
-import type { ComponentId, CreateViewEventData, MessageEventData, NativeNavigationPlugin } from '@cactuslab/native-navigation'
+import type { ComponentAlias, ComponentId, CreateViewEventData, MessageEventData, NativeNavigationPlugin } from '@cactuslab/native-navigation'
 import type React from 'react'
 
 import { Plugin } from '@capacitor/core'
@@ -12,7 +12,9 @@ export interface NativeNavigationReact {
 	/**
 	 * @returns the views by id
 	 */
-	views: () => Record<string, NativeNavigationReactView>
+	views: () => Record<ComponentId, NativeNavigationReactView>
+
+	view: (id: ComponentId | ComponentAlias) => NativeNavigationReactView | undefined
 
 	/**
 	 * Add a listener function that is called when the native views list changes
@@ -26,7 +28,7 @@ export interface NativeNavigationReact {
 	 * @param id 
 	 * @returns 
 	 */
-	fireViewReady: (id: string) => void
+	fireViewReady: (id: ComponentId) => void
 }
 
 export type ReactViewListenerEvent = 'create' | 'update' | 'remove'
@@ -35,6 +37,7 @@ export type ReactViewListenerUnsubscribeFunc = () => void
 
 export interface NativeNavigationViewProps {
 	id: ComponentId
+	alias?: ComponentAlias
 	path?: string
 	state?: unknown
 	stack?: ComponentId
@@ -47,6 +50,7 @@ export interface NativeNavigationViewProps {
 export function toNativeNavigationViewProps(data: CreateViewEventData, viewWindow: Window): NativeNavigationViewProps {
 	const props: NativeNavigationViewProps = {
 		id: data.id,
+		alias: data.alias,
 		path: data.path,
 		state: data.state,
 		stack: data.stack,
@@ -59,7 +63,8 @@ export function toNativeNavigationViewProps(data: CreateViewEventData, viewWindo
  * A native view for a React route
  */
 export interface NativeNavigationReactView {
-	id: string
+	id: ComponentId
+	alias?: ComponentAlias
 	/**
 	 * The route data.
 	 */

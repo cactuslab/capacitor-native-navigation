@@ -14,6 +14,7 @@ protocol PluginResultable {
 protocol ComponentSpec: PluginResultable {
     var type: ComponentType { get }
     var id: ComponentId? { get set }
+    var alias: ComponentId? { get set }
     
     mutating func update(_ object: JSObjectLike) throws
 }
@@ -26,6 +27,7 @@ protocol TabableSpec: ComponentSpec {
 struct StackSpec: TabableSpec, JSObjectDecodable {
     var type: ComponentType { return ComponentType.stack }
     var id: ComponentId?
+    var alias: ComponentId?
     
     var components: [ViewSpec]
     var bar: BarSpec?
@@ -44,7 +46,7 @@ struct StackSpec: TabableSpec, JSObjectDecodable {
         }
     
         var spec = StackSpec(components: stackComponents)
-        spec.id = object.getString("id")
+        spec.alias = object.getString("alias")
         spec.title = object.getString("title")
         
         if let barObject = object.getObject("bar") {
@@ -82,9 +84,9 @@ struct StackSpec: TabableSpec, JSObjectDecodable {
 
 struct TabsSpec: ComponentSpec {
     
-    
     var type: ComponentType { return ComponentType.tabs }
     var id: ComponentId?
+    var alias: ComponentId?
     
     var title: String?
     var tabs: [TabSpec]
@@ -116,7 +118,7 @@ struct TabsSpec: ComponentSpec {
 
         var spec = TabsSpec(tabs: initialTabs)
         spec.title = object.getString("title")
-        spec.id = object.getString("id")
+        spec.alias = object.getString("alias")
         
         return spec
     }
@@ -178,9 +180,9 @@ struct TabSpec: PluginResultable, JSObjectUpdatable, JSObjectDecodable {
 
 struct ViewSpec: TabableSpec, JSObjectDecodable {
     
-    
     var type: ComponentType { return ComponentType.view }
     var id: ComponentId?
+    var alias: ComponentId?
     
     var title: String?
     var stackItem: StackItemSpec?
@@ -191,7 +193,7 @@ struct ViewSpec: TabableSpec, JSObjectDecodable {
     static func fromJSObject(_ object: JSObjectLike) throws -> ViewSpec {
         var spec = ViewSpec()
         spec.path = object.getString("path")
-        spec.id = object.getString("id")
+        spec.alias = object.getString("alias")
         spec.title = object.getString("title")
         
         
@@ -335,10 +337,6 @@ extension PopResult {
         return result
     }
 
-}
-
-protocol ComponentOptions: JSObjectDecodable {
-    var title: Nullable<String>? { get set }
 }
 
 struct UpdateOptions: JSObjectDecodable {
@@ -719,6 +717,9 @@ fileprivate func componentSpecToPluginResult(_ spec: ComponentSpec) -> PluginCal
         ]
     if let id = spec.id {
         result["id"] = id
+    }
+    if let alias = spec.alias {
+        result["alias"] = alias
     }
     return result
 }

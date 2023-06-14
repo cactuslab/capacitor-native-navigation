@@ -13,7 +13,7 @@ export interface ViewHandlerImpl {
 	createView: (view: Window, data: CreateViewEventData) => void
 	updateView: (view: Window, data: UpdateViewEventData) => void
 	messageView: (view: Window, data: MessageEventData) => void
-	destroyView: (id: string) => void
+	destroyView: (id: ComponentId) => void
 
 	/**
 	 * Return whether the given Window is ready to be used.

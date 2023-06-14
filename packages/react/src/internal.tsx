@@ -1,10 +1,14 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { NativeNavigationReact, NativeNavigationReactView } from './types'
+import { ComponentAlias, ComponentId } from '@cactuslab/native-navigation'
 
 const DEFAULT_CONTEXT: NativeNavigationReact = {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	plugin: null as any,
 	views() {
+		throw new Error('Not inside NativeNavigationProvider')
+	},
+	view(id) {
 		throw new Error('Not inside NativeNavigationProvider')
 	},
 	addViewsListener() {
@@ -23,7 +27,7 @@ export function useNativeNavigation(): NativeNavigationReact {
 	return useContext(InternalContext)
 }
 
-export function useNativeNavigationView(id?: string): NativeNavigationReactView | undefined {
+export function useNativeNavigationView(id?: ComponentId | ComponentAlias): NativeNavigationReactView | undefined {
 	const nativeNavigationReact = useNativeNavigation()
 	const [, setCounter] = useState(0)
 
@@ -31,7 +35,7 @@ export function useNativeNavigationView(id?: string): NativeNavigationReactView 
 	useEffect(function() {
 		if (id) {
 			return nativeNavigationReact.addViewsListener(function(view) {
-				if (id === view.id) {
+				if (id === view.id || id === view.alias) {
 					setCounter(counter => counter + 1)
 				}
 			})
@@ -41,7 +45,6 @@ export function useNativeNavigationView(id?: string): NativeNavigationReactView 
 	if (!id) {
 		return undefined
 	} else {
-		const views = nativeNavigationReact.views()
-		return views[id]
+		return nativeNavigationReact.view(id)
 	}
 }

@@ -1,5 +1,5 @@
 import { initViewHandler } from '@cactuslab/native-navigation'
-import type { ComponentId, CreateViewEventData, NativeNavigationPluginInternal, NativeNavigationPlugin, UpdateViewEventData, MessageEventData } from '@cactuslab/native-navigation'
+import type { ComponentId, CreateViewEventData, NativeNavigationPluginInternal, NativeNavigationPlugin, UpdateViewEventData, MessageEventData, ComponentAlias } from '@cactuslab/native-navigation'
 import type { Plugin } from '@capacitor/core'
 
 import { initSync, prepareWindowForSync } from './sync'
@@ -36,6 +36,7 @@ export function initReact(options: Options): NativeNavigationReact {
 	const viewRootId = options.viewRootId || 'root'
 	const internalPlugin = plugin as unknown as NativeNavigationPluginInternal
 	const views: Record<ComponentId, NativeNavigationReactView> = {}
+	const viewsByAlias: Record<ComponentAlias, NativeNavigationReactView> = {}
 
 	initSync(views)
 
@@ -61,19 +62,23 @@ export function initReact(options: Options): NativeNavigationReact {
 	}
 
 	function createView(viewWindow: Window, data: CreateViewEventData) {
-		const { path, id } = data
+		const { path, id, alias } = data
 	
 		const rootElement = viewWindow.document.getElementById(viewRootId)
 		if (rootElement) {
 			prepareWindowForSync(viewWindow)
 			const view: NativeNavigationReactView = {
 				id,
+				alias,
 				data,
 				props: toNativeNavigationViewProps(data, viewWindow),
 				window: viewWindow,
 				element: rootElement,
 			}
 			views[id] = view
+			if (alias) {
+				viewsByAlias[alias] = view
+			}
 
 			fireViewDidChange(view, 'create')
 		} else {
@@ -105,6 +110,9 @@ export function initReact(options: Options): NativeNavigationReact {
 		const view = views[id]
 		if (view) {
 			delete views[id]
+			if (view.alias) {
+				delete viewsByAlias[view.alias]
+			}
 			fireViewDidChange(view, 'remove')
 		}
 	}
@@ -134,6 +142,9 @@ export function initReact(options: Options): NativeNavigationReact {
 		},
 		views() {
 			return views
+		},
+		view(id) {
+			return views[id as ComponentId] || viewsByAlias[id as ComponentAlias]
 		},
 		fireViewReady(id) {
 			internalPlugin.viewReady({

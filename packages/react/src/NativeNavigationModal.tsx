@@ -1,5 +1,5 @@
 import React, { useRef } from 'react'
-import { AnyComponentSpec, NativeNavigation, PresentationStyle } from '@cactuslab/native-navigation'
+import { AnyComponentSpec, ComponentAlias, NativeNavigation, PresentationStyle } from '@cactuslab/native-navigation'
 import { useNativeNavigation, useNativeNavigationView } from './internal'
 import { useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
@@ -18,26 +18,26 @@ export interface NativeNavigationModalProps {
 
 let nextModalId = 0
 
-function leafComponentId(spec: AnyComponentSpec): string | undefined {
+function leafComponentAlias(spec: AnyComponentSpec): string | undefined {
 	if (spec.type === 'stack') {
 		if (spec.components.length) {
-			return leafComponentId(spec.components[0])
+			return leafComponentAlias(spec.components[0])
 		}
 	} else if (spec.type === 'tabs') {
 		if (spec.tabs.length) {
-			return leafComponentId(spec.tabs[0].component)
+			return leafComponentAlias(spec.tabs[0].component)
 		}
 	}
-	return spec.id
+	return spec.alias
 }
 
-function updateLeafComponentId<T extends AnyComponentSpec>(spec: T, id: string): T {
+function updateLeafComponentAlias<T extends AnyComponentSpec>(spec: T, alias: string): T {
 	if (spec.type === 'stack') {
 		if (spec.components.length) {
 			return {
 				...spec,
 				components: [
-					updateLeafComponentId(spec.components[spec.components.length - 1], id),
+					updateLeafComponentAlias(spec.components[spec.components.length - 1], alias),
 					...spec.components.slice(1),
 				],
 			}
@@ -49,7 +49,7 @@ function updateLeafComponentId<T extends AnyComponentSpec>(spec: T, id: string):
 				tabs: [
 					{
 						...spec.tabs[0],
-						component: updateLeafComponentId(spec.tabs[0].component, id),
+						component: updateLeafComponentAlias(spec.tabs[0].component, alias),
 					},
 					...spec.tabs.slice(1),
 				],
@@ -59,14 +59,14 @@ function updateLeafComponentId<T extends AnyComponentSpec>(spec: T, id: string):
 
 	return {
 		...spec,
-		id,
+		alias,
 	}
 }
 
-function updateModalComponentIds<T extends AnyComponentSpec>(spec: T, id: string): T {
-	const result = updateLeafComponentId(spec, id)
-	if (!result.id) {
-		result.id = `${id}_root`
+function updateModalComponentAliases<T extends AnyComponentSpec>(spec: T, alias: string): T {
+	const result = updateLeafComponentAlias(spec, alias)
+	if (!result.alias) {
+		result.alias = `${alias}_root`
 	}
 	return result
 }
@@ -82,15 +82,15 @@ interface InternalModalState {
  */
 export default function NativeNavigationModal(props: React.PropsWithChildren<NativeNavigationModalProps>) {
 	const { children, component, presentationStyle: style, animated, cancellable, debounce, open, onClose } = props
-	const viewId = useMemo(function() {
-		return leafComponentId(component) || `_modal${nextModalId++}` 
+	const viewAlias = useMemo(function() {
+		return leafComponentAlias(component) || `_modal${nextModalId++}` 
 	// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []) /* We don't want to change the view id if the component changes as we ignore component changes in the useEffect */
 
-	const componentWithIds = useMemo(function() {
-		return updateModalComponentIds(component, viewId)
+	const componentWithAliases = useMemo(function() {
+		return updateModalComponentAliases(component, viewAlias)
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [viewId])
+	}, [viewAlias])
 
 	const { fireViewReady, addViewsListener } = useNativeNavigation()
 
@@ -108,13 +108,13 @@ export default function NativeNavigationModal(props: React.PropsWithChildren<Nat
 
 			try {
 				await NativeNavigation.present({
-					component: componentWithIds,
+					component: componentWithAliases,
 					style,
 					animated,
 					cancellable,
 				})
 			} catch (error) {
-				console.log('NativeNavigationModal failed to present', viewId, error)
+				console.log('NativeNavigationModal failed to present', viewAlias, error)
 				return
 			}
 
@@ -122,7 +122,7 @@ export default function NativeNavigationModal(props: React.PropsWithChildren<Nat
 				dismissModal()
 			} else {
 				state.viewListenerUnsubscribe = addViewsListener(function(view, event) {
-					if (view.id === viewId && event === 'remove') {
+					if (view.alias === viewAlias && event === 'remove') {
 						state.presented = false
 						onClose?.()
 					}
@@ -139,11 +139,11 @@ export default function NativeNavigationModal(props: React.PropsWithChildren<Nat
 				state.presented = false
 
 				NativeNavigation.dismiss({
-					id: componentWithIds.id,
+					id: componentWithAliases.alias,
 				}).then(function() {
 					onClose?.()
 				}).catch(function(reason: unknown) {
-					console.log('NativeNavigationModal failed to dismiss', viewId, reason)
+					console.log('NativeNavigationModal failed to dismiss', viewAlias, reason)
 				})
 			}
 		}
@@ -173,13 +173,13 @@ export default function NativeNavigationModal(props: React.PropsWithChildren<Nat
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [open])
 
-	const view = useNativeNavigationView(viewId)
+	const view = useNativeNavigationView(viewAlias)
 
 	useEffect(function() {
 		if (view) {
-			fireViewReady(viewId)
+			fireViewReady(view.id)
 		}
-	}, [fireViewReady, view, viewId])
+	}, [fireViewReady, view])
 
 	if (view) {
 		return createPortal(

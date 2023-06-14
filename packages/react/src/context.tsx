@@ -1,4 +1,4 @@
-import type { ClickEventData, DismissOptions, DismissResult, MessageEventData, TabUpdate, ViewUpdate } from '@cactuslab/native-navigation'
+import type { ClickEventData, ComponentAlias, ComponentId, DismissOptions, DismissResult, MessageEventData, TabUpdate, ViewUpdate } from '@cactuslab/native-navigation'
 import type { PluginListenerHandle } from '@capacitor/core'
 import React, { useContext, useLayoutEffect, useMemo, useRef } from 'react'
 import equal from 'fast-deep-equal'
@@ -125,7 +125,9 @@ export interface NativeNavigationViewContext {
 	/**
 	 * The component id. Will be undefined if not in a native context.
 	 */
-	componentId?: string
+	componentId?: ComponentId
+
+	alias?: ComponentAlias
 
 	/**
 	 * The path the component is rendering, if any.
@@ -140,7 +142,7 @@ export interface NativeNavigationViewContext {
 	/**
 	 * The id of the stack containing this component, if any.
 	 */
-	stack?: string
+	stack?: ComponentId
 
 	/**
 	 * The Window that contains the current view

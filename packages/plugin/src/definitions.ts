@@ -1,3 +1,5 @@
+import { Opaque } from './utils'
+
 export interface NativeNavigationPlugin {
 
 	/**
@@ -84,22 +86,25 @@ export interface MessageEventData<D = any> {
 // ?target=<name>
 // ?mode=push|replace (replaces all in stack)
 
-export type ComponentId = string
+export type ComponentId = Opaque<'ComponentId', string>
+export type ComponentAlias = string
 export type ButtonId = string
 
 export interface ComponentSpec {
 	type: ComponentType
 
 	/**
-	 * The id to use for the component, or undefined to automatically generate an id.
+	 * The alias to use for the component, if you want to be able to refer to the component without using its component id.
 	 */
-	id?: ComponentId
+	alias?: ComponentAlias
 
 	/* There was previously an options property here; this exists temporarily to help find existing usage */
 	options?: never
 }
 
 export type AnyComponentSpec = StackSpec | TabsSpec | ViewSpec
+
+export type AnyComponentModel = StackModel | TabsModel | ViewModel
 
 export interface StackSpec extends ComponentSpec {
 	type: 'stack'
@@ -108,17 +113,22 @@ export interface StackSpec extends ComponentSpec {
 	title?: string
 }
 
+export interface StackModel extends StackSpec {
+	id: ComponentId
+}
+
 export interface TabsSpec extends ComponentSpec {
 	type: 'tabs'
 	tabs: TabSpec[]
 	title?: string
 }
 
+export interface TabsModel extends TabsSpec {
+	id: ComponentId
+}
+
 export interface TabSpec {
-	/**
-	 * The id to use for the tab, or undefined to automatically generate an id.
-	 */
-	id?: ComponentId
+	alias?: ComponentAlias
 
 	title?: string
 	image?: ImageSpec
@@ -127,7 +137,12 @@ export interface TabSpec {
 	component: StackSpec | ViewSpec
 }
 
+export interface TabModel extends TabSpec {
+	id: ComponentId
+}
+
 export type StateObject = Record<string, string | number | boolean | null | undefined>
+
 export interface ViewSpec extends ComponentSpec {
 	type: 'view'
 
@@ -144,6 +159,10 @@ export interface ViewSpec extends ComponentSpec {
 	 * Options for when the component is used in a stack
 	 */
 	stackItem?: StackItemSpec
+}
+
+export interface ViewModel extends ViewSpec {
+	id: ComponentId
 }
 
 export type ComponentType = 'stack' | 'tabs' | 'view'
@@ -182,7 +201,7 @@ export interface PresentResult {
 export type PresentationStyle = 'fullScreen' | 'pageSheet' | 'formSheet' | 'dialog'
 
 export interface DismissOptions {
-	id?: ComponentId
+	id?: ComponentId | ComponentAlias
 	animated?: boolean
 }
 
@@ -199,7 +218,7 @@ export interface PushOptions {
 	/**
 	 * The target component to push to, usually a stack, or undefined to push to the current stack or component.
 	 */
-	target?: ComponentId
+	target?: ComponentId | ComponentAlias
 
 	/**
 	 * Whether to animate the push.
@@ -244,7 +263,7 @@ export interface PopOptions {
 	/**
 	 * The stack to pop from, or undefined to pop from the current stack.
 	 */
-	stack?: ComponentId
+	stack?: ComponentId | ComponentAlias
 
 	/**
 	 * How many items to pop
@@ -272,7 +291,7 @@ export interface PopResult {
 }
 
 export interface UpdateOptions {
-	id: ComponentId
+	id: ComponentId | ComponentAlias
 
 	/**
 	 * Whether to animate the changes.
@@ -456,6 +475,7 @@ export enum NativeNavigationEvents {
 
 export interface CreateViewEventData {
 	id: ComponentId
+	alias?: ComponentAlias
 	path?: string
 	state?: unknown
 	stack?: ComponentId
@@ -497,22 +517,22 @@ export interface GetOptions {
 	/**
 	 * The component id to get, or undefined to get the top-most component.
 	 */
-	id?: ComponentId
+	id?: ComponentId | ComponentAlias
 }
 
 export interface GetResult {
 	/**
 	 * The component, if any.
 	 */
-	component?: AnyComponentSpec
+	component?: AnyComponentModel
 
 	/**
 	 * The stack containing the component, if any.
 	 */
-	stack?: StackSpec
+	stack?: StackModel
 	
 	/**
 	 * The tabs containing the component, if any.
 	 */
-	tabs?: TabsSpec
+	tabs?: TabsModel
 }

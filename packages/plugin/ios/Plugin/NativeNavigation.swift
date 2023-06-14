@@ -91,6 +91,7 @@ class NativeNavigation: NSObject {
     private let plugin: CAPPlugin
     private var webViewDelegate: NativeNavigationWebViewDelegate?
     private var componentsById: [ComponentId: any ComponentModel] = [:]
+    private var componentsByAlias: [ComponentId: any ComponentModel] = [:]
     private var idCounter = 1
     private var html: String? = nil
     private let rootManager: NativeNavigationRootViewControllerManager
@@ -380,14 +381,17 @@ class NativeNavigation: NSObject {
             
             var result = StackSpec(components: specs)
             result.id = vc.componentId
+            result.alias = vc.spec.alias
             return result
         } else if let vc = vc as? TabsModel {
             var result = TabsSpec(tabs: [])
             result.id = vc.componentId
+            result.alias = vc.spec.alias
             return result
         } else if let vc = vc as? ViewModel {
             var result = ViewSpec(path: vc.viewController.path, state: vc.viewController.state)
             result.id = vc.componentId
+            result.alias = vc.spec.alias
             return result
         } else {
             throw NativeNavigatorError.illegalState(message: "Component is not of an expected type: \(vc.componentId)")
@@ -532,6 +536,8 @@ class NativeNavigation: NSObject {
     private func component(_ id: ComponentId) throws -> any ComponentModel {
         if let component = componentsById[id] {
             return component
+        } else if let component = componentsByAlias[id] {
+            return component
         } else {
             throw NativeNavigatorError.componentNotFound(name: id)
         }
@@ -544,6 +550,9 @@ class NativeNavigation: NSObject {
         }
 
         componentsById[model.componentId] = model
+        if let alias = model.spec.alias {
+            componentsByAlias[alias] = model
+        }
     }
 
     /**
@@ -565,9 +574,13 @@ class NativeNavigation: NSObject {
                 tabs.cancelled = true
                 removeComponents(tabs.tabs)
             }
+            
+            componentsById.removeValue(forKey: id)
+            if let alias = component.spec.alias {
+                componentsByAlias.removeValue(forKey: alias)
+            }
         }
         
-        componentsById.removeValue(forKey: id)
         rootManager.remove(id: id)
     }
     
@@ -621,7 +634,7 @@ class NativeNavigation: NSObject {
 
     @MainActor
     private func createStack(_ spec: StackSpec, container: (any ComponentModel)?) throws -> StackModel {
-        let componentId = spec.id ?? generateId()
+        let componentId = generateId()
         let nc = NativeNavigationNavigationController(componentId: componentId)
         
         let model = StackModel(componentId: componentId, spec: spec, viewController: nc, views: [], container: container?.componentId)
@@ -646,7 +659,7 @@ class NativeNavigation: NSObject {
 
     @MainActor
     private func createTabs(_ spec: TabsSpec, container: (any ComponentModel)?) throws -> TabsModel {
-        let componentId = spec.id ?? generateId()
+        let componentId = generateId()
         let tc = NativeNavigationTabBarController(componentId: componentId)
         let model = TabsModel(componentId: componentId, spec: spec, viewController: tc, tabs: [], selectedIndex: 0, container: container?.componentId)
         
@@ -669,10 +682,10 @@ class NativeNavigation: NSObject {
 
     @MainActor
     private func createView(_ spec: ViewSpec, container: (any ComponentModel)?) throws -> ViewModel {
-        let componentId = spec.id ?? generateId()
+        let componentId = generateId()
         let stackId = (container as? StackModel)?.componentId
         
-        let viewController = NativeNavigationWebViewController(componentId: componentId, path: spec.path, state: spec.state, stackId: stackId, plugin: plugin)
+        let viewController = NativeNavigationWebViewController(componentId: componentId, alias: spec.alias, path: spec.path, state: spec.state, stackId: stackId, plugin: plugin)
         let model = ViewModel(componentId: componentId, spec: spec, viewController: viewController, container: container?.componentId)
         try storeComponent(model)
         

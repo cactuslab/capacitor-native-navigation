@@ -6,6 +6,7 @@ class NativeNavigationWebViewController: UIViewController, NativeNavigationViewC
     private weak var plugin: CAPPlugin!
     
     let componentId: String
+    let alias: String?
     var path: String? {
         didSet {
             webViewNeedsUpdate = true
@@ -39,8 +40,9 @@ class NativeNavigationWebViewController: UIViewController, NativeNavigationViewC
     private var webViewNeedsUpdate = false
     private let stackId: ComponentId?
 
-    init(componentId: String, path: String?, state: JSObject?, stackId: ComponentId?, plugin: CAPPlugin) {
+    init(componentId: String, alias: String?, path: String?, state: JSObject?, stackId: ComponentId?, plugin: CAPPlugin) {
         self.componentId = componentId
+        self.alias = alias
         self.path = path
         self.state = state
         self.stackId = stackId
@@ -68,6 +70,9 @@ class NativeNavigationWebViewController: UIViewController, NativeNavigationViewC
             self.viewReadyContinuations.append(continuation)
 
             var notificationData: [String : Any] = ["id": self.componentId]
+            if let alias = self.alias {
+                notificationData["alias"] = alias
+            }
             if let path = self.path {
                 notificationData["path"] = path
             }

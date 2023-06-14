@@ -36,9 +36,9 @@ export default function NativeNavigationRouter(props: React.PropsWithChildren<Na
 
 			/* Fire viewReady for any native views that were created before this component is rendered */
 			const views = nativeNavigationReact.views()
-			for (const id in views) {
-				if (typeof views[id].props.path !== 'undefined') {
-					nativeNavigationReact.fireViewReady(id)
+			for (const view of Object.values(views)) {
+				if (typeof view.props.path !== 'undefined') {
+					nativeNavigationReact.fireViewReady(view.id)
 				}
 			}
 		}
@@ -58,9 +58,7 @@ export default function NativeNavigationRouter(props: React.PropsWithChildren<Na
 
 	return (
 		<>
-			{Object.keys(views).map(function(id) {
-				const view = views[id]
-
+			{Object.values(views).map(function(view) {
 				const viewProps = view.props
 				const path = viewProps.path
 				if (typeof path === 'undefined') {
@@ -82,7 +80,7 @@ export default function NativeNavigationRouter(props: React.PropsWithChildren<Na
 					/>
 				)
 
-				return createPortal(reactElement, view.element, id)
+				return createPortal(reactElement, view.element, view.id)
 			})}
 		</>
 	)

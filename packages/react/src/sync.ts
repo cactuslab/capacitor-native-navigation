@@ -28,11 +28,10 @@ export function initSync(views: Record<ComponentId, NativeNavigationReactView>):
 				if (node && shouldCopyNode(node)) {
 					const nodeId = (node as HTMLElement).dataset['capacitorNativeNavigationId']
 					if (nodeId) {
-						for (const viewId of Object.keys(views)) {
-							const view = views[viewId]
+						for (const view of Object.values(views)) {
 							const target = view.window.document.head.querySelector(`[data-capacitor-native-navigation-id="${nodeId}"]`)
 							if (!target) {
-								console.warn(`Update target "${nodeId}" not found in head for view: ${viewId}`)
+								console.warn(`Update target "${nodeId}" not found in head for view: ${view.id}`)
 								continue
 							}
 
@@ -65,11 +64,10 @@ export function initSync(views: Record<ComponentId, NativeNavigationReactView>):
 					const prevSiblingId = findPreviousSiblingId(mutation.previousSibling)
 					
 					/* Copy added nodes to each view */
-					for (const viewId of Object.keys(views)) {
-						const view = views[viewId]
+					for (const view of Object.values(views)) {
 						const prevSibling = view.window.document.head.querySelector(`[data-capacitor-native-navigation-id="${prevSiblingId}"]`)
 						if (!prevSibling) {
-							console.warn(`Marker "${prevSiblingId}" not found in head for view: ${viewId}`)
+							console.warn(`Marker "${prevSiblingId}" not found in head for view: ${view.id}`)
 							continue
 						}
 
@@ -88,8 +86,7 @@ export function initSync(views: Record<ComponentId, NativeNavigationReactView>):
 				mutation.removedNodes.forEach(function(node) {
 					const nodeId = (node as HTMLElement).dataset['capacitorNativeNavigationId']
 					if (nodeId) {
-						for (const viewId of Object.keys(views)) {
-							const view = views[viewId]
+						for (const view of Object.values(views)) {
 							const nodeToRemove = view.window.document.head.querySelector(`[data-capacitor-native-navigation-id="${nodeId}"]`)
 							if (nodeToRemove) {
 								nodeToRemove.remove()
@@ -132,15 +129,13 @@ export function initSync(views: Record<ComponentId, NativeNavigationReactView>):
 			styleSheet.insertRule = function(rule, index) {
 				const nodeId = (styleSheet.ownerNode as HTMLElement).dataset['capacitorNativeNavigationId']
 				if (nodeId) {
-					for (const viewId of Object.keys(views)) {
-						const view = views[viewId]
-
+					for (const view of Object.values(views)) {
 						const targetStyleSheet = findMatchingStyleSheet(styleSheet, view.window)
 						if (targetStyleSheet) {
 							try {
 								targetStyleSheet.insertRule(rule, index)
 							} catch (error) {
-								console.warn(`Failed to sync cssRule to ${viewId}: ${error instanceof Error ? error.message : error}: @${index} ${rule}`)
+								console.warn(`Failed to sync cssRule to ${view.id}: ${error instanceof Error ? error.message : error}: @${index} ${rule}`)
 							}
 						}
 					}
@@ -150,9 +145,7 @@ export function initSync(views: Record<ComponentId, NativeNavigationReactView>):
 			}
 	
 			/* Copy the initial set of rules to other windows */
-			for (const viewId of Object.keys(views)) {
-				const view = views[viewId]
-
+			for (const view of Object.values(views)) {
 				copyInitialCssRules(styleSheet, view.window)
 			}
 		}

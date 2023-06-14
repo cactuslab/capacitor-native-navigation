@@ -285,13 +285,13 @@ Send a message to a component.
 
 #### TabSpec
 
-| Prop             | Type                                                                                | Description                                                              |
-| ---------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| **`id`**         | <code><a href="#componentid">ComponentId</a></code>                                 | The id to use for the tab, or undefined to automatically generate an id. |
-| **`title`**      | <code>string</code>                                                                 |                                                                          |
-| **`image`**      | <code><a href="#imagespec">ImageSpec</a></code>                                     |                                                                          |
-| **`badgeValue`** | <code>string</code>                                                                 |                                                                          |
-| **`component`**  | <code><a href="#viewspec">ViewSpec</a> \| <a href="#stackspec">StackSpec</a></code> |                                                                          |
+| Prop             | Type                                                                                |
+| ---------------- | ----------------------------------------------------------------------------------- |
+| **`alias`**      | <code><a href="#componentalias">ComponentAlias</a></code>                           |
+| **`title`**      | <code>string</code>                                                                 |
+| **`image`**      | <code><a href="#imagespec">ImageSpec</a></code>                                     |
+| **`badgeValue`** | <code>string</code>                                                                 |
+| **`component`**  | <code><a href="#viewspec">ViewSpec</a> \| <a href="#stackspec">StackSpec</a></code> |
 
 
 #### DismissResult
@@ -303,10 +303,10 @@ Send a message to a component.
 
 #### DismissOptions
 
-| Prop           | Type                                                |
-| -------------- | --------------------------------------------------- |
-| **`id`**       | <code><a href="#componentid">ComponentId</a></code> |
-| **`animated`** | <code>boolean</code>                                |
+| Prop           | Type                                                          |
+| -------------- | ------------------------------------------------------------- |
+| **`id`**       | <code>string \| <a href="#componentid">ComponentId</a></code> |
+| **`animated`** | <code>boolean</code>                                          |
 
 
 #### PushResult
@@ -319,13 +319,13 @@ Send a message to a component.
 
 #### PushOptions
 
-| Prop            | Type                                                | Description                                                                                                                                                                                                      |
-| --------------- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`component`** | <code><a href="#viewspec">ViewSpec</a></code>       | The options for the view to push onto the stack.                                                                                                                                                                 |
-| **`target`**    | <code><a href="#componentid">ComponentId</a></code> | The target component to push to, usually a stack, or undefined to push to the current stack or component.                                                                                                        |
-| **`animated`**  | <code>boolean</code>                                | Whether to animate the push. Defaults to `true`                                                                                                                                                                  |
-| **`mode`**      | <code><a href="#pushmode">PushMode</a></code>       | The mode to use for the push. Defaults to `'push'`. push: Push the component onto the stack. replace: Replace the current top-most component in the stack. root: Reset the stack back to just the new component. |
-| **`popCount`**  | <code>number</code>                                 | How many items to pop first                                                                                                                                                                                      |
+| Prop            | Type                                                          | Description                                                                                                                                                                                                      |
+| --------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`component`** | <code><a href="#viewspec">ViewSpec</a></code>                 | The options for the view to push onto the stack.                                                                                                                                                                 |
+| **`target`**    | <code>string \| <a href="#componentid">ComponentId</a></code> | The target component to push to, usually a stack, or undefined to push to the current stack or component.                                                                                                        |
+| **`animated`**  | <code>boolean</code>                                          | Whether to animate the push. Defaults to `true`                                                                                                                                                                  |
+| **`mode`**      | <code><a href="#pushmode">PushMode</a></code>                 | The mode to use for the push. Defaults to `'push'`. push: Push the component onto the stack. replace: Replace the current top-most component in the stack. root: Reset the stack back to just the new component. |
+| **`popCount`**  | <code>number</code>                                           | How many items to pop first                                                                                                                                                                                      |
 
 
 #### PopResult
@@ -339,18 +339,18 @@ Send a message to a component.
 
 #### PopOptions
 
-| Prop           | Type                                                | Description                                                        |
-| -------------- | --------------------------------------------------- | ------------------------------------------------------------------ |
-| **`stack`**    | <code><a href="#componentid">ComponentId</a></code> | The stack to pop from, or undefined to pop from the current stack. |
-| **`count`**    | <code>number</code>                                 | How many items to pop                                              |
-| **`animated`** | <code>boolean</code>                                | Whether to animate the pop. Defaults to `true`                     |
+| Prop           | Type                                                          | Description                                                        |
+| -------------- | ------------------------------------------------------------- | ------------------------------------------------------------------ |
+| **`stack`**    | <code>string \| <a href="#componentid">ComponentId</a></code> | The stack to pop from, or undefined to pop from the current stack. |
+| **`count`**    | <code>number</code>                                           | How many items to pop                                              |
+| **`animated`** | <code>boolean</code>                                          | Whether to animate the pop. Defaults to `true`                     |
 
 
 #### UpdateOptions
 
 | Prop           | Type                                                                                                                                                                      | Description                                         |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| **`id`**       | <code><a href="#componentid">ComponentId</a></code>                                                                                                                       |                                                     |
+| **`id`**       | <code>string \| <a href="#componentid">ComponentId</a></code>                                                                                                             |                                                     |
 | **`animated`** | <code>boolean</code>                                                                                                                                                      | Whether to animate the changes. Defaults to `false` |
 | **`update`**   | <code><a href="#stackupdate">StackUpdate</a> \| <a href="#tabsupdate">TabsUpdate</a> \| <a href="#tabupdate">TabUpdate</a> \| <a href="#viewupdate">ViewUpdate</a></code> |                                                     |
 
@@ -447,18 +447,39 @@ Options for view components
 
 #### GetResult
 
-| Prop            | Type                                                          | Description                                 |
-| --------------- | ------------------------------------------------------------- | ------------------------------------------- |
-| **`component`** | <code><a href="#anycomponentspec">AnyComponentSpec</a></code> | The component, if any.                      |
-| **`stack`**     | <code><a href="#stackspec">StackSpec</a></code>               | The stack containing the component, if any. |
-| **`tabs`**      | <code><a href="#tabsspec">TabsSpec</a></code>                 | The tabs containing the component, if any.  |
+| Prop            | Type                                                            | Description                                 |
+| --------------- | --------------------------------------------------------------- | ------------------------------------------- |
+| **`component`** | <code><a href="#anycomponentmodel">AnyComponentModel</a></code> | The component, if any.                      |
+| **`stack`**     | <code><a href="#stackmodel">StackModel</a></code>               | The stack containing the component, if any. |
+| **`tabs`**      | <code><a href="#tabsmodel">TabsModel</a></code>                 | The tabs containing the component, if any.  |
+
+
+#### StackModel
+
+| Prop     | Type                                                |
+| -------- | --------------------------------------------------- |
+| **`id`** | <code><a href="#componentid">ComponentId</a></code> |
+
+
+#### TabsModel
+
+| Prop     | Type                                                |
+| -------- | --------------------------------------------------- |
+| **`id`** | <code><a href="#componentid">ComponentId</a></code> |
+
+
+#### ViewModel
+
+| Prop     | Type                                                |
+| -------- | --------------------------------------------------- |
+| **`id`** | <code><a href="#componentid">ComponentId</a></code> |
 
 
 #### GetOptions
 
-| Prop     | Type                                                | Description                                                          |
-| -------- | --------------------------------------------------- | -------------------------------------------------------------------- |
-| **`id`** | <code><a href="#componentid">ComponentId</a></code> | The component id to get, or undefined to get the top-most component. |
+| Prop     | Type                                                          | Description                                                          |
+| -------- | ------------------------------------------------------------- | -------------------------------------------------------------------- |
+| **`id`** | <code>string \| <a href="#componentid">ComponentId</a></code> | The component id to get, or undefined to get the top-most component. |
 
 
 #### MessageOptions
@@ -475,7 +496,12 @@ Options for view components
 
 #### ComponentId
 
-<code>string</code>
+<code><a href="#opaque">Opaque</a>&lt;'<a href="#componentid">ComponentId</a>', string&gt;</code>
+
+
+#### Opaque
+
+<code>T & { __TYPE__: K }</code>
 
 
 #### AnyComponentSpec
@@ -505,6 +531,11 @@ Construct a type with a set of properties K of type T
 <code><a href="#imageobject">ImageObject</a> | string</code>
 
 
+#### ComponentAlias
+
+<code>string</code>
+
+
 #### PresentationStyle
 
 <code>'fullScreen' | 'pageSheet' | 'formSheet' | 'dialog'</code>
@@ -517,5 +548,10 @@ replace: Replace the current top-most component in the stack.
 root: Reset the stack back to just the new component.
 
 <code>'push' | 'replace' | 'root'</code>
+
+
+#### AnyComponentModel
+
+<code><a href="#stackmodel">StackModel</a> | <a href="#tabsmodel">TabsModel</a> | <a href="#viewmodel">ViewModel</a></code>
 
 </docgen-api>

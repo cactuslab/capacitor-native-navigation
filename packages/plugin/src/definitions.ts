@@ -283,14 +283,14 @@ export interface UpdateOptions {
 	update: StackUpdate | TabsUpdate | TabUpdate | ViewUpdate
 }
 
-export interface ComponentOptions {
+export interface ComponentUpdate {
 	title?: string | null
 }
 
 /**
  * Options for stack components
  */
-export interface StackUpdate extends ComponentOptions {
+export interface StackUpdate extends ComponentUpdate {
 	components?: ViewSpec[]
 	bar?: BarUpdate
 }
@@ -350,7 +350,7 @@ export interface FontUpdate {
 /**
  * Options for tabs components
  */
-export interface TabsUpdate extends ComponentOptions {
+export interface TabsUpdate extends ComponentUpdate {
 	tabs?: TabSpec[]
 }
 
@@ -365,7 +365,7 @@ export interface TabUpdate {
 /**
  * Options for view components
  */
-export interface ViewUpdate extends ComponentOptions {
+export interface ViewUpdate extends ComponentUpdate {
 	/**
 	 * Options for when the component is used in a stack
 	 */

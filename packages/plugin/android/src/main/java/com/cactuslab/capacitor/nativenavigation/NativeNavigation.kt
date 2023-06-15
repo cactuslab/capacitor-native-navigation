@@ -122,7 +122,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
             componentsByAlias[it] = component
         }
         container?.state?.let { containerState ->
-            component.state = mergeJSObjects(containerState, component.state)
+            component.state = mergeJSObjects(component.state, containerState)
         }
         when (component) {
             is StackSpec -> {

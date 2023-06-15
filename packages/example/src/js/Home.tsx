@@ -124,7 +124,7 @@ export default function Home(): React.ReactElement {
 async function setupStack(options: { path: string; title: string; options?: Partial<StackSpec> }) {
 	const stackRoot = await NativeNavigation.present({
 		component: {
-			id: 'rootStack',
+			alias: 'rootStack',
 			type: 'stack',
 			components: [
 				{
@@ -143,14 +143,14 @@ async function setupStack(options: { path: string; title: string; options?: Part
 async function setupTabs() {
 	const tabsRoot = await NativeNavigation.present({
 		component: {
-			id: 'rootTabs',
+			alias: 'rootTabs',
 			type: 'tabs',
 			tabs: [
 				{
 					title: 'First',
 					image: star,
 					component: {
-						id: 'rootStack',
+						alias: 'rootStack',
 						type: 'stack',
 						components: [
 							{

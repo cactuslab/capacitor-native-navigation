@@ -1,5 +1,22 @@
 # @cactuslab/native-navigation-history
 
+## 6.1.0-next.0
+
+### Minor Changes
+
+- 660661b: Rename ViewState to StateObject
+
+### Patch Changes
+
+- Updated dependencies [5385d2d]
+- Updated dependencies [07e361a]
+- Updated dependencies [42ec557]
+- Updated dependencies [5d72bb2]
+- Updated dependencies [bf30927]
+- Updated dependencies [85ac89c]
+- Updated dependencies [660661b]
+  - @cactuslab/native-navigation@0.7.0-next.0
+
 ## 6.0.0
 
 ### Patch Changes

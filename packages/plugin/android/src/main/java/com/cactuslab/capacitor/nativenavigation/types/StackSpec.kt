@@ -11,10 +11,11 @@ import java.util.UUID
 class StackSpec(
     id: String? = null,
     alias: String? = null,
+    state: JSObject? = null,
     var components: List<ViewSpec>? = null,
     var bar: BarSpec? = null,
     var title: String? = null
-) : ComponentSpec(type = ComponentType.STACK, id = id ?: UUID.randomUUID().toString(), alias = alias), TabsOptionsTabs
+) : ComponentSpec(type = ComponentType.STACK, id = id ?: UUID.randomUUID().toString(), alias = alias, state = state), TabsOptionsTabs
 {
     override fun toJSObject(): JSObject {
         val obj = super.toJSObject()
@@ -46,7 +47,7 @@ class StackSpec(
             }
 
             val components = jsObject.getJSONArray("components")
-
+            val state = jsObject.getJSObject("state")
             val bar = jsObject.getJSObject("bar")?.let { BarSpec.fromJSObject(it) }
 
             val title = jsObject.getString("title")
@@ -54,6 +55,7 @@ class StackSpec(
             return StackSpec(
                 id = jsObject.getString("id"),
                 alias = jsObject.getString("alias"),
+                state = state,
                 components = components.jsObjectSequence().map { ViewSpec.fromJSObject(it) }
                     .toList(),
                 bar = bar,

@@ -9,20 +9,18 @@ import java.util.*
 
 class ViewSpec(id: String? = null,
                alias: String? = null,
+               state: JSObject?,
                var path: String? = null,
-               var state: JSObject?,
-
                var title: String? = null,
                var stackItem: StackItemSpec? = null,
                var backButtonId: String? = null,
                ) :
-    ComponentSpec(type = ComponentType.VIEW, id = id ?: UUID.randomUUID().toString(), alias = alias), TabsOptionsTabs
+    ComponentSpec(type = ComponentType.VIEW, id = id ?: UUID.randomUUID().toString(), alias = alias, state = state), TabsOptionsTabs
 {
 
     override fun toJSObject(): JSObject {
         val obj = super.toJSObject()
         path?.let { obj.put("path", it)  }
-        state?.let { obj.put("state", it) }
         backButtonId?.let {
             val android = JSObject()
             android.put("backButtonId", it)

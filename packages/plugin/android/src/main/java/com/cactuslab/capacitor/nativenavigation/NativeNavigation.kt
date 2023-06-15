@@ -16,6 +16,7 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.fragment
 import com.cactuslab.capacitor.nativenavigation.databinding.ActivityNavigationBinding
 import com.cactuslab.capacitor.nativenavigation.helpers.isColorDark
+import com.cactuslab.capacitor.nativenavigation.helpers.mergeJSObjects
 import com.cactuslab.capacitor.nativenavigation.helpers.parseRGBAColor
 import com.cactuslab.capacitor.nativenavigation.types.*
 import com.cactuslab.capacitor.nativenavigation.ui.ViewSpecFragment
@@ -115,17 +116,20 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
     /** used to ensure that when native navigation is popping nothing can prevent it */
     private var applicationDrivenPop: Boolean = false;
 
-    private fun insertComponent(component: ComponentSpec) {
+    private fun insertComponent(component: ComponentSpec, container: ComponentSpec? = null) {
         componentsById[component.id] = component
         component.alias?.let {
             componentsByAlias[it] = component
         }
+        container?.state?.let { containerState ->
+            component.state = mergeJSObjects(containerState, component.state)
+        }
         when (component) {
             is StackSpec -> {
-                component.components?.forEach { insertComponent(it) }
+                component.components?.forEach { insertComponent(it, component) }
             }
             is TabsSpec -> {
-                component.tabs.forEach { insertComponent(it as ComponentSpec) }
+                component.tabs.forEach { insertComponent(it as ComponentSpec, component) }
             }
             else -> {}
         }
@@ -500,7 +504,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                 navContext.virtualStack.clear()
 
                 stack.forEachIndexed { _, viewSpec ->
-                    insertComponent(viewSpec)
+                    insertComponent(viewSpec, component)
                     val webView = makeWebView(viewSpec.id)
                     viewModel.postWebView(webView, viewSpec.id)
                     navContext.virtualStack.add(viewSpec.id)
@@ -621,7 +625,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
                 when(options.mode) {
                     PushMode.PUSH -> {
-                        insertComponent(component)
+                        insertComponent(component, presentedComponentHost)
 
                         Log.d(TAG, "push: PUSH -> Inserted component ${component.id}")
                         var lastRemovedId: String? = null
@@ -689,7 +693,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                         }
 
                         component.id = currentId
-                        insertComponent(component)
+                        insertComponent(component, presentedComponentHost)
 
                         if (backStackEntry != null) {
                             val navController = navContext.fragment.binding?.navigationHost?.findNavController()
@@ -701,7 +705,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                         call.resolve(result.toJSObject())
                     }
                     PushMode.ROOT -> {
-                        insertComponent(component)
+                        insertComponent(component, presentedComponentHost)
 
                         navContext.virtualStack.clear()
                         navContext.virtualStack.add(component.id)

@@ -8,7 +8,8 @@ import java.util.*
 
 class TabsSpec(id: String? = null,
                alias: String? = null,
-               var tabs: List<TabsOptionsTabs>) : ComponentSpec(type = ComponentType.TABS, id = id ?: UUID.randomUUID().toString(), alias = alias) {
+               state: JSObject? = null,
+               var tabs: List<TabsOptionsTabs>) : ComponentSpec(type = ComponentType.TABS, id = id ?: UUID.randomUUID().toString(), alias = alias, state = state) {
 
     override fun toJSObject(): JSObject {
         val obj = super.toJSObject()
@@ -59,11 +60,13 @@ class TabsSpec(id: String? = null,
                 throw InvalidParameterException("type", "Type $type is incorrect for ViewOptions")
             }
 
+            val state = jsObject.getJSObject("state")
             if (!jsObject.has("tabs")) throw MissingParameterException("tabs")
             val tabs = jsObject.getJSONArray("tabs")
 
             return TabsSpec(id = jsObject.getString("id"),
                 alias = jsObject.getString("alias"),
+                state = state,
                 tabs = tabs.jsObjectSequence().map { tabFromJsObject(it) }.toList()
             )
         }

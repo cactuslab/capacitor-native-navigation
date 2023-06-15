@@ -1,5 +1,11 @@
 # @cactuslab/native-navigation
 
+## 0.7.0-next.1
+
+### Patch Changes
+
+- 2ca090e: iOS: add missing combined state for updateView
+
 ## 0.7.0-next.0
 
 ### Minor Changes

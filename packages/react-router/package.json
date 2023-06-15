@@ -33,6 +33,7 @@
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
+    "@cactuslab/native-navigation": "^0.6.0",
     "@cactuslab/native-navigation-react": "^6.0.0"
   },
   "devDependencies": {
@@ -46,7 +47,6 @@
     "typescript": "~5.0.4"
   },
   "peerDependencies": {
-    "@cactuslab/native-navigation": "^0.6.0",
     "@capacitor/core": "^5.0.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

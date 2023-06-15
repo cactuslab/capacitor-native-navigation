@@ -9,6 +9,7 @@ export default function MenuLeftItems() {
 	const { updateView, addClickListener } = useNativeNavigationViewContext()
 
 	updateView({
+		title: 'Left Items',
 		stackItem: {
 			leftItems: [
 				{
@@ -23,11 +24,19 @@ export default function MenuLeftItems() {
 				},
 			],
 		},
+		android: {
+			backButtonId: 'andy-back',
+		},
 	})
 
 	useEffect(function() {
-		return addClickListener(function() {
-			NativeNavigation.reset()
+		return addClickListener(function(id) {
+			if (id.buttonId === 'andy-back') {
+				console.log('Interrupted Back Button')
+				// NativeNavigation.dismiss()
+			} else {
+				NativeNavigation.reset()
+			}
 		})
 	}, [addClickListener])
 

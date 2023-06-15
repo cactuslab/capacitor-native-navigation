@@ -172,6 +172,17 @@ export interface ViewSpec extends ComponentSpec {
 	 * Options for when the component is used in a stack
 	 */
 	stackItem?: StackItemSpec
+
+	/** Options for Android specific features */
+	android?: {
+		
+		/** 
+		 * Interrupt the default hardware back button behaviour by setting an Id.
+		 * This id will be notified every time a user taps the back button
+		 * while this view is topmost.
+		 */
+		backButtonId?: string
+	}
 }
 
 export interface ViewModel extends ViewSpec {
@@ -402,6 +413,17 @@ export interface ViewUpdate extends ComponentUpdate {
 	 * Options for when the component is used in a stack
 	 */
 	stackItem?: StackItemUpdate
+
+	/** Options for Android specific features */
+	android?: {
+
+		/** 
+		 * Interrupt the default hardware back button behaviour by setting an Id.
+		 * This id will be notified every time a user taps the back button
+		 * while this view is topmost
+		 */
+		backButtonId?: string | null
+	}
 }
 
 export interface StackItemSpec {

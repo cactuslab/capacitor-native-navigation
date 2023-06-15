@@ -348,7 +348,13 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                     navContext.virtualStack.lastOrNull()?.let { topMostId ->
                         val isBackEnabled = when (val componentSpec = componentSpecForId(topMostId)) {
                             is ViewSpec -> {
-                                componentSpec.stackItem?.backEnabled
+                                val buttonId = componentSpec.backButtonId
+                                if (buttonId != null) {
+                                    notifyClick(buttonId, componentSpec.id)
+                                    false
+                                } else {
+                                    componentSpec.stackItem?.backEnabled()
+                                }
                             }
                             else -> { null }
                         } ?: true

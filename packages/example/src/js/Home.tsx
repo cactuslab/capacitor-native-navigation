@@ -133,6 +133,9 @@ async function setupStack(options: { path: string; title: string; options?: Part
 					title: options?.title,
 				},
 			],
+			state: {
+				fromRootStack: true,
+			},
 			...options.options,
 		},
 		animated: false,

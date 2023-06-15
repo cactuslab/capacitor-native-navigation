@@ -186,23 +186,24 @@ Send a message to a component.
 
 #### StackSpec
 
-| Prop             | Type                                        |
-| ---------------- | ------------------------------------------- |
-| **`type`**       | <code>'stack'</code>                        |
-| **`components`** | <code>ViewSpec[]</code>                     |
-| **`bar`**        | <code><a href="#barspec">BarSpec</a></code> |
-| **`title`**      | <code>string</code>                         |
+| Prop             | Type                                                | Description                                                                 |
+| ---------------- | --------------------------------------------------- | --------------------------------------------------------------------------- |
+| **`type`**       | <code>'stack'</code>                                |                                                                             |
+| **`components`** | <code>ViewSpec[]</code>                             |                                                                             |
+| **`bar`**        | <code><a href="#barspec">BarSpec</a></code>         |                                                                             |
+| **`title`**      | <code>string</code>                                 |                                                                             |
+| **`state`**      | <code><a href="#stateobject">StateObject</a></code> | State that will be mixed into the state of each of the contained components |
 
 
 #### ViewSpec
 
-| Prop            | Type                                                    | Description                                       |
-| --------------- | ------------------------------------------------------- | ------------------------------------------------- |
-| **`type`**      | <code>'view'</code>                                     |                                                   |
-| **`path`**      | <code>string</code>                                     | The path representing the view.                   |
-| **`state`**     | <code><a href="#stateobject">StateObject</a></code>     |                                                   |
-| **`title`**     | <code>string</code>                                     |                                                   |
-| **`stackItem`** | <code><a href="#stackitemspec">StackItemSpec</a></code> | Options for when the component is used in a stack |
+| Prop            | Type                                                    | Description                                                                                                                                                 |
+| --------------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`type`**      | <code>'view'</code>                                     |                                                                                                                                                             |
+| **`path`**      | <code>string</code>                                     | The path representing the view.                                                                                                                             |
+| **`state`**     | <code><a href="#stateobject">StateObject</a></code>     |                                                                                                                                                             |
+| **`title`**     | <code>string</code>                                     | The title is shown in the title bar when the view is shown in a stack. Titles may also be used in other ways by the native environment and are a good idea. |
+| **`stackItem`** | <code><a href="#stackitemspec">StackItemSpec</a></code> | Options for when the component is used in a stack                                                                                                           |
 
 
 #### StackItemSpec
@@ -276,22 +277,24 @@ Send a message to a component.
 
 #### TabsSpec
 
-| Prop        | Type                   |
-| ----------- | ---------------------- |
-| **`type`**  | <code>'tabs'</code>    |
-| **`tabs`**  | <code>TabSpec[]</code> |
-| **`title`** | <code>string</code>    |
+| Prop        | Type                                                | Description                                                                 |
+| ----------- | --------------------------------------------------- | --------------------------------------------------------------------------- |
+| **`type`**  | <code>'tabs'</code>                                 |                                                                             |
+| **`tabs`**  | <code>TabSpec[]</code>                              |                                                                             |
+| **`title`** | <code>string</code>                                 |                                                                             |
+| **`state`** | <code><a href="#stateobject">StateObject</a></code> | State that will be mixed into the state of each of the contained components |
 
 
 #### TabSpec
 
-| Prop             | Type                                                                                |
-| ---------------- | ----------------------------------------------------------------------------------- |
-| **`alias`**      | <code><a href="#componentalias">ComponentAlias</a></code>                           |
-| **`title`**      | <code>string</code>                                                                 |
-| **`image`**      | <code><a href="#imagespec">ImageSpec</a></code>                                     |
-| **`badgeValue`** | <code>string</code>                                                                 |
-| **`component`**  | <code><a href="#viewspec">ViewSpec</a> \| <a href="#stackspec">StackSpec</a></code> |
+| Prop             | Type                                                                                | Description                                                                 |
+| ---------------- | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| **`alias`**      | <code><a href="#componentalias">ComponentAlias</a></code>                           |                                                                             |
+| **`title`**      | <code>string</code>                                                                 |                                                                             |
+| **`image`**      | <code><a href="#imagespec">ImageSpec</a></code>                                     |                                                                             |
+| **`badgeValue`** | <code>string</code>                                                                 |                                                                             |
+| **`component`**  | <code><a href="#viewspec">ViewSpec</a> \| <a href="#stackspec">StackSpec</a></code> |                                                                             |
+| **`state`**      | <code><a href="#stateobject">StateObject</a></code>                                 | State that will be mixed into the state of each of the contained components |
 
 
 #### DismissResult

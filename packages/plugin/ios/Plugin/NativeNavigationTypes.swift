@@ -15,6 +15,7 @@ protocol ComponentSpec: PluginResultable {
     var type: ComponentType { get }
     var id: ComponentId? { get set }
     var alias: ComponentId? { get set }
+    var state: JSObject? { get set }
     
     mutating func update(_ object: JSObjectLike) throws
 }
@@ -33,9 +34,9 @@ struct StackSpec: TabableSpec, JSObjectDecodable {
     var bar: BarSpec?
     var title: String?
     
+    var state: JSObject?
+    
     static func fromJSObject(_ object: JSObjectLike) throws -> StackSpec {
-        
-        
         guard let viewSpecObjects = object.getArray("components") as? [JSObject] else {
             throw NativeNavigatorError.missingParameter(name: "components")
         }
@@ -51,6 +52,10 @@ struct StackSpec: TabableSpec, JSObjectDecodable {
         
         if let barObject = object.getObject("bar") {
             spec.bar = try BarSpec.fromJSObject(barObject)
+        }
+        
+        if let state = object.getObject("state") {
+            spec.state = state
         }
         
         return spec
@@ -78,6 +83,10 @@ struct StackSpec: TabableSpec, JSObjectDecodable {
             result["bar"] = value.toPluginResult()
         }
         
+        if let state = self.state {
+            result["state"] = state
+        }
+        
         return result
     }
 }
@@ -91,6 +100,8 @@ struct TabsSpec: ComponentSpec {
     var title: String?
     var tabs: [TabSpec]
     
+    var state: JSObject?
+    
     func toPluginResult() -> PluginCallResultData {
         var result = componentSpecToPluginResult(self)
         
@@ -101,6 +112,10 @@ struct TabsSpec: ComponentSpec {
         result["tabs"] = tabsResult
         if let value = title {
             result["title"] = value
+        }
+        
+        if let state = self.state {
+            result["state"] = state
         }
         
         return result
@@ -120,6 +135,10 @@ struct TabsSpec: ComponentSpec {
         spec.title = object.getString("title")
         spec.alias = object.getString("alias")
         
+        if let state = object.getObject("state") {
+            spec.state = state
+        }
+        
         return spec
     }
     
@@ -138,6 +157,8 @@ struct TabSpec: PluginResultable, JSObjectUpdatable, JSObjectDecodable {
     
     var component: TabableSpec
     
+    var state: JSObject?
+    
     func toPluginResult() -> PluginCallResultData {
         var result: PluginCallResultData = [:]
         if let id = id {
@@ -150,6 +171,9 @@ struct TabSpec: PluginResultable, JSObjectUpdatable, JSObjectDecodable {
             result["badgeValue"] = value
         }
         result["component"] = component.toPluginResult()
+        if let state = self.state {
+            result["state"] = state
+        }
         return result
     }
     
@@ -195,7 +219,6 @@ struct ViewSpec: TabableSpec, JSObjectDecodable {
         spec.path = object.getString("path")
         spec.alias = object.getString("alias")
         spec.title = object.getString("title")
-        
         
         if let state = object.getObject("state") {
             spec.state = state

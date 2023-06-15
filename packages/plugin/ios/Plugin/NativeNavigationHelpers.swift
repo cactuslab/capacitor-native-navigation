@@ -1,6 +1,24 @@
 import Capacitor
 import Foundation
 
+extension JSObject {
+    
+    /** Merges two JSObjects and returns a new JSObject. Keys in b replace keys in a in case of overlap. */
+    static func merged(_ a: JSObject?, _ b: JSObject?) -> JSObject? {
+        guard let a = a else {
+            return b
+        }
+        guard let b = b else {
+            return a
+        }
+        
+        var result = a
+        result.merge(b) { (_, new) in new }
+        return result
+    }
+    
+}
+
 protocol JSObjectLike {
     
     func has(_ key: String) -> Bool

@@ -379,11 +379,13 @@ class NativeNavigation: NSObject {
             var result = StackSpec(components: specs)
             result.id = vc.componentId
             result.alias = vc.spec.alias
+            result.state = vc.spec.state
             return result
         } else if let vc = vc as? TabsModel {
             var result = TabsSpec(tabs: [])
             result.id = vc.componentId
             result.alias = vc.spec.alias
+            result.state = vc.spec.state
             return result
         } else if let vc = vc as? ViewModel {
             var result = ViewSpec(path: vc.viewController.path, state: vc.viewController.state)
@@ -654,8 +656,9 @@ class NativeNavigation: NSObject {
     private func createView(_ spec: ViewSpec, container: (any ComponentModel)?) throws -> ViewModel {
         let componentId = generateId()
         let stackId = (container as? StackModel)?.componentId
+        let state = JSObject.merged(try self.combinedState(container), spec.state)
         
-        let viewController = NativeNavigationWebViewController(componentId: componentId, alias: spec.alias, path: spec.path, state: spec.state, stackId: stackId, plugin: plugin)
+        let viewController = NativeNavigationWebViewController(componentId: componentId, alias: spec.alias, path: spec.path, state: state, stackId: stackId, plugin: plugin)
         let model = ViewModel(componentId: componentId, spec: spec, viewController: viewController, container: container?.componentId)
         try storeComponent(model)
         
@@ -663,7 +666,27 @@ class NativeNavigation: NSObject {
         
         return model
     }
-
+    
+    /** @return the combined `state` from this component and its hierarchy */
+    private func combinedState(_ component: (any ComponentModel)?) throws -> JSObject? {
+        guard let component = component else {
+            return nil
+        }
+        
+        var containerState: JSObject?
+        if let containerId = component.container {
+            let container = try self.component(containerId)
+            containerState = try combinedState(container)
+        } else {
+            containerState = nil
+        }
+        if let state = component.spec.state {
+            return JSObject.merged(containerState, state)
+        } else {
+            return containerState
+        }
+    }
+    
     private func generateId() -> String {
         let result = "_component\(self.idCounter)"
         self.idCounter += 1

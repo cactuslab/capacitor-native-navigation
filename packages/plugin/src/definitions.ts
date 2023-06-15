@@ -111,6 +111,9 @@ export interface StackSpec extends ComponentSpec {
 	components: ViewSpec[]
 	bar?: BarSpec
 	title?: string
+
+	/** State that will be mixed into the state of each of the contained components */
+	state?: StateObject
 }
 
 export interface StackModel extends StackSpec {
@@ -121,6 +124,9 @@ export interface TabsSpec extends ComponentSpec {
 	type: 'tabs'
 	tabs: TabSpec[]
 	title?: string
+
+	/** State that will be mixed into the state of each of the contained components */
+	state?: StateObject
 }
 
 export interface TabsModel extends TabsSpec {
@@ -135,6 +141,9 @@ export interface TabSpec {
 	badgeValue?: string
 
 	component: StackSpec | ViewSpec
+	
+	/** State that will be mixed into the state of each of the contained components */
+	state?: StateObject
 }
 
 export interface TabModel extends TabSpec {
@@ -153,6 +162,10 @@ export interface ViewSpec extends ComponentSpec {
 
 	state?: StateObject
 	
+	/**
+	 * The title is shown in the title bar when the view is shown in a stack.
+	 * Titles may also be used in other ways by the native environment and are a good idea.
+	 */
 	title?: string
 
 	/**

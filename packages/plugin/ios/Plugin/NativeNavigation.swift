@@ -700,7 +700,9 @@ class NativeNavigation: NSObject {
         try self.configureViewController(component, options: spec, animated: false)
         
         viewController.path = spec.path
-        viewController.state = spec.state
+        
+        let state = try self.combinedState(component)
+        viewController.state = state
     }
     
     /**

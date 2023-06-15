@@ -35,13 +35,13 @@ export default function Stack1(): JSX.Element {
 			stackItem: {
 				bar: {
 					background: {
-						color: "#DDFFEE",
+						color: '#DDFFEE',
 					},
 					iOS: {
-						hideShadow: newValue
-					}
-				}
-			}
+						hideShadow: newValue,
+					},
+				},
+			},
 		})
 	}, [iOSShadowHidden])
 
@@ -139,6 +139,7 @@ export default function Stack1(): JSX.Element {
 				<li><Link to="/stack2">Push Stack 2</Link></li>
 				<li><Link to="/state" state={{ fromLink: true }}>Push with State</Link></li>
 				<li><Link to="/modal/">Link to modal</Link></li>
+				<li><Link to="/examples/menu-left">Link to left items</Link></li>
 			</ul>
 			
 			<p><button onClick={() => navigate(-1)}>Go Back</button></p>

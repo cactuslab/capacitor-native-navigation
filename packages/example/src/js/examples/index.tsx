@@ -5,12 +5,14 @@ import Menu from './Menu'
 import Subnav from './Subnav'
 import TallContent from './TallContent'
 import Modals from './Modals'
+import MenuLeftItems from './MenuLeftItems'
 
 export default function Examples() {
 	return (
 		<Routes>
 			<Route path="links" element={<Links />} />
 			<Route path="menu" element={<Menu />} />
+			<Route path="menu-left" element={<MenuLeftItems />} />
 			<Route path="tall-content" element={<TallContent />} />
 			<Route path="subnav/*" element={<Subnav />} />
 			<Route path="modals/*" element={<Modals />} />

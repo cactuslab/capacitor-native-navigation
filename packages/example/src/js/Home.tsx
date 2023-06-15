@@ -67,6 +67,7 @@ export default function Home(): React.ReactElement {
 					<h2>Examples</h2>
 					<dd><button onClick={() => setupStack({ path: '/examples/links', title: 'Links' })}>Links</button></dd>
 					<dd><button onClick={() => setupStack({ path: '/examples/menu', title: 'Menu' })}>Menu</button></dd>
+					<dd><button onClick={() => setupStack({ path: '/examples/menu-left', title: 'Menu Left' })}>Menu Left</button></dd>
 					<dd><button onClick={() => setupStack({ path: '/examples/subnav/first', title: 'Subnav' })}>Subnav</button></dd>
 					<dd><button onClick={() => setupStack({ path: '/examples/tall-content', title: 'Tall Content', options: { bar: { background: { color: '#23ABED60' } } } })}>Transparent Menu</button></dd>
 					<dd><button onClick={() => setupStack({ path: '/examples/modals', title: 'Modals' })}>Modals</button></dd>

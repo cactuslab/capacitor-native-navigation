@@ -427,20 +427,34 @@ export interface ViewUpdate extends ComponentUpdate {
 }
 
 export interface StackItemSpec {
+
+	/** 
+	 * The back item used when this stack item is on the back stack. This is only 
+	 * currently used by iOS as Android will show an arrow with no title if
+	 * back is enabled
+	 */
 	backItem?: StackBarButtonItem
-	leftItems?: StackBarButtonItem[]
-	rightItems?: StackBarButtonItem[]
 	
 	/**
-	 * Enables the system gestures and buttons for managing the back action.
-	 * Useful for preventing the user from exiting a window that is running
-	 * an important operation. Does not prevent the user from backgrounding
-	 * the application.
-	 * Default behaviour is to use the host Stack configuration which behaves
-	 * as backEnabled is `true`
+	 * Setting any value to leftItems will disable the navigation back
+	 * buttons on both iOS and Android. (Android hardware back button is not affected).
+	 * 
+	 * iOS: items will show on the left side of the navigation bar replacing
+	 * the back button. The swipe back gesture will be disabled.
+	 * 
+	 * Android: Toolbars have support for only a single image-button on the left.
+	 * If the first item has an image then the toolbar will insert this item left
+	 * of the title replacing the default back button if there would have been one.
+	 * The remaining left items will appear on the right of the toolbar ahead of any 
+	 * right items.
 	 */
-	backEnabled?: boolean
+	leftItems?: StackBarButtonItem[]
 
+	/**
+	 * Right items will show on the rightmost edge of the navigation bar.
+	 */
+	rightItems?: StackBarButtonItem[]
+	
 	/**
 	 * Customise the bar on top of the default options provided by the
 	 * stack
@@ -448,19 +462,32 @@ export interface StackItemSpec {
 	bar?: BarSpec
 }
 export interface StackItemUpdate {
-	backItem?: StackBarButtonItem | null
-	leftItems?: StackBarButtonItem[] | null
-	rightItems?: StackBarButtonItem[] | null
-	
-	/**
-	 * Enables the system gestures and buttons for managing the back action.
-	 * Useful for preventing the user from exiting a window that is running
-	 * an important operation. Does not prevent the user from backgrounding
-	 * the application.
-	 * Default behaviour is to use the host Stack configuration which behaves
-	 * as backEnabled is `true`
+	/** 
+	 * The back item used when this stack item is on the back stack. This is only 
+	 * currently used by iOS as Android will show an arrow with no title if
+	 * back is enabled
 	 */
-	backEnabled?: boolean | null
+	backItem?: StackBarButtonItem | null
+		
+	/**
+	 * Setting any value to leftItems will disable the navigation back
+	 * buttons on both iOS and Android. (Android hardware back button is not affected).
+	 * 
+	 * iOS: items will show on the left side of the navigation bar replacing
+	 * the back button. The swipe back gesture will be disabled.
+	 * 
+	 * Android: Toolbars have support for only a single image-button on the left.
+	 * If the first item has an image then the toolbar will insert this item left
+	 * of the title replacing the default back button if there would have been one.
+	 * The remaining left items will appear on the right of the toolbar ahead of any 
+	 * right items.
+	 */
+	leftItems?: StackBarButtonItem[] | null
+
+	/**
+	 * Right items will show on the rightmost edge of the navigation bar.
+	 */
+	rightItems?: StackBarButtonItem[] | null
 
 	/**
 	 * Customise the bar on top of the default options provided by the
@@ -481,8 +508,15 @@ export interface ResetOptions {
 
 interface StackBarButtonItem {
 	id: ButtonId
+	/** A title for the button or context for a screen reader if the button has an icon */
 	title: string
+	/** If image is present then the title will be replaced by the image */
 	image?: ImageSpec
+	/** Custom options for Android specific behaviours */
+	android?: {
+		/** An image that will take priority if present */
+		image?: ImageSpec
+	}
 }
 
 export enum NativeNavigationEvents {

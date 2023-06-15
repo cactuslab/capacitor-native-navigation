@@ -89,7 +89,7 @@ export default function Stack1(): JSX.Element {
 	useEffect(() => {
 		updateView({
 			stackItem: {
-				backEnabled: backEnabled,
+				leftItems: backEnabled ? null : [],
 			},
 			animated: true,
 		})

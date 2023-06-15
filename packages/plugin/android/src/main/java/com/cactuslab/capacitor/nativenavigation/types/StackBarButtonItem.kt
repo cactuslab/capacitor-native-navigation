@@ -17,7 +17,8 @@ class StackBarButtonItem(var id: String, var title: String, var image: String?) 
         fun fromJSObject(jsObject: JSObject): StackBarButtonItem {
             val id = jsObject.getString("id") ?: throw MissingParameterException("id")
             val title = jsObject.getString("title") ?: throw MissingParameterException("title")
-            val image = jsObject.getString("image")
+            val androidOpts = jsObject.getJSObject("android")
+            val image = androidOpts?.getString("image") ?: jsObject.getString("image")
 
             return StackBarButtonItem(id, title, image)
         }

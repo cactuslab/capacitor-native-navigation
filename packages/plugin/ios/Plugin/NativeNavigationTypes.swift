@@ -387,8 +387,12 @@ struct StackItemSpec: PluginResultable, JSObjectDecodable, JSObjectUpdatable {
     var backItem: StackBarButtonItem?
     var leftItems: [StackBarButtonItem]?
     var rightItems: [StackBarButtonItem]?
-    var backEnabled: Bool?
+    
     var bar: BarSpec?
+
+    var backEnabled: Bool {
+        return leftItems == nil
+    }
     
     func toPluginResult() -> PluginCallResultData {
         var result: PluginCallResultData = [:]
@@ -400,9 +404,6 @@ struct StackItemSpec: PluginResultable, JSObjectDecodable, JSObjectUpdatable {
         }
         if let value = rightItems?.map({$0.toPluginResult()}) {
             result["rightItems"] = value
-        }
-        if let backEnabled = backEnabled {
-            result["backEnabled"] = backEnabled
         }
         if let value = bar?.toPluginResult() {
             result["bar"] = value
@@ -442,7 +443,6 @@ struct StackItemSpec: PluginResultable, JSObjectDecodable, JSObjectUpdatable {
             
             result.rightItems = items
         }
-        result.backEnabled = object.getBool("backEnabled")
         if let obj = object.getObject("bar") {
             result.bar = try BarSpec.fromJSObject(obj)
         }
@@ -485,7 +485,6 @@ struct StackItemSpec: PluginResultable, JSObjectDecodable, JSObjectUpdatable {
             return nil
         })?.apply({spec.rightItems = $0})
         
-        try Nullable<Bool>.fromJSObjectOrNil(object, key: "backEnabled")?.apply({spec.backEnabled = $0})
         try BarSpec.updateOrCreate(object, key: "bar", existingObject: &spec.bar)
     
         existingObj = spec

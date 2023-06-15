@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Typeface
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.text.SpannableString
@@ -198,10 +199,30 @@ class ViewSpecFragment : Fragment(), MenuProvider {
 
         toolbar.invalidateMenu()
 
-        if (findNavController().previousBackStackEntry != null && spec.stackItem?.backEnabled != false) {
-            toolbar.setNavigationIcon(androidx.appcompat.R.drawable.abc_ic_ab_back_material)
+        var tintColor: Int? = null
+
+        barSpec?.buttons?.let { labelOptions ->
+            labelOptions.color?.let { color ->
+                tintColor = color.parseRGBAColor()
+            }
+        }
+
+        val navigationItem = spec.stackItem?.navigationItem()
+        if (navigationItem != null) {
+            navigationItem.image?.let { path ->
+                fetchDrawable(path, tintColor) { icon ->
+                    toolbar.navigationIcon = icon
+                    toolbar.setNavigationOnClickListener {
+                        viewModel.nativeNavigation?.notifyClick(navigationItem.id, componentId)
+                    }
+                }
+            }
         } else {
-            toolbar.navigationIcon = null
+            if (findNavController().previousBackStackEntry != null && spec.stackItem?.leftItems == null) {
+                toolbar.setNavigationIcon(androidx.appcompat.R.drawable.abc_ic_ab_back_material)
+            } else {
+                toolbar.navigationIcon = null
+            }
         }
     }
 
@@ -262,7 +283,7 @@ class ViewSpecFragment : Fragment(), MenuProvider {
         val stackItem = spec.stackItem
         if (stackItem != null) {
             val items: MutableList<StackBarButtonItem> = mutableListOf()
-            stackItem.leftItems?.let { items.addAll(it) }
+            stackItem.nonNavigationLeftItems()?.let { items.addAll(it) }
             stackItem.rightItems?.let { items.addAll(it) }
             items.forEach { item ->
                 val spanString = SpannableString(item.title)
@@ -287,88 +308,96 @@ class ViewSpecFragment : Fragment(), MenuProvider {
                 val menuItem = menu.add(0, item.id.hashCode(), 0, spanString)
 
                 item.image?.let { path ->
-                    var url = path
-                    var scale: Double = 1.0
-                    if (path.startsWith("{")) {
-                        /** This is a JSON object, let's convert and see what we find */
-                        val json = JSObject(path)
-                        url = json.getString("uri") ?: return@let
-                        if (json.has("scale")) {
-                            scale = json.getDouble("scale")
-                        }
-                    }
-                    if (url.startsWith("data:")) {
-                        val decodedBytes = Base64.decode(url.substringAfter("base64,"),Base64.DEFAULT)
-                        val bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
-                        bitmap.setDensityFromScale(scale)
-                        ImageRequest.Builder(requireContext())
-                            .data(bitmap)
-                            .target { resource ->
-                                tintColor?.let {
-                                    resource.setTint(it)
-                                }
-                                menuItem.icon = resource
-                            }
-                            .build().also {
-                                requireContext().imageLoader.enqueue(it)
-                            }
-
-                    } else {
-                        val uri = Uri.parse(viewModel.baseUrl).buildUpon()
-                            .path(url)
-                            .build()
-                        val plugin = viewModel.nativeNavigation?.plugin
-                        when (uri.host) {
-                            plugin?.bridge?.host -> {
-                                val response = plugin!!.bridge.localServer.shouldInterceptRequest(object: WebResourceRequest {
-                                    override fun getUrl(): Uri = uri
-                                    override fun isForMainFrame(): Boolean = true
-                                    override fun isRedirect(): Boolean = false
-                                    override fun hasGesture(): Boolean = true
-                                    override fun getMethod(): String = "GET"
-                                    override fun getRequestHeaders(): MutableMap<String, String> = mutableMapOf()
-                                })
-                                if (response != null && response.statusCode == 200) {
-
-                                    val outputStream = ByteArrayOutputStream()
-                                    response.data.use { input ->
-                                        outputStream.use { output ->
-                                            input.copyTo(output)
-                                        }
-                                    }
-                                    val byteArray = outputStream.toByteArray()
-
-                                    ImageRequest.Builder(requireContext())
-                                        .data(byteArray)
-                                        .target { resource ->
-                                            tintColor?.let {
-                                                resource.setTint(it)
-                                            }
-                                            menuItem.icon = resource
-                                        }
-                                        .build().also {
-                                            requireContext().imageLoader.enqueue(it)
-                                        }
-                                } else {}
-                            }
-                            else -> {
-                                ImageRequest.Builder(requireContext())
-                                    .data(uri)
-                                    .target { resource ->
-                                        tintColor?.let {
-                                            resource.setTint(it)
-                                        }
-                                        menuItem.icon = resource
-                                    }
-                                    .build().also {
-                                        requireContext().imageLoader.enqueue(it)
-                                    }
-                            }
-                        }
+                    fetchDrawable(path, tintColor) { icon ->
+                        menuItem.icon = icon
                     }
                 }
 
                 menuItem.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM)
+            }
+        }
+    }
+
+    fun fetchDrawable(path: String, tintColor: Int?, setDrawable: (Drawable?) -> Unit) {
+        var url = path
+        var scale: Double = 1.0
+        if (path.startsWith("{")) {
+            /** This is a JSON object, let's convert and see what we find */
+            val json = JSObject(path)
+            url = json.getString("uri") ?: return setDrawable(null)
+            if (json.has("scale")) {
+                scale = json.getDouble("scale")
+            }
+        }
+        if (url.startsWith("data:")) {
+            val decodedBytes = Base64.decode(url.substringAfter("base64,"),Base64.DEFAULT)
+            val bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+            bitmap.setDensityFromScale(scale)
+            ImageRequest.Builder(requireContext())
+                .data(bitmap)
+                .target { resource ->
+                    tintColor?.let {
+                        resource.setTint(it)
+                    }
+                    setDrawable(resource)
+                }
+                .build().also {
+                    requireContext().imageLoader.enqueue(it)
+                }
+
+        } else {
+            val uri = Uri.parse(viewModel.baseUrl).buildUpon()
+                .path(url)
+                .build()
+            val plugin = viewModel.nativeNavigation?.plugin
+            when (uri.host) {
+                plugin?.bridge?.host -> {
+                    val response = plugin!!.bridge.localServer.shouldInterceptRequest(object: WebResourceRequest {
+                        override fun getUrl(): Uri = uri
+                        override fun isForMainFrame(): Boolean = true
+                        override fun isRedirect(): Boolean = false
+                        override fun hasGesture(): Boolean = true
+                        override fun getMethod(): String = "GET"
+                        override fun getRequestHeaders(): MutableMap<String, String> = mutableMapOf()
+                    })
+                    if (response != null && response.statusCode == 200) {
+
+                        val outputStream = ByteArrayOutputStream()
+                        response.data.use { input ->
+                            outputStream.use { output ->
+                                input.copyTo(output)
+                            }
+                        }
+                        val byteArray = outputStream.toByteArray()
+
+                        ImageRequest.Builder(requireContext())
+                            .data(byteArray)
+                            .target { resource ->
+                                tintColor?.let {
+                                    resource.setTint(it)
+                                }
+                                setDrawable(resource)
+                            }
+                            .build().also {
+                                requireContext().imageLoader.enqueue(it)
+                            }
+                    } else {
+                        setDrawable(null)
+                    }
+                }
+                else -> {
+                    ImageRequest.Builder(requireContext())
+                        .data(uri)
+                        .target { resource ->
+                            tintColor?.let {
+                                resource.setTint(it)
+                            }
+                            setDrawable(resource)
+                        }
+                        .build().also {
+                            requireContext().imageLoader.enqueue(it)
+                        }
+                }
             }
         }
     }
@@ -379,7 +408,7 @@ class ViewSpecFragment : Fragment(), MenuProvider {
         val options = spec.stackItem ?: return false
         val componentId = componentId ?: return false
         val items: MutableList<StackBarButtonItem> = mutableListOf()
-        options.leftItems?.let { items.addAll(it) }
+        options.nonNavigationLeftItems()?.let { items.addAll(it) }
         options.rightItems?.let { items.addAll(it) }
         for (item in items) {
             if (menuItem.itemId == item.id.hashCode()) {

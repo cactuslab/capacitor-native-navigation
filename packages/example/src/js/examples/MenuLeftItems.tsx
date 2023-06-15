@@ -15,7 +15,9 @@ export default function MenuLeftItems() {
 				{
 					id: 'menu',
 					title: 'Menu',
-					image: menu,
+					android: {
+						image: menu,
+					},
 				},
 				{
 					id: 'menu',

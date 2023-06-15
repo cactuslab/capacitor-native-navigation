@@ -802,13 +802,7 @@ class NativeNavigation: NSObject {
                 viewController.navigationItem.rightBarButtonItems = []
             }
             
-            if let backEnabled = stackItem.backEnabled {
-                viewController.navigationItem.setHidesBackButton(!backEnabled, animated: animated)
-            } else {
-                // TODO: verify correct behaviour, but a sufficient default might be that it's false
-                viewController.navigationItem.setHidesBackButton(false, animated: animated)
-            }
-            
+            viewController.navigationItem.setHidesBackButton(!stackItem.backEnabled, animated: animated)
             
             var barSpec = stackItem.bar ?? BarSpec()
             if let containerId = component.container, let stackModel = try findComponent(id: containerId) as? StackModel, let spec = stackModel.spec.bar {

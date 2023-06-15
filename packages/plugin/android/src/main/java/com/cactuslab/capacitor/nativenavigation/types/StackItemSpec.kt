@@ -10,7 +10,6 @@ class StackItemSpec(
     var backItem: StackBarButtonItem? = null,
     var leftItems: List<StackBarButtonItem>? = null,
     var rightItems: List<StackBarButtonItem>? = null,
-    var backEnabled: Boolean? = null,
     var bar: BarSpec? = null
 ) {
 
@@ -19,9 +18,33 @@ class StackItemSpec(
         backItem?.let { obj.put("backItem", it.toJSObject()) }
         leftItems?.let { obj.put("leftItems", JSArray(it.map { item -> item.toJSObject() })) }
         rightItems?.let { obj.put("rightItems", JSArray(it.map { item -> item.toJSObject() })) }
-        backEnabled?.let { obj.put("backEnabled", it) }
         bar?.let { obj.put("bar", it.toJSObject()) }
         return obj
+    }
+
+    fun navigationItem(): StackBarButtonItem? {
+        val firstItem = leftItems?.firstOrNull() ?: return null
+        return if (firstItem.image != null) {
+            firstItem
+        } else {
+            null
+        }
+    }
+
+    fun nonNavigationLeftItems(): List<StackBarButtonItem>? {
+        val items = leftItems ?: return null
+        if (navigationItem() == null) {
+            return items
+        }
+        return if (items.size > 1) {
+            items.subList(1, items.size)
+        } else {
+            listOf()
+        }
+    }
+
+    fun backEnabled(): Boolean {
+        return leftItems == null
     }
 
     companion object {
@@ -29,8 +52,7 @@ class StackItemSpec(
             val backItem = jsObject.getJSObject("backItem")?.let { StackBarButtonItem.fromJSObject(it) }
             val leftItems = jsObject.getJSObjectArray("leftItems")?.map { StackBarButtonItem.fromJSObject(it) }?.toList()
             val rightItems = jsObject.getJSObjectArray("rightItems")?.map { StackBarButtonItem.fromJSObject(it) }?.toList()
-            val backEnabled = jsObject.getBool("backEnabled")
-            return StackItemSpec(backItem = backItem, leftItems = leftItems, rightItems = rightItems, backEnabled = backEnabled)
+            return StackItemSpec(backItem = backItem, leftItems = leftItems, rightItems = rightItems)
         }
 
         fun updateFromContainer(jsObject: JSObject, key:String, existingValue: StackItemSpec?): StackItemSpec? {
@@ -46,7 +68,6 @@ class StackItemSpec(
                 result.rightItems = checkNullOrUndefined(obj, "rightItems", result.rightItems) {
                     obj.getJSObjectArray("rightItems")?.map { StackBarButtonItem.fromJSObject(it) }?.toList()
                 }
-                result.backEnabled = Boolean.updateFromContainer(obj, "backEnabled", result.backEnabled)
                 result.bar = BarSpec.updateFromContainer(obj, "bar", result.bar)
                 result
             }

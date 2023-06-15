@@ -1,9 +1,5 @@
 lockfileVersion: '6.0'
 
-settings:
-  autoInstallPeers: true
-  excludeLinksFromLockfile: false
-
 importers:
 
   .:
@@ -30,29 +26,29 @@ importers:
   packages/example:
     dependencies:
       '@cactuslab/native-navigation':
-        specifier: ^0.6.0
+        specifier: ^0.7.0
         version: link:../plugin
       '@cactuslab/native-navigation-react':
-        specifier: ^6.0.0
+        specifier: ^6.1.0
         version: link:../react
       '@cactuslab/native-navigation-react-router':
-        specifier: ^7.0.0
+        specifier: ^7.1.0
         version: link:../react-router
       '@capacitor/android':
         specifier: ^5.0.3
-        version: 5.0.3(@capacitor/core@5.0.5)
+        version: 5.0.3(@capacitor/core@5.0.3)
       '@capacitor/camera':
         specifier: latest
-        version: 5.0.4(@capacitor/core@5.0.5)
+        version: 5.0.2(@capacitor/core@5.0.3)
       '@capacitor/core':
         specifier: latest
-        version: 5.0.5
+        version: 5.0.3
       '@capacitor/ios':
         specifier: ^5.0.3
-        version: 5.0.3(@capacitor/core@5.0.5)
+        version: 5.0.3(@capacitor/core@5.0.3)
       '@capacitor/splash-screen':
         specifier: latest
-        version: 5.0.4(@capacitor/core@5.0.5)
+        version: 5.0.2(@capacitor/core@5.0.3)
       react:
         specifier: ^18.2.0
         version: 18.2.0
@@ -81,6 +77,9 @@ importers:
 
   packages/history:
     dependencies:
+      '@cactuslab/native-navigation':
+        specifier: ^0.7.0
+        version: link:../plugin
       react:
         specifier: ^18.2.0
         version: 18.2.0
@@ -88,9 +87,6 @@ importers:
         specifier: ^18.2.0
         version: 18.2.0(react@18.2.0)
     devDependencies:
-      '@cactuslab/native-navigation':
-        specifier: ^0.6.0
-        version: link:../plugin
       '@capacitor/core':
         specifier: ^5.0.3
         version: 5.0.3
@@ -148,6 +144,9 @@ importers:
 
   packages/react:
     dependencies:
+      '@cactuslab/native-navigation':
+        specifier: ^0.7.0
+        version: link:../plugin
       fast-deep-equal:
         specifier: ^3.1.3
         version: 3.1.3
@@ -158,9 +157,6 @@ importers:
         specifier: ^18.2.0
         version: 18.2.0(react@18.2.0)
     devDependencies:
-      '@cactuslab/native-navigation':
-        specifier: ^0.6.0
-        version: link:../plugin
       '@capacitor/core':
         specifier: ^5.0.3
         version: 5.0.3
@@ -182,8 +178,11 @@ importers:
 
   packages/react-router:
     dependencies:
+      '@cactuslab/native-navigation':
+        specifier: ^0.7.0
+        version: link:../plugin
       '@cactuslab/native-navigation-react':
-        specifier: ^6.0.0
+        specifier: ^6.1.0
         version: link:../react
       react:
         specifier: ^18.2.0
@@ -192,9 +191,6 @@ importers:
         specifier: ^18.2.0
         version: 18.2.0(react@18.2.0)
     devDependencies:
-      '@cactuslab/native-navigation':
-        specifier: ^0.6.0
-        version: link:../plugin
       '@capacitor/core':
         specifier: ^5.0.3
         version: 5.0.3
@@ -1592,22 +1588,13 @@ packages:
       '@capacitor/core': ^5.0.0
     dependencies:
       '@capacitor/core': 5.0.3
-    dev: true
 
-  /@capacitor/android@5.0.3(@capacitor/core@5.0.5):
-    resolution: {integrity: sha512-jPN6JJUbN2cCrAjP+0Q4gIwIxleFVChZWh+/gsbDDfSpogdpZNwZnriUNxSRTZayL58tUzLHuxpJxY6hsddDrA==}
+  /@capacitor/camera@5.0.2(@capacitor/core@5.0.3):
+    resolution: {integrity: sha512-XX8fQltyAPtHxoNcf7pITmRD10ERemduzda97MRd+oND+6hEqJ3vVlNjNy0uK2qjnageolw+7zJhA9PhBqMWfQ==}
     peerDependencies:
       '@capacitor/core': ^5.0.0
     dependencies:
-      '@capacitor/core': 5.0.5
-    dev: false
-
-  /@capacitor/camera@5.0.4(@capacitor/core@5.0.5):
-    resolution: {integrity: sha512-Sl4PpoRv/FahCTugjyCZQ8MMH9Tgh5ySr8ZqY59mFKReoCu7xKnp9Ue8D8mzR9nE08gRiUBMqtl5FJbJR2f+Yg==}
-    peerDependencies:
-      '@capacitor/core': ^5.0.0
-    dependencies:
-      '@capacitor/core': 5.0.5
+      '@capacitor/core': 5.0.3
     dev: false
 
   /@capacitor/cli@5.0.3:
@@ -1640,13 +1627,6 @@ packages:
     resolution: {integrity: sha512-VxzSoFvoiGDmvlKQMbg7ZZh+w3Z223630kZINDOsbs7UZr5gZws7+m26Y9Oc8n2miI737hE6qOf2VU4H/8Tytg==}
     dependencies:
       tslib: 2.5.0
-    dev: true
-
-  /@capacitor/core@5.0.5:
-    resolution: {integrity: sha512-sulwWXEhYI6cBIj1WnH9k+a8z1f4XTRDtdh3YfXNdeV36UT7T55GCeGrPoQMm7ww6iWyGuv1VEzVIuZFga8rtw==}
-    dependencies:
-      tslib: 2.5.0
-    dev: false
 
   /@capacitor/docgen@0.2.1:
     resolution: {integrity: sha512-COS5teC6n+EOSaBS7voHnIeIKH7owALnVoI1AhVArIWtBrc1JxSgkUuvLHpti4VGZdXdsrtp4yBPUwGm8WOZKA==}
@@ -1666,22 +1646,13 @@ packages:
       '@capacitor/core': ^5.0.0
     dependencies:
       '@capacitor/core': 5.0.3
-    dev: true
 
-  /@capacitor/ios@5.0.3(@capacitor/core@5.0.5):
-    resolution: {integrity: sha512-4U+mfiT0x2oYEJN9NAxcYKdrK4szROMe8SgIiG2lXDG7t7FK1OY4BnB1euZc8c+49VcBSk9x2EiYQg5Nshi5iQ==}
+  /@capacitor/splash-screen@5.0.2(@capacitor/core@5.0.3):
+    resolution: {integrity: sha512-DJQQL3VfY7LfMH0FJgzrb0N1v3fZw0EVfBRB+xQjbI13jjoafS8WPRCQDvXxzoJqfh5hQyepDRyYxIdOCB2KEA==}
     peerDependencies:
       '@capacitor/core': ^5.0.0
     dependencies:
-      '@capacitor/core': 5.0.5
-    dev: false
-
-  /@capacitor/splash-screen@5.0.4(@capacitor/core@5.0.5):
-    resolution: {integrity: sha512-gWV6mSIDyT+4oSC7NKvCSHdBhDIZi8JK7xS/iknkL8bLTZp6/My/vvA+67fRNvmELzGrk3MmbGhLdLoLnsd5dA==}
-    peerDependencies:
-      '@capacitor/core': ^5.0.0
-    dependencies:
-      '@capacitor/core': 5.0.5
+      '@capacitor/core': 5.0.3
     dev: false
 
   /@changesets/apply-release-plan@6.1.3:
@@ -6025,3 +5996,7 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
     dev: true
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false

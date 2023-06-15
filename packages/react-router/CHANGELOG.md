@@ -1,5 +1,31 @@
 # @cactuslab/native-navigation-react-router
 
+## 7.1.0
+
+### Minor Changes
+
+- 5d72bb2: Add alias option to replace id for user-specified way to reference components
+
+  This is because allowing the user to specify an actual component id was troublesome
+  as it meant the id could be used to present, dismiss and then present again, which
+  results in two different component models in the native code that share the same
+  component id.
+
+- 660661b: Rename ViewState to StateObject
+
+### Patch Changes
+
+- Updated dependencies [5385d2d]
+- Updated dependencies [07e361a]
+- Updated dependencies [42ec557]
+- Updated dependencies [5d72bb2]
+- Updated dependencies [bf30927]
+- Updated dependencies [85ac89c]
+- Updated dependencies [2b2f1f7]
+- Updated dependencies [660661b]
+  - @cactuslab/native-navigation@0.7.0
+  - @cactuslab/native-navigation-react@6.1.0
+
 ## 7.1.0-next.0
 
 ### Minor Changes

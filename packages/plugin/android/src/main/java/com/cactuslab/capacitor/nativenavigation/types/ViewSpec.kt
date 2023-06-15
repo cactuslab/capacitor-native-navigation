@@ -7,13 +7,14 @@ import com.getcapacitor.JSObject
 import java.util.*
 
 class ViewSpec(id: String? = null,
+               alias: String? = null,
                var path: String? = null,
                var state: JSObject?,
 
                var title: String? = null,
                var stackItem: StackItemSpec? = null,
                ) :
-    ComponentSpec(type = ComponentType.VIEW, id = id ?: UUID.randomUUID().toString()), TabsOptionsTabs
+    ComponentSpec(type = ComponentType.VIEW, id = id ?: UUID.randomUUID().toString(), alias = alias), TabsOptionsTabs
 {
 
     override fun toJSObject(): JSObject {
@@ -52,6 +53,7 @@ class ViewSpec(id: String? = null,
             val title = jsObject.getString("title")
 
             return ViewSpec(id = jsObject.getString("id"),
+                alias = jsObject.getString("alias"),
                 path = path,
                 state = state,
                 title = title,

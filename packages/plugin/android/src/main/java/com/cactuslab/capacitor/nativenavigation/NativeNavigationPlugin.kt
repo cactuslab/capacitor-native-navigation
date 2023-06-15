@@ -188,7 +188,7 @@ class NativeNavigationPlugin : Plugin() {
         }
     }
 
-    fun notifyCreateView(path: String?, id: String, state: JSObject?, stack: String?) {
+    fun notifyCreateView(path: String?, id: String, alias: String?, state: JSObject?, stack: String?) {
         val obj = JSObject()
         path?.let { obj.put("path", it) }
         obj.put("id", id)
@@ -197,6 +197,9 @@ class NativeNavigationPlugin : Plugin() {
         }
         stack?.let {
             obj.put("stack", stack)
+        }
+        alias?.let {
+            obj.put("alias", it)
         }
 
         Log.d(TAG, "Notify Create View [path: $path, id: $id, state: $state]")
@@ -204,7 +207,7 @@ class NativeNavigationPlugin : Plugin() {
         notifyListeners("createView", obj, true)
     }
 
-    fun notifyUpdateView(path: String?, id: String, state: JSObject?, stack: String?) {
+    fun notifyUpdateView(path: String?, id: String, alias: String?, state: JSObject?, stack: String?) {
         val obj = JSObject()
         path?.let { obj.put("path", it) }
         obj.put("id", id)
@@ -214,15 +217,20 @@ class NativeNavigationPlugin : Plugin() {
         stack?.let {
             obj.put("stack", stack)
         }
-
+        alias?.let {
+            obj.put("alias", it)
+        }
         Log.d(TAG, "Notify Update View [path: $path, id: $id, state: $state]")
 
         notifyListeners("updateView", obj, true)
     }
 
-    fun notifyDestroyView(id: String) {
+    fun notifyDestroyView(id: String, alias: String?) {
         val obj = JSObject()
         obj.put("id", id)
+        alias?.let {
+            obj.put("alias", it)
+        }
         Log.d(TAG, "Notify Destroy View [id: $id]")
 
         notifyListeners("destroyView", obj, true)

@@ -101,7 +101,8 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
     private val navContexts : MutableList<NavContext> = mutableListOf()
 
-    private val components : MutableMap<String, ComponentSpec> = mutableMapOf()
+    private val componentsById : MutableMap<String, ComponentSpec> = mutableMapOf()
+    private val componentsByAlias : MutableMap<String, ComponentSpec> = mutableMapOf()
 
     private var nextWindowAction = LinkedList<ComponentSpec>()
 
@@ -115,7 +116,10 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
     private var applicationDrivenPop: Boolean = false;
 
     private fun insertComponent(component: ComponentSpec) {
-        components[component.id] = component
+        componentsById[component.id] = component
+        component.alias?.let {
+            componentsByAlias[it] = component
+        }
         when (component) {
             is StackSpec -> {
                 component.components?.forEach { insertComponent(it) }
@@ -128,11 +132,11 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
     }
 
     fun componentSpecForId(id: String): ComponentSpec? {
-        return components.get(id)
+        return componentsById[id] ?: componentsByAlias[id]
     }
 
     fun viewSpecForId(id: String): ViewSpec? {
-        return components[id] as? ViewSpec
+        return componentsById[id] as? ViewSpec ?: componentsByAlias[id] as? ViewSpec
     }
 
     fun findStackComponentIdHosting(componentId: String): String? {
@@ -214,9 +218,9 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
     fun findTarget(target: String?) : Target {
         val navContext = navContextForTarget(target)
         val viewSpec = if (target.isNullOrBlank()) {
-            components.get(navContext.virtualStack.last())
+            componentSpecForId(navContext.virtualStack.last())
         } else {
-            components.get(target)
+            componentSpecForId(target)
         }
         if (viewSpec == null) {
             throw NoSuchElementException("No such target exists at target:'$target'")
@@ -234,7 +238,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
             return
         }
 
-        val rootSpec = components.get(target.navContext.contextId)
+        val rootSpec = componentSpecForId(target.navContext.contextId)
 
         val result = GetResult(component = target.viewSpec)
         if (target.navContext.contextId != options.id) {
@@ -259,7 +263,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
     fun update(options: UpdateOptions) {
         Log.d(TAG, "update: -> $options")
-        val spec = components[options.id]!!
+        val spec = componentSpecForId(options.id)!!
 
         options.update?.let { obj ->
             spec.update(obj)
@@ -308,7 +312,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
         navContexts.lastOrNull()?.let context@ { topNavContext ->
             topNavContext.virtualStack.lastOrNull()?.let { topStackId ->
-                val spec = components[topStackId] ?: return@context
+                val spec = componentSpecForId(topStackId) ?: return@context
 
                 val backgroundColor = spec.topBarSpec()?.background?.color ?: topNavContext.presentOptions?.component?.topBarSpec()?.background?.color
                 backgroundColor?.parseRGBAColor()?.let { statusColor ->
@@ -342,7 +346,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
                 if (navController?.previousBackStackEntry != null) {
                     navContext.virtualStack.lastOrNull()?.let { topMostId ->
-                        val isBackEnabled = when (val componentSpec = components[topMostId]) {
+                        val isBackEnabled = when (val componentSpec = componentSpecForId(topMostId)) {
                             is ViewSpec -> {
                                 componentSpec.stackItem?.backEnabled
                             }
@@ -428,20 +432,21 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
     fun notifyCreateView(id: String) {
         Log.d(TAG, "notifyCreateView: started for id: ${id}")
-        val component = components[id] as ViewSpec
+        val component = componentSpecForId(id) as ViewSpec
         nextWindowAction.add(component)
-        plugin.notifyCreateView(component.path, component.id, component.state, findStackComponentIdHosting(id))
+        plugin.notifyCreateView(component.path, component.id, component.alias, component.state, findStackComponentIdHosting(id))
     }
 
     fun notifyUpdateView(id: String) {
         Log.d(TAG, "notifyUpdateView: started for id: ${id}")
-        val component = components[id] as ViewSpec
-        plugin.notifyUpdateView(component.path, component.id, component.state, findStackComponentIdHosting(id))
+        val component = componentSpecForId(id) as ViewSpec
+        plugin.notifyUpdateView(component.path, component.id, component.alias, component.state, findStackComponentIdHosting(id))
     }
 
     fun notifyDestroyView(componentId: String) {
         Log.d(TAG, "notifyDestroyView: Started for $componentId")
-        plugin.notifyDestroyView(componentId)
+        val component = componentSpecForId(componentId)
+        plugin.notifyDestroyView(componentId, component?.alias)
         viewModel.cleanUpComponentWithId(componentId)
         viewActions.remove(componentId)
         Log.d(TAG, "notifyDestroyView: Completed for $componentId")
@@ -459,7 +464,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         val component = options.component
         insertComponent(component)
 
-        Log.d(TAG, "⬆️ PRESENT: ${component.id} for createOptions: $component")
+        Log.d(TAG, "⬆️ PRESENT: ${component.id} ${component.alias} for createOptions: $component")
 
         val navContext = pushNavController(component.id, options.animated)
         navContext.presentOptions = options
@@ -552,7 +557,8 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
     fun dismiss(options: DismissOptions, call: PluginCall) {
         Log.d(TAG, "⬇️ DISMISS: ${options.componentId}")
-        if (options.componentId.isNullOrBlank() && navContexts.isNotEmpty()) {
+        val id = options.componentId
+        if (id.isNullOrBlank() && navContexts.isNotEmpty()) {
             val navContext = navContexts.last()
             popNavContext()
 
@@ -560,7 +566,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
             call.resolve(result.toJSObject())
         } else {
 
-            val navContext = navContexts.find { it.contextId == options.componentId }
+            val navContext = navContexts.find { it.contextId == id || it.virtualStack.contains(id) }
             if (navContext != null) {
                 navContexts.remove(navContext)
                 removeNavContext(navContext)
@@ -571,8 +577,6 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
             }
         }
     }
-
-
 
     fun push(options: PushOptions, call: PluginCall) {
         Log.d(TAG, "push: Started for id ${options.component.id}")

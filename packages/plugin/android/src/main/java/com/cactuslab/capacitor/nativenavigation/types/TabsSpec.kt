@@ -7,7 +7,8 @@ import com.getcapacitor.JSObject
 import java.util.*
 
 class TabsSpec(id: String? = null,
-               var tabs: List<TabsOptionsTabs>) : ComponentSpec(type = ComponentType.TABS, id = id ?: UUID.randomUUID().toString()) {
+               alias: String? = null,
+               var tabs: List<TabsOptionsTabs>) : ComponentSpec(type = ComponentType.TABS, id = id ?: UUID.randomUUID().toString(), alias = alias) {
 
     override fun toJSObject(): JSObject {
         val obj = super.toJSObject()
@@ -62,6 +63,7 @@ class TabsSpec(id: String? = null,
             val tabs = jsObject.getJSONArray("tabs")
 
             return TabsSpec(id = jsObject.getString("id"),
+                alias = jsObject.getString("alias"),
                 tabs = tabs.jsObjectSequence().map { tabFromJsObject(it) }.toList()
             )
         }

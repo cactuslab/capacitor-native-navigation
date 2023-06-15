@@ -5,12 +5,13 @@ import com.cactuslab.capacitor.nativenavigation.exceptions.MissingParameterExcep
 import com.getcapacitor.JSObject
 
 sealed class ComponentSpec(val type: ComponentType,
-                           var id: String) {
+                           var id: String, var alias: String?) {
 
     open fun toJSObject(): JSObject {
         val obj = JSObject()
         obj.put("type", type.id)
         obj.put("id", id)
+        alias?.let { obj.put("alias", it) }
         return obj
     }
 

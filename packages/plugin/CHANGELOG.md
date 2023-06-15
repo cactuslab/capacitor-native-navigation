@@ -1,5 +1,26 @@
 # @cactuslab/native-navigation
 
+## 0.7.0-next.0
+
+### Minor Changes
+
+- 5385d2d: Rename ComponentOptions to ComponentUpdate
+- 42ec557: Add state to Stack and Tab specs, which get combined with View state
+- 5d72bb2: Add alias option to replace id for user-specified way to reference components
+
+  This is because allowing the user to specify an actual component id was troublesome
+  as it meant the id could be used to present, dismiss and then present again, which
+  results in two different component models in the native code that share the same
+  component id.
+
+- bf30927: Fix race condition between dismiss followed by present where the component still existed until the dismiss complete
+- 85ac89c: Simplified and standardised leftItems behaviour.
+- 660661b: Rename ViewState to StateObject
+
+### Patch Changes
+
+- 07e361a: Android: added support for hardware back button interruption
+
 ## 0.6.5
 
 ### Patch Changes

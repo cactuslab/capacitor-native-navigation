@@ -1,0 +1,20 @@
+{
+  "mode": "pre",
+  "tag": "next",
+  "initialVersions": {
+    "capacitor-app": "2.2.2",
+    "@cactuslab/native-navigation-history": "6.0.0",
+    "@cactuslab/native-navigation": "0.6.5",
+    "@cactuslab/native-navigation-react": "6.0.0",
+    "@cactuslab/native-navigation-react-router": "7.0.0"
+  },
+  "changesets": [
+    "fair-cooks-roll",
+    "heavy-pumpkins-drive",
+    "kind-geese-sing",
+    "proud-dodos-lie",
+    "shy-bags-flow",
+    "tough-cobras-allow",
+    "warm-yaks-enjoy"
+  ]
+}

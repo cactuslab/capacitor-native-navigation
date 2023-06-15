@@ -1,6 +1,6 @@
 {
   "name": "@cactuslab/native-navigation-react",
-  "version": "6.0.0",
+  "version": "6.1.0-next.0",
   "description": "React support for Native navigation for Capacitor apps",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
@@ -42,11 +42,11 @@
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
-    "@cactuslab/native-navigation": "^0.6.0",
+    "@cactuslab/native-navigation": "^0.7.0-next.0",
     "fast-deep-equal": "^3.1.3"
   },
   "devDependencies": {
-    "@cactuslab/native-navigation": "^0.6.0",
+    "@cactuslab/native-navigation": "^0.7.0-next.0",
     "@capacitor/core": "^5.0.3",
     "@types/react": "^18.2.6",
     "@types/react-dom": "^18.2.4",

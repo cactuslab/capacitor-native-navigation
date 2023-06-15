@@ -1,5 +1,26 @@
 # capacitor-app
 
+## 2.3.0-next.0
+
+### Minor Changes
+
+- 42ec557: Add state to Stack and Tab specs, which get combined with View state
+- 85ac89c: Simplified and standardised leftItems behaviour.
+
+### Patch Changes
+
+- 07e361a: Android: added support for hardware back button interruption
+- Updated dependencies [5385d2d]
+- Updated dependencies [07e361a]
+- Updated dependencies [42ec557]
+- Updated dependencies [5d72bb2]
+- Updated dependencies [bf30927]
+- Updated dependencies [85ac89c]
+- Updated dependencies [660661b]
+  - @cactuslab/native-navigation@0.7.0-next.0
+  - @cactuslab/native-navigation-react-router@7.1.0-next.0
+  - @cactuslab/native-navigation-react@6.1.0-next.0
+
 ## 2.2.2
 
 ### Patch Changes

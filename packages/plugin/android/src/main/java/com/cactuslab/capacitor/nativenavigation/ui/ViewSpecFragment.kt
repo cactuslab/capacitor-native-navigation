@@ -124,6 +124,13 @@ class ViewSpecFragment : Fragment(), MenuProvider {
         val isStack = stackOptions?.type == ComponentType.STACK
         val barSpec = stackOptions?.bar?.merge(spec.stackItem?.bar) ?: spec.stackItem?.bar
 
+        barSpec?.let { bar ->
+            bar.background?.color?.let { color ->
+                val colorInt = color.parseRGBAColor()
+                changeStatusBarColor(colorInt)
+            }
+        }
+
         Log.d(TAG, "viewModel update being applied $componentId")
         if (spec.stackItem == null && stackOptions?.bar == null || !isStack) {
             toolbar.visibility = View.GONE
@@ -137,7 +144,6 @@ class ViewSpecFragment : Fragment(), MenuProvider {
                     val colorInt = color.parseRGBAColor()
 
                     toolbar.setBackgroundColor(colorInt)
-                    requireActivity().window.statusBarColor = colorInt
                     appBarLayout.setBackgroundColor(colorInt)
 
                     val alpha = Color.alpha(colorInt)
@@ -161,8 +167,6 @@ class ViewSpecFragment : Fragment(), MenuProvider {
                                 :root { --native-navigation-inset-top: ${0}px; }
                             """.trimIndent(), id = "cool")
                     }
-
-                    WindowCompat.getInsetsController(requireActivity().window, requireActivity().window.decorView).isAppearanceLightStatusBars = !colorInt.isColorDark()
                 }
 
                 bar.title?.let { labelOptions ->

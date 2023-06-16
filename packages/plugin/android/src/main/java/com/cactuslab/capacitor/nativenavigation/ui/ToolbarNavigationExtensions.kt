@@ -10,6 +10,7 @@ import androidx.annotation.ColorInt
 import androidx.annotation.StringRes
 import androidx.appcompat.graphics.drawable.DrawerArrowDrawable
 import androidx.appcompat.widget.Toolbar
+import androidx.core.view.WindowCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
@@ -20,6 +21,7 @@ import androidx.navigation.fragment.FragmentNavigator
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.transition.TransitionManager
+import com.cactuslab.capacitor.nativenavigation.helpers.isColorDark
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import java.util.regex.Pattern
 
@@ -196,5 +198,6 @@ fun Fragment.changeStatusBarColor(@ColorInt color: Int) {
 fun Activity.changeStatusBarColor(@ColorInt color: Int) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
         window.statusBarColor = color
+        WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = !color.isColorDark()
     }
 }

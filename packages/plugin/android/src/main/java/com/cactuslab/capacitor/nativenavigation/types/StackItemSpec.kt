@@ -52,7 +52,8 @@ class StackItemSpec(
             val backItem = jsObject.getJSObject("backItem")?.let { StackBarButtonItem.fromJSObject(it) }
             val leftItems = jsObject.getJSObjectArray("leftItems")?.map { StackBarButtonItem.fromJSObject(it) }?.toList()
             val rightItems = jsObject.getJSObjectArray("rightItems")?.map { StackBarButtonItem.fromJSObject(it) }?.toList()
-            return StackItemSpec(backItem = backItem, leftItems = leftItems, rightItems = rightItems)
+            val bar = jsObject.getJSObject("bar")?.let { BarSpec.fromJSObject(it) }
+            return StackItemSpec(backItem = backItem, leftItems = leftItems, rightItems = rightItems, bar = bar)
         }
 
         fun updateFromContainer(jsObject: JSObject, key:String, existingValue: StackItemSpec?): StackItemSpec? {

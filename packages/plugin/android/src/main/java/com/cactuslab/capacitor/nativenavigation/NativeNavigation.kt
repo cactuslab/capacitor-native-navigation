@@ -144,16 +144,18 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
     }
 
     fun findStackComponentIdHosting(componentId: String): String? {
+        val component = componentSpecForId(componentId)
+        val id = component?.id ?: return null
         navContexts.forEach { navContext ->
             /// Check if this is the host stack id
-            if (navContext.contextId == componentId) {
+            if (navContext.contextId == id) {
                 return navContext.contextId
             }
 
             /// Check if this id is in the view heirarchy
             navContext.fragment.binding?.navigationHost?.findNavController()?.let { navController ->
                 navController.backQueue.forEach { entry ->
-                    if (entry.arguments?.getString(nav_arguments.component_id) == componentId) {
+                    if (entry.arguments?.getString(nav_arguments.component_id) == id) {
                         return navContext.contextId
                     }
                 }
@@ -161,7 +163,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
             }
 
             /// Check if this exists in our model. This model shows the eventual expected state after all view operations are complete
-            if (navContext.virtualStack.contains(componentId)) {
+            if (navContext.virtualStack.contains(id)) {
                 return navContext.contextId
             }
         }
@@ -567,7 +569,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
     fun dismiss(options: DismissOptions, call: PluginCall) {
         Log.d(TAG, "⬇️ DISMISS: ${options.componentId}")
-        val id = options.componentId
+        var id = options.componentId
         if (id.isNullOrBlank() && navContexts.isNotEmpty()) {
             val navContext = navContexts.last()
             popNavContext()
@@ -575,6 +577,12 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
             val result = DismissResult(navContext.contextId)
             call.resolve(result.toJSObject())
         } else {
+
+            if (id != null) {
+                /* convert id/alias to id */
+                val componentSpec = componentSpecForId(id)
+                id = componentSpec?.id
+            }
 
             val navContext = navContexts.find { it.contextId == id || it.virtualStack.contains(id) }
             if (navContext != null) {

@@ -1,5 +1,12 @@
 # @cactuslab/native-navigation
 
+## 0.7.1
+
+### Patch Changes
+
+- 2822ca6: Android: Fix statusbar color and bar settings
+- b591bb0: Android: Fix broken dismiss on aliased modals
+
 ## 0.7.0
 
 ### Minor Changes

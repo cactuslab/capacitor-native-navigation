@@ -3,7 +3,9 @@ import { Opaque } from './utils'
 export interface NativeNavigationPlugin {
 
 	/**
-	 * Present a new native UI.
+	 * Present a new native UI. 
+	 * 
+	 * See `dismiss` for removing the presentation
 	 * @param options 
 	 */
 	present(options: PresentOptions): Promise<PresentResult>
@@ -11,18 +13,24 @@ export interface NativeNavigationPlugin {
 	/**
 	 * Dismiss a native UI. The component id may be a component that was previously presented or
 	 * a component within a previously presented component.
+	 * 
+	 * See `present` for presenting native UI.
 	 * @param options 
 	 */
 	dismiss(options?: DismissOptions): Promise<DismissResult>
 
 	/**
 	 * Push a new component onto a stack, or replace an existing component.
+	 * 
+	 * See `pop` for removing a component from the stack.
 	 * @param options 
 	 */
 	push(options: PushOptions): Promise<PushResult>
 
 	/**
-	 * Pop the top component off a stack
+	 * Pop the top component off a stack.
+	 * 
+	 * See `push` for adding a component to the stack.
 	 * @param options 
 	 */
 	pop(options: PopOptions): Promise<PopResult>

@@ -51,6 +51,13 @@ const stack = await NativeNavigation.present({
 
 The result of the `present` API call is an object containing the `id` of the presented component. You can also specify the `id` in the component specification to hard-code it.
 
+### Dismiss a view
+
+Modal views can often be dismissed by the user themselves using native controls, but all _presented_ views can be dismissed using the `dismiss` API. The `dismiss` API call includes:
+
+* the component `id` to dismiss.
+* an `animated` flag, to allow or prevent transition animations.
+
 ### Push a view
 
 When you have an existing stack, you can push a new view onto it, or replace the top-most view. The `push` API call includes:
@@ -80,13 +87,6 @@ Usually the user will pop views themselves using native back controls, but you c
 ```typescript
 NativeNavigation.pop({})
 ```
-
-### Dismiss a view
-
-Modal views can often be dismissed by the user themselves using native controls, but all _presented_ views can be dismissed using the `dismiss` API. The `dismiss` API call includes:
-
-* the component `id` to dismiss.
-* an `animated` flag, to allow or prevent transition animations.
 
 ## React
 
@@ -159,7 +159,7 @@ export default function Root(props: NativeNavigationReactRootProps): JSX.Element
 
 ### Modals
 
-Special support is available for modal views in the `useNativeNavigationNavigator` hook. 
+Special support is available for modal views in the `useNativeNavigationNavigator` hook.
 
 ```typescript
 const navigator = useNativeNavigationNavigator({

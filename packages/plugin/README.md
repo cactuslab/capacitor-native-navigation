@@ -39,7 +39,9 @@ npx cap sync
 present(options: PresentOptions) => Promise<PresentResult>
 ```
 
-Present a new native UI.
+Present a new native UI. 
+
+See `dismiss` for removing the presentation
 
 | Param         | Type                                                      |
 | ------------- | --------------------------------------------------------- |
@@ -59,6 +61,8 @@ dismiss(options?: DismissOptions | undefined) => Promise<DismissResult>
 Dismiss a native UI. The component id may be a component that was previously presented or
 a component within a previously presented component.
 
+See `present` for presenting native UI.
+
 | Param         | Type                                                      |
 | ------------- | --------------------------------------------------------- |
 | **`options`** | <code><a href="#dismissoptions">DismissOptions</a></code> |
@@ -76,6 +80,8 @@ push(options: PushOptions) => Promise<PushResult>
 
 Push a new component onto a stack, or replace an existing component.
 
+See `pop` for removing a component from the stack.
+
 | Param         | Type                                                |
 | ------------- | --------------------------------------------------- |
 | **`options`** | <code><a href="#pushoptions">PushOptions</a></code> |
@@ -91,7 +97,9 @@ Push a new component onto a stack, or replace an existing component.
 pop(options: PopOptions) => Promise<PopResult>
 ```
 
-Pop the top component off a stack
+Pop the top component off a stack.
+
+See `push` for adding a component to the stack.
 
 | Param         | Type                                              |
 | ------------- | ------------------------------------------------- |

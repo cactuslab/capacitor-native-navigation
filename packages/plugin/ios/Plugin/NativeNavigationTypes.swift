@@ -533,8 +533,8 @@ struct BarSpec : PluginResultable, JSObjectUpdatable, JSObjectDecodable {
     func barSpecWithFallback(_ fallback: BarSpec) -> BarSpec {
         var spec = BarSpec()
         spec.background = background ?? fallback.background
-        spec.title = title ?? fallback.title
-        spec.buttons = buttons ?? fallback.buttons
+        spec.title =  LabelSpec.merge(primary: title, fallback: fallback.title)
+        spec.buttons = LabelSpec.merge(primary: buttons, fallback: fallback.buttons)
         spec.visible = visible ?? fallback.visible
         spec.hideShadow = hideShadow ?? fallback.hideShadow
         return spec
@@ -639,6 +639,23 @@ struct LabelSpec: PluginResultable, JSObjectDecodable, JSObjectUpdatable {
             result["font"] = ["name": name, "size": size] as [String : Any]
         }
         return result
+    }
+    
+    static func merge(primary: LabelSpec?, fallback: LabelSpec?) -> LabelSpec? {
+        guard let primary = primary else {
+            return fallback
+        }
+        guard let fallback = fallback else {
+            return primary
+        }
+        var spec = LabelSpec(color: fallback.color, font: fallback.font)
+        if let color = primary.color {
+            spec.color = primary.color
+        }
+        if let font = primary.font {
+            spec.font = font
+        }
+        return spec
     }
     
     static func fromJSObject(_ object: JSObjectLike) throws -> LabelSpec {

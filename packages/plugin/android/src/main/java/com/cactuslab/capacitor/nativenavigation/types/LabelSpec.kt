@@ -14,6 +14,19 @@ data class LabelSpec(var color: String? = null, var font: FontSpec? = null) {
     }
 
     companion object {
+        fun merge(primary: LabelSpec?, fallback: LabelSpec?): LabelSpec? {
+            if (primary == null) {
+                return fallback
+            }
+            if (fallback == null) {
+                return primary
+            }
+            val spec = LabelSpec(fallback.color, fallback.font)
+            primary.color?.let { spec.color = it }
+            spec.font = FontSpec.merge(primary.font, fallback.font)
+            return spec
+        }
+
         fun fromJSObject(jsObject: JSObject) : LabelSpec {
             val color = jsObject.getString("color")
             val font = jsObject.getJSObject("font")?.let { FontSpec.fromJSObject(it) }

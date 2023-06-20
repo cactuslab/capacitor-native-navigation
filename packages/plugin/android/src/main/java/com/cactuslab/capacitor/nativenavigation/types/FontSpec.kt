@@ -13,6 +13,19 @@ data class FontSpec(var name: String? = null, var size: Double? = null) {
     }
 
     companion object {
+        fun merge(primary: FontSpec?, fallback:FontSpec?) : FontSpec? {
+            if (primary == null) {
+                return fallback
+            }
+            if (fallback == null) {
+                return primary
+            }
+            val spec = FontSpec(name = fallback.name, size = fallback.size)
+            primary.name?.let { spec.name = it }
+            primary.size?.let { spec.size = it }
+            return spec
+        }
+
         fun fromJSObject(jsObject: JSObject): FontSpec {
             val name = jsObject.getString("name")
             val size = if (jsObject.has("size")) jsObject.getDouble("size") else null

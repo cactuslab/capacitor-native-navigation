@@ -21,9 +21,9 @@ class BarSpec(
 
     fun merge(other: BarSpec?): BarSpec {
         val spec = BarSpec()
-        spec.title = other?.title ?: this.title
+        spec.title = LabelSpec.merge(other?.title, title)
+        spec.buttons = LabelSpec.merge(other?.buttons, buttons)
         spec.visible = other?.visible ?: this.visible
-        spec.buttons = other?.buttons ?: this.buttons
         spec.background = other?.background ?: this.background
         return spec
     }

@@ -1,5 +1,12 @@
 # @cactuslab/native-navigation
 
+## 0.7.2
+
+### Patch Changes
+
+- 4b788f9: Updated readme to be clearer about push/pop and present/dismiss
+- 2e6f739: native: Improved fallback support for BarSpec so that a color can be changed without clearing the font
+
 ## 0.7.1
 
 ### Patch Changes

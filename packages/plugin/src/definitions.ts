@@ -588,6 +588,13 @@ export interface ImageObject {
 	 * the scale will be determined automatically from the filename, or it will default to 1.
 	 */
 	scale?: number
+
+	/** 
+	 * By default if this image is used in a button it will get tinted the color of the button.
+	 * If your image needs to keep its original colors set `disableTint: true` to prevent the 
+	 * tinting.
+	 */
+	disableTint?: boolean
 }
 
 export interface GetOptions {

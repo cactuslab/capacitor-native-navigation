@@ -862,6 +862,9 @@ class NativeNavigation: NSObject {
             
             let scale = image.scale ?? determineImageScale(image.uri)
             if let uiImage = UIImage(data: data, scale: scale) {
+                if (image.disableTint == true) {
+                    return uiImage.withRenderingMode(.alwaysOriginal)
+                }
                 return uiImage
             } else {
                 throw NativeNavigatorError.illegalState(message: "Not an image at \"\(image.uri)\"")

@@ -237,10 +237,11 @@ Send a message to a component.
 
 #### ImageObject
 
-| Prop        | Type                | Description                                                                                                                                                         |
-| ----------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`uri`**   | <code>string</code> | The uri for the image.                                                                                                                                              |
-| **`scale`** | <code>number</code> | The scale to use for the image, e.g. 2 for a 2x scale image. If not provided the scale will be determined automatically from the filename, or it will default to 1. |
+| Prop              | Type                 | Description                                                                                                                                                                              |
+| ----------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`uri`**         | <code>string</code>  | The uri for the image.                                                                                                                                                                   |
+| **`scale`**       | <code>number</code>  | The scale to use for the image, e.g. 2 for a 2x scale image. If not provided the scale will be determined automatically from the filename, or it will default to 1.                      |
+| **`disableTint`** | <code>boolean</code> | By default if this image is used in a button it will get tinted the color of the button. If your image needs to keep its original colors set `disableTint: true` to prevent the tinting. |
 
 
 #### BarSpec

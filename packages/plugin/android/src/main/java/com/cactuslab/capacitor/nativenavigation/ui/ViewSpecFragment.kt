@@ -322,9 +322,10 @@ class ViewSpecFragment : Fragment(), MenuProvider {
         }
     }
 
-    fun fetchDrawable(path: String, tintColor: Int?, setDrawable: (Drawable?) -> Unit) {
+    private fun fetchDrawable(path: String, tintColor: Int?, setDrawable: (Drawable?) -> Unit) {
         var url = path
         var scale: Double = 1.0
+        var disableTint = false
         if (path.startsWith("{")) {
             /** This is a JSON object, let's convert and see what we find */
             val json = JSObject(path)
@@ -332,7 +333,20 @@ class ViewSpecFragment : Fragment(), MenuProvider {
             if (json.has("scale")) {
                 scale = json.getDouble("scale")
             }
+            if (json.has("disableTint")) {
+                disableTint = json.getBool("disableTint") ?: false
+            }
         }
+
+        fun handleResource(resource: Drawable) {
+            if (!disableTint) {
+                tintColor?.let {
+                    resource.setTint(it)
+                }
+            }
+            setDrawable(resource)
+        }
+
         if (url.startsWith("data:")) {
             val decodedBytes = Base64.decode(url.substringAfter("base64,"),Base64.DEFAULT)
             val bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
@@ -340,10 +354,7 @@ class ViewSpecFragment : Fragment(), MenuProvider {
             ImageRequest.Builder(requireContext())
                 .data(bitmap)
                 .target { resource ->
-                    tintColor?.let {
-                        resource.setTint(it)
-                    }
-                    setDrawable(resource)
+                    handleResource(resource)
                 }
                 .build().also {
                     requireContext().imageLoader.enqueue(it)
@@ -377,10 +388,7 @@ class ViewSpecFragment : Fragment(), MenuProvider {
                         ImageRequest.Builder(requireContext())
                             .data(byteArray)
                             .target { resource ->
-                                tintColor?.let {
-                                    resource.setTint(it)
-                                }
-                                setDrawable(resource)
+                                handleResource(resource)
                             }
                             .build().also {
                                 requireContext().imageLoader.enqueue(it)
@@ -393,10 +401,7 @@ class ViewSpecFragment : Fragment(), MenuProvider {
                     ImageRequest.Builder(requireContext())
                         .data(uri)
                         .target { resource ->
-                            tintColor?.let {
-                                resource.setTint(it)
-                            }
-                            setDrawable(resource)
+                            handleResource(resource)
                         }
                         .build().also {
                             requireContext().imageLoader.enqueue(it)

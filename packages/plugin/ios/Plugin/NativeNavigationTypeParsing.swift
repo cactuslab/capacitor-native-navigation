@@ -201,6 +201,10 @@ extension ImageObject {
         if let scale = object.getFloat("scale") {
             result.scale = CGFloat(scale)
         }
+        if let disableTint = object.getBool("disableTint") {
+            result.disableTint = disableTint
+        }
+        
         return result
     }
     

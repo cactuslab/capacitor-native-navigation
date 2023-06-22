@@ -690,11 +690,15 @@ struct ViewReadyOptions {
 struct ImageObject: PluginResultable {
     var uri: String
     var scale: CGFloat?
+    var disableTint: Bool?
     
     func toPluginResult() -> PluginCallResultData {
         var result: PluginCallResultData = ["uri": uri]
         if let scale = scale {
             result["scale"] = scale
+        }
+        if let disableTint = disableTint {
+            result["disableTint"] = disableTint
         }
         return result
     }

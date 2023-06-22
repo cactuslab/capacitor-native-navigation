@@ -533,12 +533,20 @@ class NativeNavigation: NSObject {
 
     /** Get the component with the given id. Throws an error if the component is not found. */
     private func component(_ id: ComponentId) throws -> any ComponentModel {
+        if let component = componentOrNil(id) {
+            return component
+        } else {
+            throw NativeNavigatorError.componentNotFound(name: id)
+        }
+    }
+    
+    private func componentOrNil(_ id: ComponentId) -> (any ComponentModel)? {
         if let component = componentsById[id] {
             return component
         } else if let component = componentsByAlias[id] {
             return component
         } else {
-            throw NativeNavigatorError.componentNotFound(name: id)
+            return nil
         }
     }
 
@@ -1001,12 +1009,15 @@ extension NativeNavigation: UINavigationControllerDelegate {
             guard let viewController = viewController as? NativeNavigationViewController else {
                 throw NativeNavigatorError.illegalState(message: "Unexpected UIViewController implementation")
             }
-
-            let viewComponent = try self.component(viewController.componentId)
-            if let viewModel = viewComponent as? ViewModel {
-                
+            
+            guard let component = self.componentOrNil(viewController.componentId) else {
+                /* This view has been removed from the model. It will be removed from the navigation controller later. */
+                return
+            }
+            
+            if let viewModel = component as? ViewModel {
                 var barSpec = viewModel.spec.stackItem?.bar ?? BarSpec()
-                if let containerId = viewComponent.container, let stackModel = try? self.component(containerId) as? StackModel, let spec = stackModel.spec.bar {
+                if let containerId = viewModel.container, let stackModel = try? self.component(containerId) as? StackModel, let spec = stackModel.spec.bar {
                     barSpec = barSpec.barSpecWithFallback(spec)
                 }
                 
@@ -1015,6 +1026,8 @@ extension NativeNavigation: UINavigationControllerDelegate {
                 if navigationController.isNavigationBarHidden == barVisible {
                     navigationController.setNavigationBarHidden(!barVisible, animated: animated)
                 }
+            } else {
+                throw NativeNavigatorError.illegalState(message: "Component for UINavigationController is not a ViewModel")
             }
             
         } catch {
@@ -1040,7 +1053,8 @@ extension NativeNavigation: UINavigationControllerDelegate {
             }
             
             guard let topIndex = component.views.firstIndex(of: viewController.componentId) else {
-                throw NativeNavigatorError.illegalState(message: "Top component of UINavigationController is not known: \(viewController.componentId)")
+                /* This view has been removed from the model. It will be removed from the navigation controller later. */
+                return
             }
             
             self.removeComponents(Array(component.views[(topIndex + 1)...]))

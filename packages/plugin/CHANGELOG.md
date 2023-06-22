@@ -1,5 +1,11 @@
 # @cactuslab/native-navigation
 
+## 0.7.3
+
+### Patch Changes
+
+- 130b7ea: native: added support for disabling tint of image buttons
+
 ## 0.7.2
 
 ### Patch Changes

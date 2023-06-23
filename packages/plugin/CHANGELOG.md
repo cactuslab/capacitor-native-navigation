@@ -1,5 +1,11 @@
 # @cactuslab/native-navigation
 
+## 0.7.4
+
+### Patch Changes
+
+- 6b0e760: iOS: Fix race condition on pushing multiple times during animation
+
 ## 0.7.3
 
 ### Patch Changes

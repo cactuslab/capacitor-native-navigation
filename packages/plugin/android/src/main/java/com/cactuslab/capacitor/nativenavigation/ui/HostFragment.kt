@@ -1,13 +1,16 @@
 package com.cactuslab.capacitor.nativenavigation.ui
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import androidx.fragment.app.Fragment
 import com.cactuslab.capacitor.nativenavigation.databinding.ActivityNavigationBinding
 
-class HostFragment: Fragment() {
+class HostFragment: NativeNavigationFragment() {
 
     var binding: ActivityNavigationBinding? = null
 
@@ -19,8 +22,7 @@ class HostFragment: Fragment() {
         return ActivityNavigationBinding.inflate(inflater, container, false).also { this.binding = it }.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    companion object {
+        private const val TAG = "HostFragment"
     }
-
 }

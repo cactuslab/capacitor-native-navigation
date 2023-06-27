@@ -2,6 +2,7 @@ package com.cactuslab.capacitor.nativenavigation
 
 import android.annotation.SuppressLint
 import android.net.Uri
+import android.os.Bundle
 import android.os.Message
 import android.util.Log
 import android.webkit.WebView
@@ -9,8 +10,15 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.core.view.WindowCompat
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.*
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.fragment
@@ -490,10 +498,18 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                 navContext.virtualStack.clear()
                 navContext.virtualStack.add(component.id)
 
+                navContext.fragment.onEnterEnd = Runnable {
+                    Log.d(TAG, "ANIMATOR ON ENTER END")
+                    val result = PresentResult(component.id)
+                    call.resolve(result.toJSObject())
+                }
+
                 viewActions[component.id] = {
+
                     val transaction = plugin.activity.supportFragmentManager.beginTransaction()
 
                     navContext.tryAddToActivity(transaction)
+
                     transaction.commitNow()
 
                     navContext.runSetup(component.id)
@@ -504,6 +520,12 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
             is StackSpec -> {
                 val stack = component.components ?: listOf()
                 navContext.virtualStack.clear()
+
+                navContext.fragment.onEnterEnd = Runnable {
+                    Log.d(TAG, "ANIMATOR ON ENTER END")
+                    val result = PresentResult(component.id)
+                    call.resolve(result.toJSObject())
+                }
 
                 stack.forEachIndexed { _, viewSpec ->
                     insertComponent(viewSpec, component)
@@ -516,6 +538,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
                 viewActions[lastViewSpec.id] = {
                     val transaction = plugin.activity.supportFragmentManager.beginTransaction()
+
                     navContext.tryAddToActivity(transaction)
                     transaction.commitNow()
 
@@ -537,26 +560,6 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
             }
         }
-
-//        viewActions[component.id] = {
-//
-//            val transaction = plugin.activity.supportFragmentManager.beginTransaction()
-//            navContext.tryAddToActivity(transaction)
-//            transaction.commitNow()
-//
-//            navContext.runSetup(component.id)
-//
-////                val bottomsheet = ModalBottomSheet().also {
-////                    it.arguments = bundleOf(OPTIONS_ID to component.id)
-////                }
-////                bottomsheet.show(plugin.activity.supportFragmentManager, component.id)
-//        }
-//
-//        notifyCreateView(component.id)
-
-        val result = PresentResult(component.id)
-        call.resolve(result.toJSObject())
-
     }
 
     fun pop(call: PluginCall, activity: AppCompatActivity) {
@@ -572,10 +575,12 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         var id = options.componentId
         if (id.isNullOrBlank() && navContexts.isNotEmpty()) {
             val navContext = navContexts.last()
+            navContext.fragment.onExitEnd = Runnable {
+                Log.d(TAG, "DISMISS EXIT END")
+                val result = DismissResult(navContext.contextId)
+                call.resolve(result.toJSObject())
+            }
             popNavContext()
-
-            val result = DismissResult(navContext.contextId)
-            call.resolve(result.toJSObject())
         } else {
 
             if (id != null) {
@@ -586,14 +591,24 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
             val navContext = navContexts.find { it.contextId == id || it.virtualStack.contains(id) }
             if (navContext != null) {
+                navContext.fragment.onExitEnd = Runnable {
+                    Log.d(TAG, "DISMISS EXIT END")
+                    val result = DismissResult(navContext.contextId)
+                    call.resolve(result.toJSObject())
+                }
                 navContexts.remove(navContext)
                 removeNavContext(navContext)
-                val result = DismissResult(navContext.contextId)
-                call.resolve(result.toJSObject())
+
             } else {
                 call.reject("No such component is presented")
             }
         }
+    }
+
+    private val pushActions: MutableMap<String,() -> Unit> = mutableMapOf()
+
+    fun completePush(id: String) {
+        pushActions.remove(id)?.let { function -> function() }
     }
 
     fun push(options: PushOptions, call: PluginCall) {
@@ -623,6 +638,8 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
             return
         }
 
+
+
         val presentedComponentHost = componentSpecForId(navContext.contextId)!!
 
         when (presentedComponentHost.type) {
@@ -633,6 +650,11 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
                 when(options.mode) {
                     PushMode.PUSH -> {
+
+                        pushActions[component.id] = {
+                            val result = PushResult(component.id , stackId)
+                            call.resolve(result.toJSObject())
+                        }
                         insertComponent(component, presentedComponentHost)
 
                         Log.d(TAG, "push: PUSH -> Inserted component ${component.id}")
@@ -649,9 +671,26 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                         val webView = makeWebView(component.id)
                         viewModel.postWebView(webView, component.id)
                         viewActions[component.id] = {
-                            val navController = navContext.fragment.binding?.navigationHost?.findNavController()
+                            val navHost = navContext.fragment.binding?.navigationHost!!
+                            val navController = navHost.findNavController()
 
-                            navController!!.navigate("${stackId}/${component.id}") {
+                            navController.addOnDestinationChangedListener(object: NavController.OnDestinationChangedListener {
+                                override fun onDestinationChanged(
+                                    controller: NavController,
+                                    destination: NavDestination,
+                                    arguments: Bundle?
+                                ) {
+                                    Log.d(TAG, "DESTINATION CHANGED to ${destination.route}")
+                                    controller.removeOnDestinationChangedListener(this)
+                                }
+                            })
+                            navContext.fragment.childFragmentManager.addOnBackStackChangedListener(object: FragmentManager.OnBackStackChangedListener {
+                                override fun onBackStackChanged() {
+                                    Log.d(TAG, "BACKSTACK CHANGED")
+                                    navContext.fragment.childFragmentManager.removeOnBackStackChangedListener(this)
+                                }
+                            })
+                            navController.navigate("${stackId}/${component.id}") {
                                 if (options.animated) {
                                     anim {
                                         enter = R.anim.slide_in_right
@@ -671,8 +710,8 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
                         notifyCreateView(component.id)
 
-                        val result = PushResult(component.id , stackId)
-                        call.resolve(result.toJSObject())
+
+
                     }
                     PushMode.REPLACE -> {
 
@@ -703,6 +742,11 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                         component.id = currentId
                         insertComponent(component, presentedComponentHost)
 
+//                        pushActions[component.id] = {
+//                            val result = PushResult(component.id , stackId)
+//                            call.resolve(result.toJSObject())
+//                        }
+//
                         if (backStackEntry != null) {
                             val navController = navContext.fragment.binding?.navigationHost?.findNavController()
                             navController!!.popBackStack(backStackEntry.destination.id, inclusive = true, saveState = false)
@@ -715,10 +759,17 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                     PushMode.ROOT -> {
                         insertComponent(component, presentedComponentHost)
 
+                        pushActions[component.id] = {
+                            val result = PushResult(component.id , stackId)
+                            call.resolve(result.toJSObject())
+                        }
+
                         navContext.virtualStack.clear()
                         navContext.virtualStack.add(component.id)
                         val webView = makeWebView(component.id)
                         viewModel.postWebView(webView, component.id)
+
+
                         viewActions[component.id] = {
                             val navController = navContext.fragment.binding?.navigationHost?.findNavController()
 
@@ -740,8 +791,8 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
                         notifyCreateView(component.id)
 
-                        val result = PushResult(component.id , stackId)
-                        call.resolve(result.toJSObject())
+//                        val result = PushResult(component.id , stackId)
+//                        call.resolve(result.toJSObject())
                     }
                 }
 

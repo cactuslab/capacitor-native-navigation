@@ -65,3 +65,29 @@ export function toNativeNavigationNavigationState(state: unknown): NativeNavigat
 		return undefined
 	}
 }
+
+function delay(ms: number): Promise<void> {
+	return new Promise(function(resolve) {
+		setTimeout(resolve, ms)
+	})
+}
+  
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function ignoreUntilDone<T extends(...args: any[]) => Promise<void>>(func: T): T {
+	let inflight = false
+	return async function(...args) {
+		if (inflight) {
+			console.log('NN Blocked')
+			return
+		}
+		console.log('NN Permitted')
+		inflight = true
+
+		try {
+			// await delay(1000)
+			await func(...args)
+		} finally {
+			inflight = false
+		}
+	} as T
+}

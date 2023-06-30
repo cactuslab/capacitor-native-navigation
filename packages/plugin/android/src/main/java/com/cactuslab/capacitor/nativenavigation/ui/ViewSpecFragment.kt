@@ -1,5 +1,6 @@
 package com.cactuslab.capacitor.nativenavigation.ui
 
+import android.animation.Animator
 import android.annotation.SuppressLint
 import android.graphics.BitmapFactory
 import android.graphics.Color
@@ -15,6 +16,8 @@ import android.util.Base64
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.*
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -28,6 +31,7 @@ import androidx.navigation.fragment.findNavController
 import coil.imageLoader
 import coil.request.ImageRequest
 import com.cactuslab.capacitor.nativenavigation.NativeNavigationViewModel
+import com.cactuslab.capacitor.nativenavigation.R
 import com.cactuslab.capacitor.nativenavigation.databinding.FragmentBlankBinding
 import com.cactuslab.capacitor.nativenavigation.helpers.*
 import com.cactuslab.capacitor.nativenavigation.types.ComponentType
@@ -37,7 +41,7 @@ import com.getcapacitor.JSObject
 import com.google.android.material.appbar.AppBarLayout
 import java.io.ByteArrayOutputStream
 
-class ViewSpecFragment : Fragment(), MenuProvider {
+class ViewSpecFragment : NativeNavigationFragment(), MenuProvider {
     private var binding: FragmentBlankBinding? = null
 
     private val viewModel : NativeNavigationViewModel by activityViewModels()
@@ -59,6 +63,12 @@ class ViewSpecFragment : Fragment(), MenuProvider {
     @SuppressLint("SetJavaScriptEnabled")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        onEnterEnd = Runnable {
+            componentId?.let {
+                viewModel.nativeNavigation?.completePush(it)
+            }
+        }
 
         val binding = binding ?: return
 
@@ -241,7 +251,28 @@ class ViewSpecFragment : Fragment(), MenuProvider {
         updateToolbar()
         setupMenu()
         viewModel.nativeNavigation?.plugin?.notifyViewWillAppear(componentId!!)
-        viewModel.nativeNavigation?.plugin?.notifyViewDidAppear(componentId!!)
+        val animation = view?.animation
+//        if (animation != null) {
+//            animation.setAnimationListener(object: Animation.AnimationListener {
+//                override fun onAnimationStart(animation: Animation?) {
+//                    Log.d(TAG, "ANIMATOR RESUME START")
+//
+//                }
+//
+//                override fun onAnimationEnd(animation: Animation?) {
+//                    Log.d(TAG, "ANIMATOR RESUME END")
+//                    viewModel.nativeNavigation?.plugin?.notifyViewDidAppear(componentId!!)
+//                }
+//
+//                override fun onAnimationRepeat(animation: Animation?) {
+//                    Log.d(TAG, "ANIMATOR RESUME REPEAT")
+//                }
+//
+//            })
+//        } else {
+            viewModel.nativeNavigation?.plugin?.notifyViewDidAppear(componentId!!)
+//        }
+
     }
 
     private fun setupMenu() {

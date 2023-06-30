@@ -3,7 +3,7 @@ import { useNativeNavigation, useNativeNavigationViewContext } from '@cactuslab/
 import { useCallback, useEffect, useMemo } from 'react'
 import type { NavigateOptions, Navigator, To } from 'react-router-dom'
 import { NativeNavigationNavigatorOptions } from './types'
-import { findModalConfig, toNativeNavigationNavigationState } from './utils'
+import { findModalConfig, ignoreUntilDone, toNativeNavigationNavigationState } from './utils'
 
 export { NativeNavigationNavigatorOptions, ModalConfig } from './types'
 export { default as NativeNavigationRouter } from './NativeNavigationRouter'
@@ -38,134 +38,138 @@ export function useNativeNavigationNavigator(options: NativeNavigationNavigatorO
 
 		options.errorHandler?.(source, error)
 	}, [options])
-	
-	const navigator: Navigator = useMemo(() => ({
 
-		createHref: function(to: To): string {
-			if (typeof to === 'string') {
-				return to
-			} else {
-				let result = ''
-				if (to.pathname) {
-					result += to.pathname
-				}
-				if (to.search) {
-					result += `${to.search}`
-				}
-				if (to.hash) {
-					result += `${to.hash}`
-				}
-				return result
+	function createHref(to: To): string {
+		if (typeof to === 'string') {
+			return to
+		} else {
+			let result = ''
+			if (to.pathname) {
+				result += to.pathname
 			}
-		},
-
-		go: async function(delta: number): Promise<void> {
-			if (delta < 0) {
-				if (stack) {
-					try {
-						const result = await plugin.pop({
-							count: -delta,
-							stack,
-						})
-						if (result.count === 0) {
-							/* If there was nothing to pop, and we're in a navigation-driven modal, dismiss it */
-							if (currentModal) {
-								await plugin.dismiss()
-							}
-						}
-					} catch (error) {
-						reportError('pop', error)
-						throw error
-					}
-				} else {
-					console.warn(`Failed to pop as component ${componentId} is not in a stack`)
-				}
-			} else if (delta > 0) {
-				throw new Error('go(delta) is not implemented for going forward')
+			if (to.search) {
+				result += `${to.search}`
 			}
-		},
+			if (to.hash) {
+				result += `${to.hash}`
+			}
+			return result
+		}
+	}
 
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		push: async function(to: To, state?: any, opts?: NavigateOptions | undefined): Promise<void> {
-			const actualState = state || opts?.state
-			const navigationState = toNativeNavigationNavigationState(actualState)
-
-			if (typeof navigationState?.dismiss === 'string') {
+	const go = useCallback(async function(delta: number): Promise<void> {
+		if (delta < 0) {
+			if (stack) {
 				try {
-					await plugin.dismiss({
-						id: navigationState.dismiss,
+					const result = await plugin.pop({
+						count: -delta,
+						stack,
 					})
-				} catch (error) {
-					reportError('dismiss', error)
-					throw error
-				}
-			} else if (typeof navigationState?.dismiss === 'boolean') {
-				try {
-					await plugin.dismiss()
-				} catch (error) {
-					reportError('dismiss', error)
-					throw error
-				}
-			}
-
-			const path = navigator.createHref(to)
-
-			const targetModal = findModalConfig(path, options)
-			if (targetModal) {
-				if (!currentModal || targetModal !== currentModal) {
-					/* New modal */
-					const presentOptions = targetModal.presentOptions(path, state)
-					try {
-						await plugin.present(presentOptions)
-					} catch (error) {
-						reportError('push modal', error)
-						throw error
+					if (result.count === 0) {
+						/* If there was nothing to pop, and we're in a navigation-driven modal, dismiss it */
+						if (currentModal) {
+							await plugin.dismiss()
+						}
 					}
-					return
+				} catch (error) {
+					reportError('pop', error)
+					throw error
 				}
-			} else if (currentModal) {
-				/* Close this modal */
-				plugin.dismiss({
-					id: stack || componentId,
-				}).catch(function(reason) {
-					reportError('dismiss', reason)
-				})
-
-				/* Then get the new top view to handle this navigation */
-				await plugin.message<NavigateMessageData>({
-					type: NAVIGATOR_NAVIGATE_MESSAGE_TYPE,
-					value: {
-						to,
-						state,
-						opts,
-					},
-				})
-				return
+			} else {
+				console.warn(`Failed to pop as component ${componentId} is not in a stack`)
 			}
+		} else if (delta > 0) {
+			throw new Error('go(delta) is not implemented for going forward')
+		}
+	}, [componentId, currentModal, plugin, reportError, stack])
 
-			const replace = !!(opts?.replace || navigationState?.replace)
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const push = useCallback(async function(to: To, state?: any, opts?: NavigateOptions | undefined): Promise<void> {
+		const actualState = state || opts?.state
+		const navigationState = toNativeNavigationNavigationState(actualState)
+
+		if (typeof navigationState?.dismiss === 'string') {
 			try {
-				await plugin.push({
-					component: {
-						type: 'view',
-						path,
-						state: actualState,
-					},
-					mode: navigationState?.root ? 'root' : replace ? 'replace' : undefined,
-					target: navigationState?.target || stack || componentId,
-					animated: navigationState?.animated,
+				await plugin.dismiss({
+					id: navigationState.dismiss,
 				})
 			} catch (error) {
-				reportError(replace ? 'replace' : 'push', error)
+				reportError('dismiss', error)
 				throw error
 			}
-		},
+		} else if (typeof navigationState?.dismiss === 'boolean') {
+			try {
+				await plugin.dismiss()
+			} catch (error) {
+				reportError('dismiss', error)
+				throw error
+			}
+		}
 
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		replace: async function(to: To, state?: any, opts?: NavigateOptions | undefined): Promise<void> {
-			return navigator.push(to, state, opts ? { ...opts, replace: true } : { replace: true })
-		},
-	}), [componentId, currentModal, options, plugin, reportError, stack])
+		const path = createHref(to)
+
+		const targetModal = findModalConfig(path, options)
+		if (targetModal) {
+			if (!currentModal || targetModal !== currentModal) {
+				/* New modal */
+				const presentOptions = targetModal.presentOptions(path, state)
+				try {
+					await plugin.present(presentOptions)
+				} catch (error) {
+					reportError('push modal', error)
+					throw error
+				}
+				return
+			}
+		} else if (currentModal) {
+			/* Close this modal */
+			plugin.dismiss({
+				id: stack || componentId,
+			}).catch(function(reason) {
+				reportError('dismiss', reason)
+			})
+
+			/* Then get the new top view to handle this navigation */
+			await plugin.message<NavigateMessageData>({
+				type: NAVIGATOR_NAVIGATE_MESSAGE_TYPE,
+				value: {
+					to,
+					state,
+					opts,
+				},
+			})
+			return
+		}
+
+		const replace = !!(opts?.replace || navigationState?.replace)
+		try {
+			await plugin.push({
+				component: {
+					type: 'view',
+					path,
+					state: actualState,
+				},
+				mode: navigationState?.root ? 'root' : replace ? 'replace' : undefined,
+				target: navigationState?.target || stack || componentId,
+				animated: navigationState?.animated,
+			})
+		} catch (error) {
+			reportError(replace ? 'replace' : 'push', error)
+			throw error
+		}
+	}, [componentId, currentModal, options, plugin, reportError, stack])
+
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const replace = useCallback(async function(to: To, state?: any, opts?: NavigateOptions | undefined): Promise<void> {
+		return push(to, state, opts ? { ...opts, replace: true } : { replace: true })
+	}, [push])
+	
+	const navigator: Navigator = useMemo(() => ({
+		createHref,
+		go: ignoreUntilDone(go),
+		push: ignoreUntilDone(push),
+		replace: ignoreUntilDone(replace),
+	}), [go, push, replace])
 
 	/* Handle navigate requests from closing modals */
 	useEffect(function() {

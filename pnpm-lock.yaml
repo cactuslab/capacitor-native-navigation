@@ -179,7 +179,7 @@ importers:
   packages/react-router:
     dependencies:
       '@cactuslab/native-navigation':
-        specifier: ^0.7.0
+        specifier: ^0.7.5
         version: link:../plugin
       '@cactuslab/native-navigation-react':
         specifier: ^6.1.0

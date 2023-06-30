@@ -1,5 +1,11 @@
 # @cactuslab/native-navigation
 
+## 0.7.5
+
+### Patch Changes
+
+- db35275: Added blocking actions on routing to prevent double navigations
+
 ## 0.7.4
 
 ### Patch Changes

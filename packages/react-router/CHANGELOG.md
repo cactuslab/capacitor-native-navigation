@@ -1,5 +1,13 @@
 # @cactuslab/native-navigation-react-router
 
+## 7.1.1
+
+### Patch Changes
+
+- db35275: Added blocking actions on routing to prevent double navigations
+- Updated dependencies [db35275]
+  - @cactuslab/native-navigation@0.7.5
+
 ## 7.1.0
 
 ### Minor Changes

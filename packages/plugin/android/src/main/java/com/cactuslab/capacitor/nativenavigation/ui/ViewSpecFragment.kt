@@ -122,10 +122,10 @@ class ViewSpecFragment : NativeNavigationFragment(), MenuProvider {
     }
 
     private fun updateToolbar() {
-        val spec = viewModel.nativeNavigation!!.viewSpecForId(componentId!!)!!
         val toolbar = binding?.toolbar ?: return
         val appBarLayout = binding?.appBarLayout ?: return
         val componentId = componentId ?: return
+        val spec = viewModel.nativeNavigation?.viewSpecForId(componentId) ?: return
 
         val stackOptions = viewModel.nativeNavigation?.findStackComponentIdHosting(componentId)?.let {
             viewModel.nativeNavigation?.componentSpecForId(it) as? StackSpec
@@ -308,7 +308,7 @@ class ViewSpecFragment : NativeNavigationFragment(), MenuProvider {
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
         val componentId = componentId ?: return
 
-        val spec = viewModel.nativeNavigation?.viewSpecForId(componentId)!!
+        val spec = viewModel.nativeNavigation?.viewSpecForId(componentId) ?: return
         val stackOptions = viewModel.nativeNavigation?.findStackComponentIdHosting(componentId)?.let {
             viewModel.nativeNavigation?.componentSpecForId(it) as? StackSpec
         }

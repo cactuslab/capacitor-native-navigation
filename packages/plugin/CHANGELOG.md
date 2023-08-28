@@ -1,5 +1,11 @@
 # @cactuslab/native-navigation
 
+## 0.7.6
+
+### Patch Changes
+
+- 44836f5: Android: Fix race condition on resuming from background with a reset UI
+
 ## 0.7.5
 
 ### Patch Changes

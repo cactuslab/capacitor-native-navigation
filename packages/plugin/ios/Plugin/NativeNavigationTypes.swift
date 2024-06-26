@@ -650,7 +650,7 @@ struct LabelSpec: PluginResultable, JSObjectDecodable, JSObjectUpdatable {
         }
         var spec = LabelSpec(color: fallback.color, font: fallback.font)
         if let color = primary.color {
-            spec.color = primary.color
+            spec.color = color
         }
         if let font = primary.font {
             spec.font = font

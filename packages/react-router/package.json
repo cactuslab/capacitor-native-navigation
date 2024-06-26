@@ -33,18 +33,18 @@
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
-    "@cactuslab/native-navigation": "^0.7.5",
-    "@cactuslab/native-navigation-react": "^6.1.0"
+    "@cactuslab/native-navigation": "workspace:*",
+    "@cactuslab/native-navigation-react": "workspace:*"
   },
   "devDependencies": {
-    "@cactuslab/native-navigation": "^0.7.5",
-    "@capacitor/core": "^5.0.3",
-    "@types/react": "^18.2.6",
-    "@types/react-dom": "^18.2.4",
-    "react-router-dom": "^6.11.1",
-    "rimraf": "^5.0.0",
-    "rollup": "^3.21.6",
-    "typescript": "~5.0.4"
+    "@cactuslab/native-navigation": "workspace:*",
+    "@capacitor/core": "^6.1.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "react-router-dom": "^6.23.1",
+    "rimraf": "^5.0.7",
+    "rollup": "^4.18.0",
+    "typescript": "~5.5.2"
   },
   "peerDependencies": {
     "@capacitor/core": "^5.0.3",

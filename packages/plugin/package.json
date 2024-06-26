@@ -2,6 +2,7 @@
   "name": "@cactuslab/native-navigation",
   "version": "0.7.6",
   "description": "Native navigation for Capacitor apps",
+  "type": "module",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",

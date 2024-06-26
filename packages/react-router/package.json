@@ -2,6 +2,7 @@
   "name": "@cactuslab/native-navigation-react-router",
   "version": "7.1.1",
   "description": "React Router support for Native navigation for Capacitor apps",
+  "type": "module",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",

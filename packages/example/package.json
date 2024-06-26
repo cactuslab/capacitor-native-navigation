@@ -3,6 +3,7 @@
   "version": "2.3.0",
   "description": "An Amazing Capacitor App",
   "main": "index.js",
+  "type": "module",
   "private": true,
   "keywords": [
     "capacitor",

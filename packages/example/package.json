@@ -9,9 +9,9 @@
     "mobile"
   ],
   "scripts": {
-    "cap:local": "CAP_SERVER=http://$(hostname | tr '[:upper:]' '[:lower:]'):5173/ cap sync",
+    "cap:local": "CAP_SERVER=http://$(ipconfig getifaddr en0 || ipconfig getifaddr en1):5173/ cap sync",
     "start": "vite",
-    "start:host": "vite --host $(hostname | tr '[:upper:]' '[:lower:]')",
+    "start:host": "vite --host $(ipconfig getifaddr en0 || ipconfig getifaddr en1)",
     "build": "vite build",
     "preview": "vite preview"
   },

@@ -1,12 +1,32 @@
-## Created with Capacitor Create App
+# Capacitor Native Navigation example app
 
-This app was created using [`@capacitor/create-app`](https://github.com/ionic-team/create-capacitor-app),
-and comes with a very minimal shell for building an app.
+This example includes web, iOS and Android projects to test with while developing and evaluating Capacitor Native Navigation.
 
-### Running this example
+## Web
 
-To run the provided example, you can use `npm start` command.
+```shell
+nvm use
+pnpm install
+pnpm start
+```
 
-```bash
-npm start
+Then navigate to the URL displayed.
+
+## iOS
+
+Prerequisites:
+
+* `rbenv` for managing Ruby versions
+
+Setup the iOS toolchain:
+
+```shell
+cd ios
+gem install bundler
+bundle install
+cd ..
+```
+
+```shell
+pnpm cap:local
 ```

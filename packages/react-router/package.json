@@ -6,7 +6,6 @@
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",
-  "unpkg": "dist/plugin.js",
   "files": [
     "dist/"
   ],
@@ -38,10 +37,10 @@
     "capacitor-native-navigation-react": "workspace:*"
   },
   "devDependencies": {
-    "capacitor-native-navigation": "workspace:*",
     "@capacitor/core": "^6.1.0",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
+    "capacitor-native-navigation": "workspace:*",
     "react-router-dom": "^6.23.1",
     "rimraf": "^5.0.7",
     "rollup": "^4.18.0",

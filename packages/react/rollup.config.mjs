@@ -3,19 +3,6 @@ export default [
 		input: 'dist/esm/index.js',
 		output: [
 			{
-				file: 'dist/index.js',
-				format: 'iife',
-				name: 'CapacitorNativeNavigationReact',
-				globals: {
-					'capacitor-native-navigation': 'CapacitorNativeNavigation',
-					'@capacitor/core': 'capacitorExports',
-					'react': 'React',
-					'react-dom': 'ReactDOM',
-				},
-				sourcemap: true,
-				inlineDynamicImports: true,
-			},
-			{
 				file: 'dist/index.cjs.js',
 				format: 'cjs',
 				sourcemap: true,
@@ -27,6 +14,7 @@ export default [
 			'@capacitor/core',
 			'react',
 			'react-dom',
+			'fast-deep-equal',
 		],
 	},
 ]

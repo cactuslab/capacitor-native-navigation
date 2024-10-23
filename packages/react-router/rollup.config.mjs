@@ -3,19 +3,6 @@ export default [
 		input: 'dist/esm/index.js',
 		output: [
 			{
-				file: 'dist/index.js',
-				format: 'iife',
-				name: 'CapacitorNativeNavigationReactRouter',
-				globals: {
-					'capacitor-native-navigation': 'CapacitorNativeNavigation',
-					'react': 'React',
-					'react-dom': 'ReactDOM',
-					'react-router-dom': 'ReactRouterDOM',
-				},
-				sourcemap: true,
-				inlineDynamicImports: true,
-			},
-			{
 				file: 'dist/index.cjs.js',
 				format: 'cjs',
 				sourcemap: true,
@@ -24,6 +11,7 @@ export default [
 		],
 		external: [
 			'capacitor-native-navigation',
+			'capacitor-native-navigation-react',
 			'react',
 			'react-dom',
 			'react-router-dom',

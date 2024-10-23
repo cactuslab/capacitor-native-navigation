@@ -1,5 +1,18 @@
 # capacitor-native-navigation
 
+## 0.9.0
+
+### Minor Changes
+
+- 4d4c694: Build to ES2020 so we don't output so many shims
+- b16c1c9: No longer output IIFE
+
+  We don't believe anyone needs to use IIFE versions of this library, and they're a pain to maintain with all these global names!
+
+### Patch Changes
+
+- 3316211: Upgrade dependencies
+
 ## 0.8.0
 
 ### Minor Changes

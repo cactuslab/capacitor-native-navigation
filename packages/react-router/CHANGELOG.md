@@ -1,5 +1,17 @@
 # capacitor-native-navigation-react-router
 
+## 7.2.0
+
+### Minor Changes
+
+- 79e38e8: Rename packages from `@cactuslab` to no scope
+
+### Patch Changes
+
+- Updated dependencies [79e38e8]
+  - capacitor-native-navigation@0.8.0
+  - capacitor-native-navigation-react@6.2.0
+
 ## 7.1.1
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # capacitor-native-navigation
 
+## 0.8.0
+
+### Minor Changes
+
+- 79e38e8: Rename packages from `@cactuslab` to no scope
+
 ## 0.7.6
 
 ### Patch Changes

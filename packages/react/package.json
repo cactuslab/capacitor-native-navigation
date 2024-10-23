@@ -1,6 +1,6 @@
 {
   "name": "capacitor-native-navigation-react",
-  "version": "6.1.0",
+  "version": "6.2.0",
   "description": "React support for Native navigation for Capacitor apps",
   "type": "module",
   "main": "dist/plugin.cjs.js",

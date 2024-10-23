@@ -1,4 +1,4 @@
-import type { ComponentAlias, ComponentId, CreateViewEventData, MessageEventData, NativeNavigationPlugin } from '@cactuslab/native-navigation'
+import type { ComponentAlias, ComponentId, CreateViewEventData, MessageEventData, NativeNavigationPlugin } from 'capacitor-native-navigation'
 import type React from 'react'
 
 import { Plugin } from '@capacitor/core'

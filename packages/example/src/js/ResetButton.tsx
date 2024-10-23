@@ -1,5 +1,5 @@
-import { NativeNavigation } from '@cactuslab/native-navigation'
-import { useNativeNavigationViewContext } from '@cactuslab/native-navigation-react'
+import { NativeNavigation } from 'capacitor-native-navigation'
+import { useNativeNavigationViewContext } from 'capacitor-native-navigation-react'
 import { useEffect } from 'react'
 
 /**

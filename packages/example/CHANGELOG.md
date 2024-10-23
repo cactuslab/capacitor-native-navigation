@@ -18,9 +18,9 @@
 - Updated dependencies [85ac89c]
 - Updated dependencies [2b2f1f7]
 - Updated dependencies [660661b]
-  - @cactuslab/native-navigation@0.7.0
-  - @cactuslab/native-navigation-react-router@7.1.0
-  - @cactuslab/native-navigation-react@6.1.0
+  - capacitor-native-navigation@0.7.0
+  - capacitor-native-navigation-react-router@7.1.0
+  - capacitor-native-navigation-react@6.1.0
 
 ## 2.3.0-next.0
 
@@ -39,16 +39,16 @@
 - Updated dependencies [bf30927]
 - Updated dependencies [85ac89c]
 - Updated dependencies [660661b]
-  - @cactuslab/native-navigation@0.7.0-next.0
-  - @cactuslab/native-navigation-react-router@7.1.0-next.0
-  - @cactuslab/native-navigation-react@6.1.0-next.0
+  - capacitor-native-navigation@0.7.0-next.0
+  - capacitor-native-navigation-react-router@7.1.0-next.0
+  - capacitor-native-navigation-react@6.1.0-next.0
 
 ## 2.2.2
 
 ### Patch Changes
 
 - Updated dependencies [eab1bec]
-  - @cactuslab/native-navigation-react-router@7.0.0
+  - capacitor-native-navigation-react-router@7.0.0
 
 ## 2.2.1
 
@@ -61,9 +61,9 @@
 - Updated dependencies [c15bb76]
 - Updated dependencies [65b9585]
 - Updated dependencies [b73eacb]
-  - @cactuslab/native-navigation@0.6.0
-  - @cactuslab/native-navigation-react@6.0.0
-  - @cactuslab/native-navigation-react-router@6.0.0
+  - capacitor-native-navigation@0.6.0
+  - capacitor-native-navigation-react@6.0.0
+  - capacitor-native-navigation-react-router@6.0.0
 
 ## 2.2.0
 
@@ -81,9 +81,9 @@
 - Updated dependencies [10fe5f1]
 - Updated dependencies [991eceb]
 - Updated dependencies [718859d]
-  - @cactuslab/native-navigation@0.5.0
-  - @cactuslab/native-navigation-react@5.0.0
-  - @cactuslab/native-navigation-react-router@5.0.0
+  - capacitor-native-navigation@0.5.0
+  - capacitor-native-navigation-react@5.0.0
+  - capacitor-native-navigation-react-router@5.0.0
 
 ## 2.1.0
 
@@ -104,9 +104,9 @@
 - Updated dependencies [209789b]
 - Updated dependencies [dfe3463]
 - Updated dependencies [a18842c]
-  - @cactuslab/native-navigation@0.4.1
-  - @cactuslab/native-navigation-react@4.1.0
-  - @cactuslab/native-navigation-react-router@4.0.1
+  - capacitor-native-navigation@0.4.1
+  - capacitor-native-navigation-react@4.1.0
+  - capacitor-native-navigation-react-router@4.0.1
 
 ## 2.0.0
 
@@ -152,9 +152,9 @@
 - Updated dependencies [8cbf96b]
 - Updated dependencies [ed67a32]
 - Updated dependencies [a83dd7e]
-  - @cactuslab/native-navigation-react-router@4.0.0
-  - @cactuslab/native-navigation@0.4.0
-  - @cactuslab/native-navigation-react@4.0.0
+  - capacitor-native-navigation-react-router@4.0.0
+  - capacitor-native-navigation@0.4.0
+  - capacitor-native-navigation-react@4.0.0
 
 ## 1.2.1
 
@@ -166,9 +166,9 @@
 - Updated dependencies [815da46]
 - Updated dependencies [8eb7b84]
 - Updated dependencies [f6b3925]
-  - @cactuslab/native-navigation@0.3.0
-  - @cactuslab/native-navigation-react-router@3.0.0
-  - @cactuslab/native-navigation-react@3.0.0
+  - capacitor-native-navigation@0.3.0
+  - capacitor-native-navigation-react-router@3.0.0
+  - capacitor-native-navigation-react@3.0.0
 
 ## 1.2.0
 
@@ -183,9 +183,9 @@
 - Updated dependencies [e6ef6ea]
 - Updated dependencies [1c09146]
 - Updated dependencies [c7971af]
-  - @cactuslab/native-navigation@0.2.0
-  - @cactuslab/native-navigation-react@2.0.0
-  - @cactuslab/native-navigation-react-router@2.0.0
+  - capacitor-native-navigation@0.2.0
+  - capacitor-native-navigation-react@2.0.0
+  - capacitor-native-navigation-react-router@2.0.0
 
 ## 1.1.0
 
@@ -199,9 +199,9 @@
 - Updated dependencies [c901c24]
 - Updated dependencies [a0a7df3]
 - Updated dependencies [cf84e19]
-  - @cactuslab/native-navigation@0.1.0
-  - @cactuslab/native-navigation-react@1.0.0
-  - @cactuslab/native-navigation-react-router@1.0.0
+  - capacitor-native-navigation@0.1.0
+  - capacitor-native-navigation-react@1.0.0
+  - capacitor-native-navigation-react-router@1.0.0
 
 ## 1.0.8
 
@@ -210,9 +210,9 @@
 - Updated dependencies [65565e2]
 - Updated dependencies [740123c]
 - Updated dependencies [da2dc51]
-  - @cactuslab/native-navigation@0.0.8
-  - @cactuslab/native-navigation-react@0.0.9
-  - @cactuslab/native-navigation-react-router@0.0.8
+  - capacitor-native-navigation@0.0.8
+  - capacitor-native-navigation-react@0.0.9
+  - capacitor-native-navigation-react-router@0.0.8
 
 ## 1.0.7
 
@@ -235,9 +235,9 @@
 - Updated dependencies [718edfe]
 - Updated dependencies [99b56d7]
 - Updated dependencies [35fd1ce]
-  - @cactuslab/native-navigation@0.0.7
-  - @cactuslab/native-navigation-react@0.0.8
-  - @cactuslab/native-navigation-react-router@0.0.7
+  - capacitor-native-navigation@0.0.7
+  - capacitor-native-navigation-react@0.0.8
+  - capacitor-native-navigation-react-router@0.0.7
 
 ## 1.0.6
 
@@ -245,9 +245,9 @@
 
 - Updated dependencies [d45530c]
 - Updated dependencies [e1abe83]
-  - @cactuslab/native-navigation@0.0.6
-  - @cactuslab/native-navigation-react@0.0.7
-  - @cactuslab/native-navigation-react-router@0.0.6
+  - capacitor-native-navigation@0.0.6
+  - capacitor-native-navigation-react@0.0.7
+  - capacitor-native-navigation-react-router@0.0.6
 
 ## 1.0.5
 
@@ -255,9 +255,9 @@
 
 - Updated dependencies [51ca1de]
 - Updated dependencies [fb4fec9]
-  - @cactuslab/native-navigation@0.0.5
-  - @cactuslab/native-navigation-react-router@0.0.5
-  - @cactuslab/native-navigation-react@0.0.6
+  - capacitor-native-navigation@0.0.5
+  - capacitor-native-navigation-react-router@0.0.5
+  - capacitor-native-navigation-react@0.0.6
 
 ## 1.0.4
 
@@ -268,9 +268,9 @@
 - Updated dependencies [e66a5a7]
 - Updated dependencies [33377b1]
 - Updated dependencies [258b8cc]
-  - @cactuslab/native-navigation@0.0.4
-  - @cactuslab/native-navigation-react@0.0.5
-  - @cactuslab/native-navigation-react-router@0.0.4
+  - capacitor-native-navigation@0.0.4
+  - capacitor-native-navigation-react@0.0.5
+  - capacitor-native-navigation-react-router@0.0.4
 
 ## 1.0.3
 
@@ -305,22 +305,22 @@
 - Updated dependencies [92bfc86]
 - Updated dependencies [a4b2f23]
 - Updated dependencies [324870c]
-  - @cactuslab/native-navigation@0.0.3
-  - @cactuslab/native-navigation-react@0.0.4
-  - @cactuslab/native-navigation-react-router@0.0.3
+  - capacitor-native-navigation@0.0.3
+  - capacitor-native-navigation-react@0.0.4
+  - capacitor-native-navigation-react-router@0.0.3
 
 ## 1.0.2
 
 ### Patch Changes
 
 - Updated dependencies [c5bd5ba]
-  - @cactuslab/native-navigation-react@0.0.3
+  - capacitor-native-navigation-react@0.0.3
 
 ## 1.0.1
 
 ### Patch Changes
 
 - Updated dependencies [d8075be]
-  - @cactuslab/native-navigation@0.0.2
-  - @cactuslab/native-navigation-react@0.0.2
-  - @cactuslab/native-navigation-react-router@0.0.2
+  - capacitor-native-navigation@0.0.2
+  - capacitor-native-navigation-react@0.0.2
+  - capacitor-native-navigation-react-router@0.0.2

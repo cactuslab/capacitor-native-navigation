@@ -1,4 +1,4 @@
-import type { ComponentId } from '@cactuslab/native-navigation'
+import type { ComponentId } from 'capacitor-native-navigation'
 import { NativeNavigationReactView } from './types'
 
 let copyNodeId = 1

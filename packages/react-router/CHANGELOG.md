@@ -1,4 +1,4 @@
-# @cactuslab/native-navigation-react-router
+# capacitor-native-navigation-react-router
 
 ## 7.1.1
 
@@ -6,7 +6,7 @@
 
 - db35275: Added blocking actions on routing to prevent double navigations
 - Updated dependencies [db35275]
-  - @cactuslab/native-navigation@0.7.5
+  - capacitor-native-navigation@0.7.5
 
 ## 7.1.0
 
@@ -31,8 +31,8 @@
 - Updated dependencies [85ac89c]
 - Updated dependencies [2b2f1f7]
 - Updated dependencies [660661b]
-  - @cactuslab/native-navigation@0.7.0
-  - @cactuslab/native-navigation-react@6.1.0
+  - capacitor-native-navigation@0.7.0
+  - capacitor-native-navigation-react@6.1.0
 
 ## 7.1.0-next.0
 
@@ -56,8 +56,8 @@
 - Updated dependencies [bf30927]
 - Updated dependencies [85ac89c]
 - Updated dependencies [660661b]
-  - @cactuslab/native-navigation@0.7.0-next.0
-  - @cactuslab/native-navigation-react@6.1.0-next.0
+  - capacitor-native-navigation@0.7.0-next.0
+  - capacitor-native-navigation-react@6.1.0-next.0
 
 ## 7.0.0
 
@@ -78,8 +78,8 @@
 - Updated dependencies [d88b6ce]
 - Updated dependencies [c15bb76]
 - Updated dependencies [65b9585]
-  - @cactuslab/native-navigation@0.6.0
-  - @cactuslab/native-navigation-react@6.0.0
+  - capacitor-native-navigation@0.6.0
+  - capacitor-native-navigation-react@6.0.0
 
 ## 5.0.0
 
@@ -92,8 +92,8 @@
 - Updated dependencies [90a909b]
 - Updated dependencies [10fe5f1]
 - Updated dependencies [991eceb]
-  - @cactuslab/native-navigation@0.5.0
-  - @cactuslab/native-navigation-react@5.0.0
+  - capacitor-native-navigation@0.5.0
+  - capacitor-native-navigation-react@5.0.0
 
 ## 4.0.1
 
@@ -110,8 +110,8 @@
 - Updated dependencies [0af59f1]
 - Updated dependencies [209789b]
 - Updated dependencies [a18842c]
-  - @cactuslab/native-navigation@0.4.1
-  - @cactuslab/native-navigation-react@4.1.0
+  - capacitor-native-navigation@0.4.1
+  - capacitor-native-navigation-react@4.1.0
 
 ## 4.0.0
 
@@ -159,8 +159,8 @@
 - Updated dependencies [8cbf96b]
 - Updated dependencies [ed67a32]
 - Updated dependencies [a83dd7e]
-  - @cactuslab/native-navigation@0.4.0
-  - @cactuslab/native-navigation-react@4.0.0
+  - capacitor-native-navigation@0.4.0
+  - capacitor-native-navigation-react@4.0.0
 
 ## 3.0.0
 
@@ -172,8 +172,8 @@
 - Updated dependencies [815da46]
 - Updated dependencies [8eb7b84]
 - Updated dependencies [f6b3925]
-  - @cactuslab/native-navigation@0.3.0
-  - @cactuslab/native-navigation-react@3.0.0
+  - capacitor-native-navigation@0.3.0
+  - capacitor-native-navigation-react@3.0.0
 
 ## 2.0.0
 
@@ -183,8 +183,8 @@
 - Updated dependencies [e6ef6ea]
 - Updated dependencies [1c09146]
 - Updated dependencies [c7971af]
-  - @cactuslab/native-navigation@0.2.0
-  - @cactuslab/native-navigation-react@2.0.0
+  - capacitor-native-navigation@0.2.0
+  - capacitor-native-navigation-react@2.0.0
 
 ## 1.0.0
 
@@ -197,8 +197,8 @@
 - Updated dependencies [c901c24]
 - Updated dependencies [a0a7df3]
 - Updated dependencies [cf84e19]
-  - @cactuslab/native-navigation@0.1.0
-  - @cactuslab/native-navigation-react@1.0.0
+  - capacitor-native-navigation@0.1.0
+  - capacitor-native-navigation-react@1.0.0
 
 ## 0.0.8
 
@@ -206,7 +206,7 @@
 
 - Updated dependencies [65565e2]
 - Updated dependencies [740123c]
-  - @cactuslab/native-navigation@0.0.8
+  - capacitor-native-navigation@0.0.8
 
 ## 0.0.7
 
@@ -226,7 +226,7 @@
 - Updated dependencies [718edfe]
 - Updated dependencies [99b56d7]
 - Updated dependencies [35fd1ce]
-  - @cactuslab/native-navigation@0.0.7
+  - capacitor-native-navigation@0.0.7
 
 ## 0.0.6
 
@@ -234,7 +234,7 @@
 
 - Updated dependencies [d45530c]
 - Updated dependencies [e1abe83]
-  - @cactuslab/native-navigation@0.0.6
+  - capacitor-native-navigation@0.0.6
 
 ## 0.0.5
 
@@ -243,7 +243,7 @@
 - fb4fec9: added target and dismiss to navigation state
 - Updated dependencies [51ca1de]
 - Updated dependencies [fb4fec9]
-  - @cactuslab/native-navigation@0.0.5
+  - capacitor-native-navigation@0.0.5
 
 ## 0.0.4
 
@@ -253,7 +253,7 @@
 - Updated dependencies [e66a5a7]
 - Updated dependencies [33377b1]
 - Updated dependencies [258b8cc]
-  - @cactuslab/native-navigation@0.0.4
+  - capacitor-native-navigation@0.0.4
 
 ## 0.0.3
 
@@ -279,11 +279,11 @@
 - Updated dependencies [6981173]
 - Updated dependencies [92bfc86]
 - Updated dependencies [324870c]
-  - @cactuslab/native-navigation@0.0.3
+  - capacitor-native-navigation@0.0.3
 
 ## 0.0.2
 
 ### Patch Changes
 
 - Updated dependencies [d8075be]
-  - @cactuslab/native-navigation@0.0.2
+  - capacitor-native-navigation@0.0.2

@@ -1,6 +1,6 @@
-import { NativeNavigation } from '@cactuslab/native-navigation'
-import { initReact } from '@cactuslab/native-navigation-react'
-import { NativeNavigationNavigatorOptions } from '@cactuslab/native-navigation-react-router'
+import { NativeNavigation } from 'capacitor-native-navigation'
+import { initReact } from 'capacitor-native-navigation-react'
+import { NativeNavigationNavigatorOptions } from 'capacitor-native-navigation-react-router'
 
 export const nativeNavigationReact = initReact({
 	plugin: NativeNavigation,

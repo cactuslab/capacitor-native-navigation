@@ -1,7 +1,7 @@
 import { Route, Routes, useNavigate } from 'react-router-dom'
 import ResetButton from '../ResetButton'
 import { useState } from 'react'
-import { NativeNavigationModal } from '@cactuslab/native-navigation-react'
+import { NativeNavigationModal } from 'capacitor-native-navigation-react'
 
 export default function Modals() {
 	return (

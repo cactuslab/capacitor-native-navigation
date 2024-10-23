@@ -1,4 +1,4 @@
-import { useNativeNavigationViewContext } from '@cactuslab/native-navigation-react'
+import { useNativeNavigationViewContext } from 'capacitor-native-navigation-react'
 import React from 'react'
 
 export function ModalContent() {

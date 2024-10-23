@@ -1,5 +1,5 @@
 {
-  "name": "@cactuslab/native-navigation-history",
+  "name": "capacitor-native-navigation-history",
   "version": "6.1.0",
   "description": "Navigation support using History for Native navigation for Capacitor apps",
   "main": "dist/plugin.cjs.js",
@@ -33,10 +33,10 @@
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
-    "@cactuslab/native-navigation": "workspace:*"
+    "capacitor-native-navigation": "workspace:*"
   },
   "devDependencies": {
-    "@cactuslab/native-navigation": "workspace:*",
+    "capacitor-native-navigation": "workspace:*",
     "@capacitor/core": "^6.1.0",
     "@types/history": "^4.7.11",
     "rimraf": "^5.0.7",

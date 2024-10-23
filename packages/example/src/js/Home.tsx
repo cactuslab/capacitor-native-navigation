@@ -1,10 +1,10 @@
-import { NativeNavigation, StackSpec } from '@cactuslab/native-navigation'
-import { NativeNavigationModal, NativeNavigationProvider } from '@cactuslab/native-navigation-react'
+import { NativeNavigation, StackSpec } from 'capacitor-native-navigation'
+import { NativeNavigationModal, NativeNavigationProvider } from 'capacitor-native-navigation-react'
 
 import diamond from '../assets/imgs/diamond@2x.png'
 import flags from '../assets/imgs/flag.2.crossed@2x.png'
 import star from '../assets/imgs/star@2x.png'
-import { NativeNavigationRouter } from '@cactuslab/native-navigation-react-router'
+import { NativeNavigationRouter } from 'capacitor-native-navigation-react-router'
 import { useState } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import Stack1 from './Stack1'

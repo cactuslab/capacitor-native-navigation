@@ -1,4 +1,4 @@
-# @cactuslab/native-navigation
+# capacitor-native-navigation
 
 ## 0.7.6
 

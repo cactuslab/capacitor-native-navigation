@@ -1,5 +1,5 @@
 {
-  "name": "@cactuslab/native-navigation",
+  "name": "capacitor-native-navigation",
   "version": "0.7.6",
   "description": "Native navigation for Capacitor apps",
   "type": "module",

@@ -29,23 +29,14 @@ importers:
 
   packages/example:
     dependencies:
-      '@cactuslab/native-navigation':
-        specifier: workspace:*
-        version: link:../plugin
-      '@cactuslab/native-navigation-react':
-        specifier: workspace:*
-        version: link:../react
-      '@cactuslab/native-navigation-react-router':
-        specifier: workspace:*
-        version: link:../react-router
       '@capacitor/android':
         specifier: ^6.1.2
         version: 6.1.2(@capacitor/core@6.1.2)
       '@capacitor/camera':
-        specifier: latest
+        specifier: ^6.0.2
         version: 6.0.2(@capacitor/core@6.1.2)
       '@capacitor/core':
-        specifier: latest
+        specifier: ^6.1.2
         version: 6.1.2
       '@capacitor/ios':
         specifier: ^6.1.2
@@ -53,6 +44,15 @@ importers:
       '@capacitor/splash-screen':
         specifier: latest
         version: 6.0.2(@capacitor/core@6.1.2)
+      capacitor-native-navigation:
+        specifier: workspace:*
+        version: link:../plugin
+      capacitor-native-navigation-react:
+        specifier: workspace:*
+        version: link:../react
+      capacitor-native-navigation-react-router:
+        specifier: workspace:*
+        version: link:../react-router
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -81,7 +81,7 @@ importers:
 
   packages/history:
     dependencies:
-      '@cactuslab/native-navigation':
+      capacitor-native-navigation:
         specifier: workspace:*
         version: link:../plugin
       react:
@@ -148,7 +148,7 @@ importers:
 
   packages/react:
     dependencies:
-      '@cactuslab/native-navigation':
+      capacitor-native-navigation:
         specifier: workspace:*
         version: link:../plugin
       fast-deep-equal:
@@ -182,10 +182,10 @@ importers:
 
   packages/react-router:
     dependencies:
-      '@cactuslab/native-navigation':
+      capacitor-native-navigation:
         specifier: workspace:*
         version: link:../plugin
-      '@cactuslab/native-navigation-react':
+      capacitor-native-navigation-react:
         specifier: workspace:*
         version: link:../react
       react:

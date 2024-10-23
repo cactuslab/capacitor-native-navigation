@@ -1,5 +1,5 @@
 {
-  "name": "@cactuslab/native-navigation-react-router",
+  "name": "capacitor-native-navigation-react-router",
   "version": "7.1.1",
   "description": "React Router support for Native navigation for Capacitor apps",
   "type": "module",
@@ -34,11 +34,11 @@
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
-    "@cactuslab/native-navigation": "workspace:*",
-    "@cactuslab/native-navigation-react": "workspace:*"
+    "capacitor-native-navigation": "workspace:*",
+    "capacitor-native-navigation-react": "workspace:*"
   },
   "devDependencies": {
-    "@cactuslab/native-navigation": "workspace:*",
+    "capacitor-native-navigation": "workspace:*",
     "@capacitor/core": "^6.1.0",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",

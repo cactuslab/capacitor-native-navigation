@@ -1,4 +1,4 @@
-import type { ComponentAlias, ComponentId, PresentOptions, StateObject } from '@cactuslab/native-navigation'
+import type { ComponentAlias, ComponentId, PresentOptions, StateObject } from 'capacitor-native-navigation'
 
 export interface NativeNavigationNavigatorOptions {
 	modals?: ModalConfig[]

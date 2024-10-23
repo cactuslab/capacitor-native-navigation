@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { NativeNavigationReact, NativeNavigationReactView } from './types'
-import { ComponentAlias, ComponentId } from '@cactuslab/native-navigation'
+import { ComponentAlias, ComponentId } from 'capacitor-native-navigation'
 
 const DEFAULT_CONTEXT: NativeNavigationReact = {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any

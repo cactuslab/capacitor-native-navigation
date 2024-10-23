@@ -1,4 +1,4 @@
-import { NativeNavigationModal } from '@cactuslab/native-navigation-react'
+import { NativeNavigationModal } from 'capacitor-native-navigation-react'
 import ResetButton from '../ResetButton'
 import React, { useState } from 'react'
 

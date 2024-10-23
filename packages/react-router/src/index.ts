@@ -1,5 +1,5 @@
-import type { MessageEventData } from '@cactuslab/native-navigation'
-import { useNativeNavigation, useNativeNavigationViewContext } from '@cactuslab/native-navigation-react'
+import type { MessageEventData } from 'capacitor-native-navigation'
+import { useNativeNavigation, useNativeNavigationViewContext } from 'capacitor-native-navigation-react'
 import { useCallback, useEffect, useMemo } from 'react'
 import type { NavigateOptions, Navigator, To } from 'react-router-dom'
 import { NativeNavigationNavigatorOptions } from './types'
@@ -16,7 +16,7 @@ export function alertErrorHandler(source: string, error: unknown): void {
 	alert(`Navigation failed (${source}): ${error instanceof Error ? error.message : error}`)
 }
 
-const NAVIGATOR_NAVIGATE_MESSAGE_TYPE = '@cactuslab/native-navigation-react-router:navigate'
+const NAVIGATOR_NAVIGATE_MESSAGE_TYPE = 'capacitor-native-navigation-react-router:navigate'
 
 /**
  * A Navigator implementation to provide to react-router that handles navigation requests

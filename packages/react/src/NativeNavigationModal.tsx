@@ -1,5 +1,5 @@
 import React, { useRef } from 'react'
-import { AnyComponentSpec, ComponentAlias, NativeNavigation, PresentationStyle } from '@cactuslab/native-navigation'
+import { AnyComponentSpec, ComponentAlias, NativeNavigation, PresentationStyle } from 'capacitor-native-navigation'
 import { useNativeNavigation, useNativeNavigationView } from './internal'
 import { useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'

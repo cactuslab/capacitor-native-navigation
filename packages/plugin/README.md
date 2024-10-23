@@ -9,7 +9,7 @@ Please see the root of this repository for a discussion of how to use this plugi
 ## Install
 
 ```bash
-npm install @cactuslab/native-navigation
+npm install capacitor-native-navigation
 npx cap sync
 ```
 

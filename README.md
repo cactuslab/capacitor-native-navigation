@@ -95,8 +95,8 @@ Capacitor Native Navigation integrates with [React](https://react.dev/) to rende
 The React integration is activated by calling `initReact` and passing a reference to the `NativeNavigation` plugin, and the root component that will render each view.
 
 ```typescript
-import { NativeNavigation } from '@cactuslab/native-navigation'
-import { initReact, NativeNavigationReactRootProps } from '@cactuslab/native-navigation-react'
+import { NativeNavigation } from 'capacitor-native-navigation'
+import { initReact, NativeNavigationReactRootProps } from 'capacitor-native-navigation-react'
 
 function Root(props: NativeNavigationReactRootProps): JSX.Element {
   const { pathname, search, hash, state } = props
@@ -110,7 +110,7 @@ initReact({
 })
 ```
 
-[@cactuslab/native-navigation-react](./packages/react)
+[capacitor-native-navigation-react](./packages/react)
 
 ### Differences to React DOM
 
@@ -133,9 +133,9 @@ The root view component receives all of the location information from Capacitor 
 
 ```typescript
 import { Route, Router, Routes } from 'react-router-dom'
-import { NativeNavigation } from '@cactuslab/native-navigation'
-import { NativeNavigationReactRootProps } from '@cactuslab/native-navigation-react'
-import { useNativeNavigationNavigator } from '@cactuslab/native-navigation-react-router'
+import { NativeNavigation } from 'capacitor-native-navigation'
+import { NativeNavigationReactRootProps } from 'capacitor-native-navigation-react'
+import { useNativeNavigationNavigator } from 'capacitor-native-navigation-react-router'
 
 export default function Root(props: NativeNavigationReactRootProps): JSX.Element {
   const { pathname, search, hash, state } = props
@@ -155,7 +155,7 @@ export default function Root(props: NativeNavigationReactRootProps): JSX.Element
 }
 ```
 
-[@cactuslab/native-navigation-react-router](./packages/react-router)
+[capacitor-native-navigation-react-router](./packages/react-router)
 
 ### Modals
 

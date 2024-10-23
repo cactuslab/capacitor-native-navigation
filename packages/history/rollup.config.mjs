@@ -7,7 +7,7 @@ export default [
         format: 'iife',
         name: 'CapacitorNativeNavigationReact',
         globals: {
-          '@cactuslab/native-navigation': 'CapacitorNativeNavigation',
+          'capacitor-native-navigation': 'CapacitorNativeNavigation',
           '@capacitor/core': 'capacitorExports',
           'react': 'React',
           'react-dom/client': 'ReactDOM',
@@ -23,7 +23,7 @@ export default [
       },
     ],
     external: [
-      '@cactuslab/native-navigation',
+      'capacitor-native-navigation',
       '@capacitor/core',
       'react',
       'react-dom/client',

@@ -1,4 +1,4 @@
-import type { ClickEventData, ComponentAlias, ComponentId, DismissOptions, DismissResult, MessageEventData, TabUpdate, ViewUpdate } from '@cactuslab/native-navigation'
+import type { ClickEventData, ComponentAlias, ComponentId, DismissOptions, DismissResult, MessageEventData, TabUpdate, ViewUpdate } from 'capacitor-native-navigation'
 import type { PluginListenerHandle } from '@capacitor/core'
 import React, { useContext, useLayoutEffect, useMemo, useRef } from 'react'
 import equal from 'fast-deep-equal'

@@ -1,5 +1,5 @@
-import { NativeNavigation } from '@cactuslab/native-navigation'
-import type { GetResult, ViewSpec, StateObject } from '@cactuslab/native-navigation'
+import { NativeNavigation } from 'capacitor-native-navigation'
+import type { GetResult, ViewSpec, StateObject } from 'capacitor-native-navigation'
 import type { Action, History, Location, LocationDescriptor, LocationDescriptorObject, UnregisterCallback } from 'history'
 
 import { defaultDecider } from './NavigationDecider'

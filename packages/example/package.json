@@ -17,9 +17,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@cactuslab/native-navigation": "workspace:*",
-    "@cactuslab/native-navigation-react": "workspace:*",
-    "@cactuslab/native-navigation-react-router": "workspace:*",
+    "capacitor-native-navigation": "workspace:*",
+    "capacitor-native-navigation-react": "workspace:*",
+    "capacitor-native-navigation-react-router": "workspace:*",
     "@capacitor/android": "^6.1.2",
     "@capacitor/camera": "^6.0.2",
     "@capacitor/core": "^6.1.2",

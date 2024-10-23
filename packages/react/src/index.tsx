@@ -1,5 +1,5 @@
-import { initViewHandler } from '@cactuslab/native-navigation'
-import type { ComponentId, CreateViewEventData, NativeNavigationPluginInternal, NativeNavigationPlugin, UpdateViewEventData, MessageEventData, ComponentAlias } from '@cactuslab/native-navigation'
+import { initViewHandler } from 'capacitor-native-navigation'
+import type { ComponentId, CreateViewEventData, NativeNavigationPluginInternal, NativeNavigationPlugin, UpdateViewEventData, MessageEventData, ComponentAlias } from 'capacitor-native-navigation'
 import type { Plugin } from '@capacitor/core'
 
 import { initSync, prepareWindowForSync } from './sync'

@@ -1,6 +1,6 @@
 //
 //  NativeNavigationRootViewControllerManager.swift
-//  CactuslabNativeNavigation
+//  CapacitorNativeNavigation
 //
 //  Created by Karl von Randow on 11/05/23.
 //

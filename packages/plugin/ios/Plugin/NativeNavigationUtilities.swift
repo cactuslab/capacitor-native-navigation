@@ -1,6 +1,6 @@
 //
 //  NativeNavigationUtilities.swift
-//  CactuslabNativeNavigation
+//  CapacitorNativeNavigation
 //
 //  Created by Thomas Carey on 24/04/23.
 //

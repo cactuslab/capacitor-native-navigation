@@ -15,6 +15,46 @@ To install Capacitor Native Navigation in your app we add the required packages 
 pnpm add capacitor-native-navigation capacitor-native-navigation-react capacitor-native-navigation-react-router
 ```
 
+### Tips & Tricks
+
+To use your local development server from your app, we need to setup some package scripts and tweak the Capacitor configuration like we have done in our [example](./packages/example) app:
+
+In `package.json` add the following scripts:
+
+```json
+{
+  "scripts": {
+    "cap:local": "CAP_SERVER=http://$(ipconfig getifaddr en0 || ipconfig getifaddr en1):5173/ cap sync",
+    "start:host": "vite --host $(ipconfig getifaddr en0 || ipconfig getifaddr en1)",
+  }
+}
+```
+
+In your `capacitor.config.ts`, add to your `server` configuration:
+
+```typescript
+import process from 'process'
+
+const config: CapacitorConfig = {
+  ...,
+	server: {
+		/* Set the CAP_SERVER environment variable when running cap copy or cap sync; see the cap:local npm script */
+		url: process.env.CAP_SERVER || undefined,
+	},
+}
+```
+
+If you see an error on the `process` module import and your project is a Vite project, you may need to add `capacitor.config.ts` to the list of files to include in `tsconfig.node.json`.
+
+To use, now run:
+
+```shell
+pnpm cap:local
+pnpm start:host
+```
+
+Then build and run the native app. Changes you make should automatically reload in your app.
+
 ## Native navigation components
 
 Native applications are made up of "views". Views can be organised in "stacks" or "tabs". Views can also be presented modally, over another view. On iOS the native component representing a view is the `UIViewController`.

@@ -7,6 +7,14 @@ The traditional method of using React DOM on native is to either mimic native na
 without transitions and without a native backstack. Capacitor Native Navigation lets you use all of the native navigation containers from
 React DOM, often transparently, so you have the best of native and web.
 
+## Installation
+
+To install Capacitor Native Navigation in your app we add the required packages to your app... these are the packages usually required for a React app using ReactRouter:
+
+```shell
+pnpm add capacitor-native-navigation capacitor-native-navigation-react capacitor-native-navigation-react-router
+```
+
 ## Native navigation components
 
 Native applications are made up of "views". Views can be organised in "stacks" or "tabs". Views can also be presented modally, over another view. On iOS the native component representing a view is the `UIViewController`.
@@ -206,3 +214,58 @@ const navigator = useNativeNavigationNavigator({
 ## Work in progress
 
 * Android tabs support
+
+## Developing
+
+To build all of the packages:
+
+```shell
+nvm use
+pnpm install
+pnpm build
+```
+
+This repository uses [`changesets`](https://github.com/changesets/changesets). A changeset file should be included with most commits:
+
+```shell
+pnpm changeset
+```
+
+Include the file generated in `./changeset` in your commit.
+
+### Example app
+
+Build and run the [Example app](./packages/example) to try it out.
+
+### Linking to your app in development
+
+Create global pnpm links for the current node version for the packages in this repository:
+
+```shell
+pnpm run link
+```
+
+Then in your app (adjust the package list to match the packages you have installed):
+
+```shell
+pnpm link --global capacitor-native-navigation capacitor-native-navigation-react capacitor-native-navigation-react-router
+```
+
+Remember this will break every time you run `pnpm install`, so to make it semi-permanent change the `package.json` to use
+`link:./path/to/capacitor-native-navigation/packages/plugin` etc.
+
+## Publishing
+
+To publish a new version to npm we process the changesets files and then build, test, git tag and publish to npmjs.com.
+
+```shell
+nvm use
+pnpm install
+pnpm release:version
+```
+
+Commit the changed files, and then:
+
+```shell
+pnpm release
+```

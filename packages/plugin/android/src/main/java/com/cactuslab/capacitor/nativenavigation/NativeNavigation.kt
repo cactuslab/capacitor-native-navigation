@@ -163,7 +163,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
             /// Check if this id is in the view heirarchy
             navContext.fragment.binding?.navigationHost?.findNavController()?.let { navController ->
-                navController.backQueue.forEach { entry ->
+                navController.currentBackStack.value.forEach { entry ->
                     if (entry.arguments?.getString(nav_arguments.component_id) == id) {
                         return navContext.contextId
                     }
@@ -611,6 +611,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         pushActions.remove(id)?.let { function -> function() }
     }
 
+    @SuppressLint("RestrictedApi")
     fun push(options: PushOptions, call: PluginCall) {
         Log.d(TAG, "push: Started for id ${options.component.id}")
 
@@ -724,7 +725,8 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                                 lastRemovedId = navContext.virtualStack.removeLast()
                             }
                             val navController = navContext.fragment.binding?.navigationHost?.findNavController()
-                            backStackEntry = navController!!.backQueue[navController.backQueue.size - options.popCount]
+                            val backQueue = navController!!.currentBackStack.value
+                            backStackEntry = backQueue[backQueue.size - options.popCount]
                         }
 
                         val currentId = if (target.isNullOrBlank() || target == navContext.contextId) { //

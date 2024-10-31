@@ -722,7 +722,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                         var backStackEntry: NavBackStackEntry? = null
                         if (options.popCount > 0) {
                             for (i in 1..options.popCount) {
-                                lastRemovedId = navContext.virtualStack.removeLast()
+                                lastRemovedId = navContext.virtualStack.removeAt(navContext.virtualStack.lastIndex)
                             }
                             val navController = navContext.fragment.binding?.navigationHost?.findNavController()
                             val backQueue = navController!!.currentBackStack.value

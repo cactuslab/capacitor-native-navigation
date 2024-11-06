@@ -251,6 +251,60 @@ const navigator = useNativeNavigationNavigator({
   })
 ```
 
+## Safe Area and Toolbar Margins for Mobile Web Content
+
+When developing for mobile, it’s crucial to ensure that your content respects the safe area insets, which prevent content from overlapping with native elements like the navigation bar, home indicator, and toolbars. This plugin provides CSS variables that help manage these safe areas effectively.
+
+### Injecting Safe Area Insets
+
+The plugin injects CSS variables based on the safe area insets and toolbar height, allowing you to control margins and padding to avoid overlap with native UI components. These values adapt dynamically based on the device’s safe areas.
+
+#### Injected CSS Variables
+
+Here’s a breakdown of the CSS variables injected by the plugin:
+
+At a minimum, your app should align its content with the `native-navigation-inset` values. Doing so ensures that your content is positioned correctly below the toolbar (if it’s visible) or beneath the status bar (if the toolbar is hidden).
+
+* **Navigation Insets**: A simplified safe area inset that accomodates the toolbar if present
+  * `--native-navigation-inset-top`
+  * `--native-navigation-inset-bottom`
+  * `--native-navigation-inset-left`
+  * `--native-navigation-inset-right`
+
+* **Safe Content Insets**: The insets where it is both safe for gesutres and safe for drawing (ignoring toolbar appearance)
+  * `--native-navigation-safe-content-inset-top`
+  * `--native-navigation-safe-content-inset-bottom`
+  * `--native-navigation-safe-content-inset-left`
+  * `--native-navigation-safe-content-inset-right`
+
+* **Safe Drawing Insets**: The insets where it is both safe for drawing (ignoring toolbar appearance)
+  * `--native-navigation-safe-drawing-inset-top`
+  * `--native-navigation-safe-drawing-inset-bottom`
+  * `--native-navigation-safe-drawing-inset-left`
+  * `--native-navigation-safe-drawing-inset-right`
+
+* **Safe Gestures Insets**: The insets where it is both safe for gestures (ignoring toolbar appearance)
+  * `--native-navigation-safe-gestures-inset-top`
+  * `--native-navigation-safe-gestures-inset-bottom`
+  * `--native-navigation-safe-gestures-inset-left`
+  * `--native-navigation-safe-gestures-inset-right`
+
+* **Toolbar Height**
+  * `--native-navigation-toolbar-height`: The height of the toolbar if present, useful for additional margin adjustments.
+
+### Using Insets in CSS
+
+To apply these values, you can use CSS `calc()` to set padding or margins based on the device’s safe area. Here’s an example for setting padding on the `body` element:
+
+```css
+body {
+  padding-top: calc(var(--native-navigation-inset-top, env(safe-area-inset-top, 0)));
+  padding-bottom: calc(var(--native-navigation-inset-bottom, env(safe-area-inset-bottom, 0)));
+  padding-left: calc(var(--native-navigation-inset-left, env(safe-area-inset-left, 0)));
+  padding-right: calc(var(--native-navigation-inset-right, env(safe-area-inset-right, 0)));
+}
+```
+
 ## Work in progress
 
 * Android tabs support

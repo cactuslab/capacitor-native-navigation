@@ -164,11 +164,7 @@ initReact({
 
 Capacitor Native Navigation tries as much as possible to be a seamless adaptation of React DOM to native, however there are some differences that you should be aware of.
 
-Each view is mounted as a separate React DOM root. If there are ten _views_ in a _stack_ there will be ten React DOM roots.
-
-The components in each view continue to respond to state changes (such as Redux, or timers), even if they're not currently visible. You must be careful not to trigger unintentional side-effects such as navigation from a component that is not visible.
-
-Because each view is a separate root, you cannot share context or state between two views. Instead use global context / state such as [Redux](https://redux.js.org), or pass state between views using navigation state. This has the additional benefit that state will be maintained when reloading the page in the browser.
+Each view is mounted as a separate React portal. Views in a _stack_ remain mounted, even when not the frontmost in the stack, so they continue to respond to state changes (such as Redux, or timers), even if they're not currently visible. Be careful not to trigger unintentional side-effects such as navigation from a component that is not visible.
 
 ## React Router
 

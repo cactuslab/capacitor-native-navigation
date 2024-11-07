@@ -4,11 +4,21 @@ import { NativeNavigationViewProps, useNativeNavigation } from 'capacitor-native
 import { NativeNavigationViewContextProvider } from 'capacitor-native-navigation-react/context'
 import { NativeNavigationNavigatorOptions } from './index'
 import { useNativeNavigationNavigator } from './hooks'
-import { Router } from 'react-router-dom'
+import { resolvePath, Router, RouterProvider, RouterProviderProps, To } from 'react-router-dom'
 import { parsePath } from './utils'
+import { isNativeNavigationAvailable } from 'capacitor-native-navigation'
+
+type RemixRouter = RouterProviderProps['router']
+type RouterNavigateOptions = Exclude<Parameters<RemixRouter['navigate']>[1], undefined>
 
 interface NativeNavigationRouterProps {
 	navigation?: NativeNavigationNavigatorOptions
+
+	/**
+	 * Provide a react-router data router, if you are using data routers. Otherwise add `<Route>` components
+	 * as children.
+	 */
+	router?: RemixRouter
 }
 
 interface NativeNavigationRouterInternalState {
@@ -17,12 +27,12 @@ interface NativeNavigationRouterInternalState {
 }
 
 /**
- * Render the native views with paths using the routes provided as children to this component.
+ * Render the native views with paths using either the router provided as a prop, or `<Route>`s provided as children to this component.
  * @param props 
  * @returns 
  */
 export default function NativeNavigationRouter(props: React.PropsWithChildren<NativeNavigationRouterProps>) {
-	const { children, navigation } = props
+	const { children, navigation, router } = props
 	const nativeNavigationReact = useNativeNavigation()
 	const [, setCounter] = useState(0)
 
@@ -55,6 +65,17 @@ export default function NativeNavigationRouter(props: React.PropsWithChildren<Na
 		})
 	}, [nativeNavigationReact])
 
+	/* If CNN isn't available, render the default router */
+	if (!isNativeNavigationAvailable()) {
+		if (router) {
+			return (
+				<RouterProvider router={router} />
+			)
+		} else {
+			return children
+		}
+	}
+
 	const views = nativeNavigationReact.views()
 
 	return (
@@ -76,6 +97,7 @@ export default function NativeNavigationRouter(props: React.PropsWithChildren<Na
 						}} 
 						routerProps={{
 							navigation,
+							router,
 						}}
 						children={children}
 					/>
@@ -106,14 +128,49 @@ function NativeNavigationRootWrapper(props: React.PropsWithChildren<NativeNaviga
 	)
 }
 
-
 function NativeNavigationRoot(props: React.PropsWithChildren<NativeNavigationReactRouterRootProps>) {
 	const { viewProps: componentProps, routerProps, children } = props
 
 	const navigator = useNativeNavigationNavigator(routerProps.navigation || {})
-	return (
-		<Router location={{ state: componentProps.state, ...parsePath(componentProps.path) }} navigator={navigator}>
-			{children}
-		</Router>
-	)
+
+	const router = routerProps.router
+	if (router) {
+		/* The data router approach */
+		const nnRouter: RemixRouter = {
+			...router,
+			createHref(location) {
+				return navigator.createHref(location)
+			},
+			state: {
+				...router.state,
+				location: {
+					state: componentProps.state,
+					...parsePath(componentProps.path),
+					key: componentProps.id,
+				}
+			},
+			navigate: async function(to: To | number | null, opts?: RouterNavigateOptions) {
+				if (typeof to === 'number') {
+					navigator.go(to)
+				} else if (to) {
+					to = resolvePath(to, componentProps.path)
+					if (!opts?.replace) {
+						navigator.push(to, opts?.state, opts)
+					} else {
+						navigator.replace(to, opts?.state, opts)
+					}
+				}
+			},
+		}
+		return (
+			<RouterProvider router={nnRouter} />
+		)
+	} else {
+		/* The non-data router approach */
+		return (
+			<Router location={{ state: componentProps.state, ...parsePath(componentProps.path) }} navigator={navigator}>
+				{children}
+			</Router>
+		)
+	}
 }

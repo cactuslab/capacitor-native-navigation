@@ -23,6 +23,8 @@ export function findModalConfig(path: string, options: NativeNavigationNavigator
 export function parsePath(path: string): Path {
 	const result: Path = {
 		pathname: path,
+		search: '',
+		hash: '',
 	}
 	const s = path.indexOf('?')
 	if (s !== -1) {

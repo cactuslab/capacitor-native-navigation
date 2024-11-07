@@ -58,6 +58,6 @@ export interface ModalConfig {
 
 export interface Path {
 	pathname: string
-	search?: string
-	hash?: string
+	search: string
+	hash: string
 }

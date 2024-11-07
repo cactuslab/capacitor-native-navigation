@@ -26,7 +26,7 @@ class NativeNavigationRootViewControllerManager {
     
     private let baseViewController: UIViewController
     
-    private (set) var roots: [any ComponentModel] = []
+    private(set) var roots: [any ComponentModel] = []
     
     init(baseViewController: UIViewController) {
         self.baseViewController = baseViewController

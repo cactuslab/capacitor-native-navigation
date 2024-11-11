@@ -6,7 +6,7 @@ import { initSync, prepareWindowForSync } from './sync'
 import { NativeNavigationReact, NativeNavigationReactView, ReactViewListenerEvent, ReactViewListenerFunc, toNativeNavigationViewProps } from './types'
 
 export { useNativeNavigationViewContext, NativeNavigationViewContext } from './context'
-export { NativeNavigationViewProps } from './types'
+export { NativeNavigationViewProps, NativeNavigationReact } from './types'
 export { default as NativeNavigationModal } from './NativeNavigationModal'
 export { useNativeNavigation, InternalContextProvider as NativeNavigationProvider } from './internal'
 

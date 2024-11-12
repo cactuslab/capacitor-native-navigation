@@ -1,5 +1,12 @@
 # capacitor-native-navigation
 
+## 0.9.1
+
+### Patch Changes
+
+- b667720: Update peer dependencies to be more lenient
+- 689da2c: Fix plugin Podspec name
+
 ## 0.9.0
 
 ### Minor Changes

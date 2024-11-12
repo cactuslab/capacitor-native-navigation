@@ -1,5 +1,19 @@
 # capacitor-app
 
+## 2.4.2
+
+### Patch Changes
+
+- 689da2c: Fix plugin Podspec name
+- Updated dependencies [b667720]
+- Updated dependencies [689da2c]
+- Updated dependencies [8754303]
+- Updated dependencies [fd8354d]
+- Updated dependencies [7dffc65]
+  - capacitor-native-navigation-react-router@7.4.0
+  - capacitor-native-navigation@0.9.1
+  - capacitor-native-navigation-react@6.3.1
+
 ## 2.4.1
 
 ### Patch Changes

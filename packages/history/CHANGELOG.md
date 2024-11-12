@@ -1,5 +1,14 @@
 # capacitor-native-navigation-history
 
+## 6.3.1
+
+### Patch Changes
+
+- b667720: Update peer dependencies to be more lenient
+- Updated dependencies [b667720]
+- Updated dependencies [689da2c]
+  - capacitor-native-navigation@0.9.1
+
 ## 6.3.0
 
 ### Minor Changes

@@ -1,5 +1,21 @@
 # capacitor-native-navigation-react-router
 
+## 7.4.0
+
+### Minor Changes
+
+- 7dffc65: Add react-router data router support
+
+### Patch Changes
+
+- b667720: Update peer dependencies to be more lenient
+- 8754303: Bump react-router-dom version
+- Updated dependencies [b667720]
+- Updated dependencies [689da2c]
+- Updated dependencies [fd8354d]
+  - capacitor-native-navigation@0.9.1
+  - capacitor-native-navigation-react@6.3.1
+
 ## 7.3.0
 
 ### Minor Changes

@@ -192,11 +192,13 @@ private fun matchDestinations(destination: NavDestination?, destinationIds: Set<
     return false
 }
 
-fun Fragment.changeStatusBarColor(@ColorInt color: Int) {
-    requireActivity().changeStatusBarColor(color)
+private const val defaultAnimationDuration: Long = 150
+
+fun Fragment.changeStatusBarColor(@ColorInt color: Int, duration: Long = defaultAnimationDuration) {
+    requireActivity().changeStatusBarColor(color, duration)
 }
 
-fun Activity.changeStatusBarColor(@ColorInt color: Int, duration: Long = 300) {
+fun Activity.changeStatusBarColor(@ColorInt color: Int, duration: Long = defaultAnimationDuration) {
     if (duration == 0L) {
         window.statusBarColor = color
         WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = !color.isColorDark()

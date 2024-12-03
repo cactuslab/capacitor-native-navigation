@@ -12,3 +12,14 @@ dd {
 	margin: 0.5em 0;
 	text-align: center;
 }
+
+/* body with data-theme="red" should be red */
+body[data-theme="red"] {
+	background-color: rgb(255, 224, 224);
+}
+body[data-theme="blue"] {
+	background-color: rgb(224, 224, 255);
+}
+body[data-theme="green"] {
+	background-color: rgb(224, 255, 224);
+}

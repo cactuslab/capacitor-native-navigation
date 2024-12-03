@@ -21,6 +21,7 @@ import { ModalContent } from './ModalContent'
 import { nativeNavigationNavigatorOptions, nativeNavigationReact } from './init'
 import ModalsRace from './race/ModalsRace'
 import LinkModal, { LinkModalPage2 } from './LinkModal'
+import PushTheming from './race/PushTheming'
 
 export default function Home(): React.ReactElement {
 	const [showModal, setShowModal] = useState(false)
@@ -64,6 +65,7 @@ export default function Home(): React.ReactElement {
 					<dd><button onClick={() => setupStack({ path: '/race/stack-immediate-replace', title: 'Stack Immediate Replace' })}>Immediate replace</button></dd>
 					<dd><button onClick={() => setupStack({ path: '/race/push-replace/one', title: 'Push Replace' })}>Push replace</button></dd>
 					<dd><button onClick={() => setupStack({ path: '/race/modals', title: 'Modal Race' })}>Modal Race</button></dd>
+					<dd><button onClick={() => setupStack({ path: '/race/push-theming/red', title: 'Theme Race', options: { bar: { background: { color: '#23ABED60' } } } })}>Theme race</button></dd>
 					<h2>Examples</h2>
 					<dd><button onClick={() => setupStack({ path: '/examples/links', title: 'Links' })}>Links</button></dd>
 					<dd><button onClick={() => setupStack({ path: '/examples/menu', title: 'Menu' })}>Menu</button></dd>
@@ -85,6 +87,7 @@ export default function Home(): React.ReactElement {
 						<Route path="tab1" element={<Tab1 />} />
 						<Route path="race">
 							{PushReplace()}
+							{PushTheming()}
 							<Route path="stack-immediate-push" element={<StackImmediatePush />} />
 							<Route path="stack-immediate-replace2" element={<StackImmediateReplace2 />} />
 							<Route path="stack-immediate-replace" element={<StackImmediateReplace />} />

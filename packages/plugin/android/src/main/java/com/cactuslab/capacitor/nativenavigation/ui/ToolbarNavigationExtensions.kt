@@ -1,5 +1,6 @@
 package com.cactuslab.capacitor.nativenavigation.ui
 
+import android.animation.ValueAnimator
 import android.app.Activity
 import android.graphics.drawable.Drawable
 import android.os.Build
@@ -195,9 +196,18 @@ fun Fragment.changeStatusBarColor(@ColorInt color: Int) {
     requireActivity().changeStatusBarColor(color)
 }
 
-fun Activity.changeStatusBarColor(@ColorInt color: Int) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+fun Activity.changeStatusBarColor(@ColorInt color: Int, duration: Long = 300) {
+    if (duration == 0L) {
         window.statusBarColor = color
         WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = !color.isColorDark()
+    } else {
+        val animator = ValueAnimator.ofArgb(window.statusBarColor, color).apply {
+            this.duration = duration
+            addUpdateListener { valueAnimator ->
+                val animatedValue = valueAnimator.animatedValue as Int
+                window.statusBarColor = animatedValue
+            }
+        }
+        animator.start()
     }
 }

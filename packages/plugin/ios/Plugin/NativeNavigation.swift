@@ -945,6 +945,10 @@ class NativeNavigation: NSObject {
         let newWebView = WKWebView(frame: .zero, configuration: configuration)
         newWebView.uiDelegate = self.webViewDelegate
         newWebView.navigationDelegate = self.webViewDelegate
+        if #available(iOS 16.4, *) {
+            newWebView.isInspectable = self.bridge.config.isWebDebuggable
+        }
+        newWebView.scrollView.contentInsetAdjustmentBehavior = self.bridge.config.contentInsetAdjustmentBehavior
 
         _ = newWebView.loadHTMLString(html, baseURL: webView.url!)
         view.viewController.webView = newWebView

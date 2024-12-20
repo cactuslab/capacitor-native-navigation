@@ -11,6 +11,7 @@ import androidx.annotation.ColorInt
 import androidx.annotation.StringRes
 import androidx.appcompat.graphics.drawable.DrawerArrowDrawable
 import androidx.appcompat.widget.Toolbar
+import androidx.core.graphics.ColorUtils
 import androidx.core.view.WindowCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
@@ -199,11 +200,11 @@ fun Fragment.changeStatusBarColor(@ColorInt color: Int, duration: Long = default
 }
 
 fun Activity.changeStatusBarColor(@ColorInt color: Int, duration: Long = defaultAnimationDuration) {
+    val transparentColor = ColorUtils.setAlphaComponent(color, 0)
     if (duration == 0L) {
-        window.statusBarColor = color
-        WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = !color.isColorDark()
+        window.statusBarColor = transparentColor
     } else {
-        val animator = ValueAnimator.ofArgb(window.statusBarColor, color).apply {
+        val animator = ValueAnimator.ofArgb(window.statusBarColor, transparentColor).apply {
             this.duration = duration
             addUpdateListener { valueAnimator ->
                 val animatedValue = valueAnimator.animatedValue as Int
@@ -212,4 +213,5 @@ fun Activity.changeStatusBarColor(@ColorInt color: Int, duration: Long = default
         }
         animator.start()
     }
+    WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = !color.isColorDark()
 }

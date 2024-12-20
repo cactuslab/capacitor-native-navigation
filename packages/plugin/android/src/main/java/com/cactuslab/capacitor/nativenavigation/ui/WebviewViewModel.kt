@@ -30,7 +30,6 @@ class WebviewViewModel: ViewModel() {
 
     data class State(
         val toolbarHeight: Int = 0,
-        val isToolbarTransparent: Boolean = false,
         val isToolbarVisible: Boolean = true,
         val safeContent: MeasuredInsets = MeasuredInsets(),
         val safeDrawing: MeasuredInsets = MeasuredInsets(),
@@ -77,13 +76,8 @@ class WebviewViewModel: ViewModel() {
         insetState.update { it.copy(safeContent = safeContent, safeDrawing = safeDrawing, safeGestures = safeGestures) }
     }
 
-
     fun updateToolbarHeight(toolbarHeight: Int) {
         insetState.update { it.copy(toolbarHeight = toolbarHeight) }
-    }
-
-    fun updateToolbarTransparent(isToolbarTransparent: Boolean) {
-        insetState.update { it.copy(isToolbarTransparent = isToolbarTransparent) }
     }
 
     fun updateToolbarVisible(isToolbarVisible: Boolean) {

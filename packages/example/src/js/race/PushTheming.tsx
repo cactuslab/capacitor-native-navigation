@@ -77,10 +77,16 @@ function PushRed(): JSX.Element {
 				],
 				bar: {
 					background: {
-						color: '#ffb0b080',
+						color: '#ffe0e0',
 					},
+					android: {
+						elevatedColor: {
+							color: '#ff8080',
+						},
+					}
 				},
 			},
+			title: 'Red',
 		})
 		
 		return addClickListener(function({ buttonId }) {
@@ -116,10 +122,16 @@ function PushBlue(): JSX.Element {
 				],
 				bar: {
 					background: {
-						color: '#b0c9ff80',
+						color: '#b0c9ffff',
 					},
+					android: {
+						elevatedColor: {
+							color: '#80aaff',
+						},
+					}
 				},
 			},
+			title: 'Blue',
 		})
 		
 		return addClickListener(function({ buttonId }) {
@@ -155,10 +167,17 @@ function PushGreen(): JSX.Element {
 				],
 				bar: {
 					background: {
-						color: '#b0ffd380',
+						color: '#b0ffd3',
 					},
+					android: {
+						elevatedColor: {
+							color: '#80ff9f',
+						},
+					}
 				},
+				
 			},
+			title: 'Green',
 		})
 		
 		return addClickListener(function({ buttonId }) {

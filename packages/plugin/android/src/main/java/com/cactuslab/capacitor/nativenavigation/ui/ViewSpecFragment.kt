@@ -1,5 +1,7 @@
 package com.cactuslab.capacitor.nativenavigation.ui
 
+import android.animation.ArgbEvaluator
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.graphics.BitmapFactory
 import android.graphics.Color
@@ -8,6 +10,8 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.AbsoluteSizeSpan
@@ -17,8 +21,11 @@ import android.util.Log
 import android.view.*
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
+import androidx.annotation.ColorInt
 import androidx.appcompat.widget.Toolbar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.animation.doOnEnd
+import androidx.core.graphics.ColorUtils
 import androidx.core.text.toSpannable
 import androidx.core.view.MenuProvider
 import androidx.core.view.WindowInsetsCompat
@@ -26,6 +33,7 @@ import androidx.core.view.doOnLayout
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewModelScope
@@ -60,6 +68,55 @@ class ViewSpecFragment : NativeNavigationFragment(), MenuProvider {
         return FragmentBlankBinding.inflate(inflater, container, false).also {
             binding = it
         }.root
+    }
+
+
+    var appBarLayoutBackgroundColor: Int = Color.WHITE
+    private fun updateAppBarColor(
+        appBarLayout: AppBarLayout,
+        startColor: Int,
+        endColor: Int,
+        progress: Float
+    ) {
+        val color = ArgbEvaluator().evaluate(progress, startColor, endColor) as Int
+        appBarLayout.setBackgroundColor(color)
+        appBarLayoutBackgroundColor = color
+        val titleColor = ArgbEvaluator().evaluate(progress, ColorUtils.setAlphaComponent(Color.BLACK, 0), Color.BLACK) as Int
+        binding?.toolbar?.setTitleTextColor(titleColor)
+    }
+
+    private var isElevated = false
+    @ColorInt
+    private var elevatedColor: Int = Color.TRANSPARENT
+    @ColorInt
+    private var nonElevatedColor: Int = Color.TRANSPARENT
+
+    private var appBarAnimator: ValueAnimator? = null
+    private fun animateAppBarColor(
+        appBarLayout: AppBarLayout,
+        isElevated: Boolean
+    ) {
+        if (isElevated == this.isElevated) {
+            return
+        }
+        this.isElevated = isElevated
+
+        var fromColor = if (isElevated) nonElevatedColor else elevatedColor
+        val toColor = if (isElevated) elevatedColor else nonElevatedColor
+
+        val animator = appBarAnimator
+        if (animator?.isRunning == true) {
+            fromColor = animator.getAnimatedValue() as Int
+            animator.cancel()
+        }
+
+        appBarAnimator = ValueAnimator.ofObject(ArgbEvaluator(), fromColor, toColor).apply {
+            duration = 200 // Adjust for desired smoothness
+            addUpdateListener { animator ->
+                appBarLayout.setBackgroundColor(animator.animatedValue as Int)
+            }
+            start()
+        }
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -133,51 +190,47 @@ class ViewSpecFragment : NativeNavigationFragment(), MenuProvider {
             signal.consumed = true
         }
 
-        lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                webviewViewModel.state.collect() { state ->
-                    val webview = webView ?: return@collect
-                    val ctx = context ?: return@collect
+        viewLifecycleOwner.lifecycleScope.launch {
+            webviewViewModel.state.flowWithLifecycle(viewLifecycleOwner.lifecycle).collect { state ->
+                val webview = webView ?: return@collect
+                val ctx = context ?: return@collect
 
-                    val topInset = if (state.isToolbarTransparent && state.isToolbarVisible) {
-                        state.toolbarHeight + state.safeDrawing.top
-                    } else if (!state.isToolbarVisible) {
-                        state.safeDrawing.top
-                    } else {
-                        0
-                    }
-                    webview.injectCSS("""
-                    :root { --native-navigation-inset-top: ${topInset.pxToDp(requireContext())}px; }
-                    :root { --native-navigation-inset-bottom: ${state.safeDrawing.bottom.pxToDp(requireContext())}px; }
-                    :root { --native-navigation-inset-left: ${state.safeDrawing.left.pxToDp(requireContext())}px; }
-                    :root { --native-navigation-inset-right: ${state.safeDrawing.right.pxToDp(requireContext())}px; }
-                                
-                    :root { --native-navigation-safe-content-inset-top: ${state.safeContent.top.pxToDp(ctx)}px; }
-                    :root { --native-navigation-safe-content-inset-bottom: ${state.safeContent.bottom.pxToDp(ctx)}px; }
-                    :root { --native-navigation-safe-content-inset-left: ${state.safeContent.left.pxToDp(ctx)}px; }
-                    :root { --native-navigation-safe-content-inset-right: ${state.safeContent.right.pxToDp(ctx)}px; }
-                    
-                    :root { --native-navigation-safe-drawing-inset-top: ${state.safeDrawing.top.pxToDp(ctx)}px; }
-                    :root { --native-navigation-safe-drawing-inset-bottom: ${state.safeDrawing.bottom.pxToDp(ctx)}px; }
-                    :root { --native-navigation-safe-drawing-inset-left: ${state.safeDrawing.left.pxToDp(ctx)}px; }
-                    :root { --native-navigation-safe-drawing-inset-right: ${state.safeDrawing.right.pxToDp(ctx)}px; }
-                    
-                    :root { --native-navigation-safe-gestures-inset-top: ${state.safeGestures.top.pxToDp(ctx)}px; }
-                    :root { --native-navigation-safe-gestures-inset-bottom: ${state.safeGestures.bottom.pxToDp(ctx)}px; }
-                    :root { --native-navigation-safe-gestures-inset-left: ${state.safeGestures.left.pxToDp(ctx)}px; }
-                    :root { --native-navigation-safe-gestures-inset-right: ${state.safeGestures.right.pxToDp(ctx)}px; }
-                    
-                    :root { --native-navigation-toolbar-height: ${state.toolbarHeight.pxToDp(ctx)}px; }
-                    """.trimIndent(), id = "native-navigation-inset")
+                val topInset = if (!state.isToolbarVisible) {
+                    state.safeDrawing.top
+                } else {
+                    0
                 }
+                webview.injectCSS("""
+                :root { --native-navigation-inset-top: ${topInset.pxToDp(requireContext())}px; }
+                :root { --native-navigation-inset-bottom: ${state.safeDrawing.bottom.pxToDp(requireContext())}px; }
+                :root { --native-navigation-inset-left: ${state.safeDrawing.left.pxToDp(requireContext())}px; }
+                :root { --native-navigation-inset-right: ${state.safeDrawing.right.pxToDp(requireContext())}px; }
+                            
+                :root { --native-navigation-safe-content-inset-top: ${state.safeContent.top.pxToDp(ctx)}px; }
+                :root { --native-navigation-safe-content-inset-bottom: ${state.safeContent.bottom.pxToDp(ctx)}px; }
+                :root { --native-navigation-safe-content-inset-left: ${state.safeContent.left.pxToDp(ctx)}px; }
+                :root { --native-navigation-safe-content-inset-right: ${state.safeContent.right.pxToDp(ctx)}px; }
+                
+                :root { --native-navigation-safe-drawing-inset-top: ${state.safeDrawing.top.pxToDp(ctx)}px; }
+                :root { --native-navigation-safe-drawing-inset-bottom: ${state.safeDrawing.bottom.pxToDp(ctx)}px; }
+                :root { --native-navigation-safe-drawing-inset-left: ${state.safeDrawing.left.pxToDp(ctx)}px; }
+                :root { --native-navigation-safe-drawing-inset-right: ${state.safeDrawing.right.pxToDp(ctx)}px; }
+                
+                :root { --native-navigation-safe-gestures-inset-top: ${state.safeGestures.top.pxToDp(ctx)}px; }
+                :root { --native-navigation-safe-gestures-inset-bottom: ${state.safeGestures.bottom.pxToDp(ctx)}px; }
+                :root { --native-navigation-safe-gestures-inset-left: ${state.safeGestures.left.pxToDp(ctx)}px; }
+                :root { --native-navigation-safe-gestures-inset-right: ${state.safeGestures.right.pxToDp(ctx)}px; }
+                
+                :root { --native-navigation-toolbar-height: ${state.toolbarHeight.pxToDp(ctx)}px; }
+                """.trimIndent(), id = "native-navigation-inset")
             }
         }
-
     }
 
     private fun updateToolbar() {
-        val toolbar = binding?.toolbar ?: return
-        val appBarLayout = binding?.appBarLayout ?: return
+        val binding = binding ?: return
+        val toolbar = binding.toolbar
+        val appBarLayout = binding.appBarLayout
         val componentId = componentId ?: return
         val spec = viewModel.nativeNavigation?.viewSpecForId(componentId) ?: return
 
@@ -213,29 +266,15 @@ class ViewSpecFragment : NativeNavigationFragment(), MenuProvider {
             barSpec?.let { bar ->
                 bar.background?.color?.let { color ->
                     val colorInt = color.parseRGBAColor()
-
-                    toolbar.setBackgroundColor(colorInt)
+                    nonElevatedColor = colorInt
+                    elevatedColor = darkenColor(colorInt, 0.9f)
                     appBarLayout.setBackgroundColor(colorInt)
 
-                    val alpha = Color.alpha(colorInt)
-                    val isTransparent = alpha < 255
-
-                    if (isTransparent) {
-                        val layoutParams = CoordinatorLayout.LayoutParams(
-                            CoordinatorLayout.LayoutParams.MATCH_PARENT,
-                            CoordinatorLayout.LayoutParams.MATCH_PARENT
-                        )
-                        this.webView?.layoutParams = layoutParams
-                    } else {
-                        val layoutParams = CoordinatorLayout.LayoutParams(
-                            CoordinatorLayout.LayoutParams.MATCH_PARENT,
-                            CoordinatorLayout.LayoutParams.MATCH_PARENT
-                        )
-                        layoutParams.behavior = AppBarLayout.ScrollingViewBehavior()
-                        this.webView?.layoutParams = layoutParams
+                    webView?.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
+                        val maxScroll = 300
+                        val progress = scrollY > maxScroll.toFloat()
+                        animateAppBarColor(appBarLayout, progress)
                     }
-
-                    webviewViewModel.updateToolbarTransparent(isTransparent)
                 }
                 bar.title?.let { labelOptions ->
                     labelOptions.color?.let { color ->
@@ -302,28 +341,7 @@ class ViewSpecFragment : NativeNavigationFragment(), MenuProvider {
         updateToolbar()
         setupMenu()
         viewModel.nativeNavigation?.plugin?.notifyViewWillAppear(componentId!!)
-        val animation = view?.animation
-//        if (animation != null) {
-//            animation.setAnimationListener(object: Animation.AnimationListener {
-//                override fun onAnimationStart(animation: Animation?) {
-//                    Log.d(TAG, "ANIMATOR RESUME START")
-//
-//                }
-//
-//                override fun onAnimationEnd(animation: Animation?) {
-//                    Log.d(TAG, "ANIMATOR RESUME END")
-//                    viewModel.nativeNavigation?.plugin?.notifyViewDidAppear(componentId!!)
-//                }
-//
-//                override fun onAnimationRepeat(animation: Animation?) {
-//                    Log.d(TAG, "ANIMATOR RESUME REPEAT")
-//                }
-//
-//            })
-//        } else {
         viewModel.nativeNavigation?.plugin?.notifyViewDidAppear(componentId!!)
-//        }
-
     }
 
     private fun setupMenu() {

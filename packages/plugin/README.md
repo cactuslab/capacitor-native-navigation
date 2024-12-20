@@ -257,9 +257,9 @@ Send a message to a component.
 
 #### FillSpec
 
-| Prop        | Type                |
-| ----------- | ------------------- |
-| **`color`** | <code>string</code> |
+| Prop        | Type                | Description                        |
+| ----------- | ------------------- | ---------------------------------- |
+| **`color`** | <code>string</code> | A color to use for the background. |
 
 
 #### LabelSpec
@@ -280,9 +280,10 @@ Send a message to a component.
 
 #### BarSpecIOS
 
-| Prop             | Type                         | Description                             |
-| ---------------- | ---------------------------- | --------------------------------------- |
-| **`hideShadow`** | <code>boolean \| null</code> | Default behaviour is to show the shadow |
+| Prop              | Type                 | Description                                                                                                                    |
+| ----------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| **`hideShadow`**  | <code>boolean</code> | Default behaviour is to show the shadow                                                                                        |
+| **`translucent`** | <code>boolean</code> | A flag to indicate Apple's translucency behaviour when content is scrolled. It can be used in conjunction with onScroll colors |
 
 
 #### TabsSpec
@@ -378,38 +379,55 @@ Options for stack components
 | **`bar`**        | <code><a href="#barupdate">BarUpdate</a></code> |
 
 
-#### BarUpdate
+#### Array
 
-| Prop             | Type                                                        |
-| ---------------- | ----------------------------------------------------------- |
-| **`background`** | <code><a href="#fillupdate">FillUpdate</a> \| null</code>   |
-| **`title`**      | <code><a href="#labelupdate">LabelUpdate</a> \| null</code> |
-| **`buttons`**    | <code><a href="#labelupdate">LabelUpdate</a> \| null</code> |
-| **`visible`**    | <code>boolean \| null</code>                                |
-| **`iOS`**        | <code><a href="#barspecios">BarSpecIOS</a></code>           |
+| Prop         | Type                | Description                                                                                            |
+| ------------ | ------------------- | ------------------------------------------------------------------------------------------------------ |
+| **`length`** | <code>number</code> | Gets or sets the length of the array. This is a number one higher than the highest index in the array. |
+
+| Method             | Signature                                                                                                                     | Description                                                                                                                                                                                                                                 |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **toString**       | () =&gt; string                                                                                                               | Returns a string representation of an array.                                                                                                                                                                                                |
+| **toLocaleString** | () =&gt; string                                                                                                               | Returns a string representation of an array. The elements are converted to string using their toLocalString methods.                                                                                                                        |
+| **pop**            | () =&gt; T \| undefined                                                                                                       | Removes the last element from an array and returns it. If the array is empty, undefined is returned and the array is not modified.                                                                                                          |
+| **push**           | (...items: T[]) =&gt; number                                                                                                  | Appends new elements to the end of an array, and returns the new length of the array.                                                                                                                                                       |
+| **concat**         | (...items: <a href="#concatarray">ConcatArray</a>&lt;T&gt;[]) =&gt; T[]                                                       | Combines two or more arrays. This method returns a new array without modifying any existing arrays.                                                                                                                                         |
+| **concat**         | (...items: (T \| <a href="#concatarray">ConcatArray</a>&lt;T&gt;)[]) =&gt; T[]                                                | Combines two or more arrays. This method returns a new array without modifying any existing arrays.                                                                                                                                         |
+| **join**           | (separator?: string \| undefined) =&gt; string                                                                                | Adds all the elements of an array into a string, separated by the specified separator string.                                                                                                                                               |
+| **reverse**        | () =&gt; T[]                                                                                                                  | Reverses the elements in an array in place. This method mutates the array and returns a reference to the same array.                                                                                                                        |
+| **shift**          | () =&gt; T \| undefined                                                                                                       | Removes the first element from an array and returns it. If the array is empty, undefined is returned and the array is not modified.                                                                                                         |
+| **slice**          | (start?: number \| undefined, end?: number \| undefined) =&gt; T[]                                                            | Returns a copy of a section of an array. For both start and end, a negative index can be used to indicate an offset from the end of the array. For example, -2 refers to the second to last element of the array.                           |
+| **sort**           | (compareFn?: ((a: T, b: T) =&gt; number) \| undefined) =&gt; this                                                             | Sorts an array in place. This method mutates the array and returns a reference to the same array.                                                                                                                                           |
+| **splice**         | (start: number, deleteCount?: number \| undefined) =&gt; T[]                                                                  | Removes elements from an array and, if necessary, inserts new elements in their place, returning the deleted elements.                                                                                                                      |
+| **splice**         | (start: number, deleteCount: number, ...items: T[]) =&gt; T[]                                                                 | Removes elements from an array and, if necessary, inserts new elements in their place, returning the deleted elements.                                                                                                                      |
+| **unshift**        | (...items: T[]) =&gt; number                                                                                                  | Inserts new elements at the start of an array, and returns the new length of the array.                                                                                                                                                     |
+| **indexOf**        | (searchElement: T, fromIndex?: number \| undefined) =&gt; number                                                              | Returns the index of the first occurrence of a value in an array, or -1 if it is not present.                                                                                                                                               |
+| **lastIndexOf**    | (searchElement: T, fromIndex?: number \| undefined) =&gt; number                                                              | Returns the index of the last occurrence of a specified value in an array, or -1 if it is not present.                                                                                                                                      |
+| **every**          | &lt;S extends T&gt;(predicate: (value: T, index: number, array: T[]) =&gt; value is S, thisArg?: any) =&gt; this is S[]       | Determines whether all the members of an array satisfy the specified test.                                                                                                                                                                  |
+| **every**          | (predicate: (value: T, index: number, array: T[]) =&gt; unknown, thisArg?: any) =&gt; boolean                                 | Determines whether all the members of an array satisfy the specified test.                                                                                                                                                                  |
+| **some**           | (predicate: (value: T, index: number, array: T[]) =&gt; unknown, thisArg?: any) =&gt; boolean                                 | Determines whether the specified callback function returns true for any element of an array.                                                                                                                                                |
+| **forEach**        | (callbackfn: (value: T, index: number, array: T[]) =&gt; void, thisArg?: any) =&gt; void                                      | Performs the specified action for each element in an array.                                                                                                                                                                                 |
+| **map**            | &lt;U&gt;(callbackfn: (value: T, index: number, array: T[]) =&gt; U, thisArg?: any) =&gt; U[]                                 | Calls a defined callback function on each element of an array, and returns an array that contains the results.                                                                                                                              |
+| **filter**         | &lt;S extends T&gt;(predicate: (value: T, index: number, array: T[]) =&gt; value is S, thisArg?: any) =&gt; S[]               | Returns the elements of an array that meet the condition specified in a callback function.                                                                                                                                                  |
+| **filter**         | (predicate: (value: T, index: number, array: T[]) =&gt; unknown, thisArg?: any) =&gt; T[]                                     | Returns the elements of an array that meet the condition specified in a callback function.                                                                                                                                                  |
+| **reduce**         | (callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) =&gt; T) =&gt; T                           | Calls the specified callback function for all the elements in an array. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.                      |
+| **reduce**         | (callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) =&gt; T, initialValue: T) =&gt; T          |                                                                                                                                                                                                                                             |
+| **reduce**         | &lt;U&gt;(callbackfn: (previousValue: U, currentValue: T, currentIndex: number, array: T[]) =&gt; U, initialValue: U) =&gt; U | Calls the specified callback function for all the elements in an array. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.                      |
+| **reduceRight**    | (callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) =&gt; T) =&gt; T                           | Calls the specified callback function for all the elements in an array, in descending order. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function. |
+| **reduceRight**    | (callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) =&gt; T, initialValue: T) =&gt; T          |                                                                                                                                                                                                                                             |
+| **reduceRight**    | &lt;U&gt;(callbackfn: (previousValue: U, currentValue: T, currentIndex: number, array: T[]) =&gt; U, initialValue: U) =&gt; U | Calls the specified callback function for all the elements in an array, in descending order. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function. |
 
 
-#### FillUpdate
+#### ConcatArray
 
-| Prop        | Type                        |
-| ----------- | --------------------------- |
-| **`color`** | <code>string \| null</code> |
+| Prop         | Type                |
+| ------------ | ------------------- |
+| **`length`** | <code>number</code> |
 
-
-#### LabelUpdate
-
-| Prop        | Type                                                      |
-| ----------- | --------------------------------------------------------- |
-| **`color`** | <code>string \| null</code>                               |
-| **`font`**  | <code><a href="#fontupdate">FontUpdate</a> \| null</code> |
-
-
-#### FontUpdate
-
-| Prop       | Type                        |
-| ---------- | --------------------------- |
-| **`name`** | <code>string \| null</code> |
-| **`size`** | <code>number \| null</code> |
+| Method    | Signature                                                          |
+| --------- | ------------------------------------------------------------------ |
+| **join**  | (separator?: string \| undefined) =&gt; string                     |
+| **slice** | (start?: number \| undefined, end?: number \| undefined) =&gt; T[] |
 
 
 #### TabsUpdate
@@ -439,16 +457,6 @@ Options for view components
 | --------------- | ----------------------------------------------------------- | ------------------------------------------------- |
 | **`stackItem`** | <code><a href="#stackitemupdate">StackItemUpdate</a></code> | Options for when the component is used in a stack |
 | **`android`**   | <code>{ backButtonId?: string \| null; }</code>             | Options for Android specific features             |
-
-
-#### StackItemUpdate
-
-| Prop             | Type                                                                      | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| ---------------- | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`backItem`**   | <code><a href="#stackbarbuttonitem">StackBarButtonItem</a> \| null</code> | The back item used when this stack item is on the back stack. This is only currently used by iOS as Android will show an arrow with no title if back is enabled                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| **`leftItems`**  | <code>StackBarButtonItem[] \| null</code>                                 | Setting any value to leftItems will disable the navigation back buttons on both iOS and Android. (Android hardware back button is not affected). iOS: items will show on the left side of the navigation bar replacing the back button. The swipe back gesture will be disabled. Android: Toolbars have support for only a single image-button on the left. If the first item has an image then the toolbar will insert this item left of the title replacing the default back button if there would have been one. The remaining left items will appear on the right of the toolbar ahead of any right items. |
-| **`rightItems`** | <code>StackBarButtonItem[] \| null</code>                                 | Right items will show on the rightmost edge of the navigation bar.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| **`bar`**        | <code><a href="#barupdate">BarUpdate</a> \| null</code>                   | Customise the bar on top of the default options provided by the stack                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 
 
 #### ResetOptions
@@ -561,6 +569,28 @@ replace: Replace the current top-most component in the stack.
 root: Reset the stack back to just the new component.
 
 <code>'push' | 'replace' | 'root'</code>
+
+
+#### BarUpdate
+
+<code><a href="#recursivenullable">RecursiveNullable</a>&lt;<a href="#barspec">BarSpec</a>&gt;</code>
+
+
+#### RecursiveNullable
+
+<code>{ 	[K in keyof T]: <a href="#required">Required</a>&lt;T&gt;[K] extends object 		? <a href="#required">Required</a>&lt;T&gt;[K] extends <a href="#array">Array</a>&lt;infer U&gt; 			? <a href="#array">Array</a>&lt;U&gt; | null 			: <a href="#recursivenullable">RecursiveNullable</a>&lt;T[K]&gt; 		: T[K] | null }</code>
+
+
+#### Required
+
+Make all properties in T required
+
+<code>{ [P in keyof T]-?: T[P]; }</code>
+
+
+#### StackItemUpdate
+
+<code><a href="#recursivenullable">RecursiveNullable</a>&lt;<a href="#stackitemspec">StackItemSpec</a>&gt;</code>
 
 
 #### AnyComponentModel

@@ -350,9 +350,21 @@ interface BarSpecIOS {
 	/** 
 	 * Default behaviour is to show the shadow 
 	 */
-	hideShadow?: boolean | null
+	hideShadow?: boolean
+
+	/** 
+	 * A flag to indicate Apple's translucency behaviour when content is scrolled. It can be used in conjunction with onScroll colors 
+	 */
+	translucent?: boolean
 }
 
+type RecursiveNullable<T> = {
+	[K in keyof T]: Required<T>[K] extends object
+		? Required<T>[K] extends Array<infer U>
+			? Array<U> | null
+			: RecursiveNullable<T[K]> 
+		: T[K] | null
+}
 
 interface BarSpec {
 	background?: FillSpec
@@ -361,42 +373,27 @@ interface BarSpec {
 	visible?: boolean
 	iOS?: BarSpecIOS
 }
-
-interface BarUpdate {
-	background?: FillUpdate | null
-	title?: LabelUpdate | null
-	buttons?: LabelUpdate | null
-	visible?: boolean | null
-	iOS?: BarSpecIOS
-}
+type BarUpdate = RecursiveNullable<BarSpec>
 
 export interface FillSpec {
+	/** A color to use for the background. */
 	color?: string
 }
 
-export interface FillUpdate {
-	color?: string | null
-}
+export type FillUpdate = RecursiveNullable<FillSpec>
 
 export interface LabelSpec {
 	color?: string
 	font?: FontSpec
 }
 
-export interface LabelUpdate {
-	color?: string | null
-	font?: FontUpdate | null
-}
-
+export type LabelUpdate = RecursiveNullable<LabelSpec>
 export interface FontSpec {
 	name?: string
 	size?: number
 }
 
-export interface FontUpdate {
-	name?: string | null
-	size?: number | null
-}
+export type FontUpdate = RecursiveNullable<FontSpec>
 
 /**
  * Options for tabs components
@@ -469,43 +466,8 @@ export interface StackItemSpec {
 	 */
 	bar?: BarSpec
 }
-export interface StackItemUpdate {
-	/** 
-	 * The back item used when this stack item is on the back stack. This is only 
-	 * currently used by iOS as Android will show an arrow with no title if
-	 * back is enabled
-	 */
-	backItem?: StackBarButtonItem | null
-		
-	/**
-	 * Setting any value to leftItems will disable the navigation back
-	 * buttons on both iOS and Android. (Android hardware back button is not affected).
-	 * 
-	 * iOS: items will show on the left side of the navigation bar replacing
-	 * the back button. The swipe back gesture will be disabled.
-	 * 
-	 * Android: Toolbars have support for only a single image-button on the left.
-	 * If the first item has an image then the toolbar will insert this item left
-	 * of the title replacing the default back button if there would have been one.
-	 * The remaining left items will appear on the right of the toolbar ahead of any 
-	 * right items.
-	 */
-	leftItems?: StackBarButtonItem[] | null
 
-	/**
-	 * Right items will show on the rightmost edge of the navigation bar.
-	 */
-	rightItems?: StackBarButtonItem[] | null
-
-	/**
-	 * Customise the bar on top of the default options provided by the
-	 * stack
-	 */
-	bar?: BarUpdate | null
-}
-
-
-
+export type StackItemUpdate = RecursiveNullable<StackItemSpec>
 export interface ResetOptions {
 	/**
 	 * Whether to animate resetting the navigation back to Capacitor

@@ -79,6 +79,9 @@ function PushRed(): JSX.Element {
 					background: {
 						color: '#ffe0e0',
 					},
+					buttons: {
+						color: '#ff0000',
+					},
 					android: {
 						elevatedColor: {
 							color: '#ff8080',
@@ -124,6 +127,9 @@ function PushBlue(): JSX.Element {
 					background: {
 						color: '#b0c9ffff',
 					},
+					buttons: {
+						color: '#0000ff',
+					},
 					android: {
 						elevatedColor: {
 							color: '#80aaff',
@@ -168,6 +174,9 @@ function PushGreen(): JSX.Element {
 				bar: {
 					background: {
 						color: '#b0ffd3',
+					},
+					buttons: {
+						color: '#425f4f',
 					},
 					android: {
 						elevatedColor: {

@@ -829,6 +829,10 @@ class NativeNavigation: NSObject {
                     /* This controller is the topmost in this stack so apply options that may show or hide settings for the whole navigation controller */
                     if let barOptions = stackItem.bar {
                         navigationController.setNavigationBarHidden(barOptions.visible == false, animated: animated)
+                        
+                        if let tintColor = barOptions.buttons?.color {
+                            navigationController.navigationBar.tintColor = tintColor
+                        }
                     }
                     
                 }
@@ -1025,6 +1029,9 @@ extension NativeNavigation: UINavigationControllerDelegate {
 
                 if navigationController.isNavigationBarHidden == barVisible {
                     navigationController.setNavigationBarHidden(!barVisible, animated: animated)
+                }
+                if let color = barSpec.buttons?.color {
+                    navigationController.navigationBar.tintColor = color
                 }
             } else {
                 throw NativeNavigatorError.illegalState(message: "Component for UINavigationController is not a ViewModel")

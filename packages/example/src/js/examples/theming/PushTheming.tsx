@@ -2,9 +2,21 @@ import { NativeNavigation, ViewUpdate } from 'capacitor-native-navigation'
 import { useNativeNavigationViewContext } from 'capacitor-native-navigation-react'
 import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import { Route, useNavigate } from 'react-router-dom'
-import TallContent from '../examples/TallContent';
+import TallContent from '../TallContent';
 
+import './PushTheming.css'
 
+/**
+ * A helper component that sets a data attribute on the body element of the view window.
+ * 
+ * We use this to set a `theme` attribute on the body element to allow the CSS to change the `background-color` based on the theme.
+ * 
+ * The `background-color` of the body element is used when the scroll view bounces beyond the top or bottom which is
+ * the default behavior on iOS. 
+ * 
+ * It is important to use the viewWindow from the context to ensure that the correct window is updated which is
+ * why it is useful to create a helper like this to avoid mistakes.
+ */
 const SetBodyAttribute: React.FC<{ attribute: string; value: string | null }> = ({ attribute, value }) => {
 	const context = useNativeNavigationViewContext()
 	useLayoutEffect(() => {
@@ -28,9 +40,9 @@ const SetBodyAttribute: React.FC<{ attribute: string; value: string | null }> = 
 export default function PushTheming(): JSX.Element {
 	return (
 		<Route path="push-theming">
-		<Route path="red" element={<PushRed />} />
-		<Route path="green" element={<PushGreen />} />
-		<Route path="blue" element={<PushBlue />} />
+			<Route path="red" element={<PushRed />} />
+			<Route path="green" element={<PushGreen />} />
+			<Route path="blue" element={<PushBlue />} />
 		</Route>
 	)
 }
@@ -40,24 +52,24 @@ function ThemeButtons(): JSX.Element {
 	
 	const handleRed = useCallback(function(evt: React.MouseEvent) {
 		evt.preventDefault()
-		navigate('/race/push-theming/red')
+		navigate('../red')
 	}, [navigate])
 	
 	const handleGreen = useCallback(function(evt: React.MouseEvent) {
 		evt.preventDefault()
-		navigate('/race/push-theming/green')
+		navigate('../green')
 	}, [navigate])
 	
 	const handleBlue = useCallback(function(evt: React.MouseEvent) {
 		evt.preventDefault()
-		navigate('/race/push-theming/blue')
+		navigate('../blue')
 	}, [navigate])
 	
 	return (
 		<div>
-		<button onClick={handleRed}>Push Red</button>
-		<button onClick={handleGreen}>Push Green</button>
-		<button onClick={handleBlue}>Push Blue</button>
+			<button onClick={handleRed}>Push Red</button>
+			<button onClick={handleGreen}>Push Green</button>
+			<button onClick={handleBlue}>Push Blue</button>
 		</div>
 	)
 }
@@ -96,11 +108,11 @@ function PushRed(): JSX.Element {
 	
 	return (
 		<div>
-		<SetBodyAttribute attribute="theme" value="red" />
-		<h1>Red</h1>
-		<p>This is the red themed navigation bar</p>
-		<ThemeButtons />
-		<TallContent />
+			<SetBodyAttribute attribute="theme" value="red" />
+			<h1>Red</h1>
+			<p>This is the red themed navigation bar</p>
+			<ThemeButtons />
+			<TallContent />
 		</div>
 	)
 }
@@ -109,34 +121,6 @@ function PushBlue(): JSX.Element {
 	const navigate = useNavigate()
 	const { updateView, addClickListener, viewWindow } = useNativeNavigationViewContext()
 	
-	const [stackItem, setStackItem] = useState<ViewUpdate>({
-		stackItem: {
-			rightItems: [
-				{
-					id: 'reset',
-					title: 'Reset',
-				},
-			],
-			bar: {
-				background: {
-					color: '#b0c9ffff',
-				},
-				buttons: {
-					color: '#0000ff',
-				},
-				title: {
-					color: '#0000ff',
-				}
-			},
-		},
-		title: 'Blue',
-	})
-
-	useEffect(function() {
-		updateView(stackItem)
-	}, [stackItem, updateView])
-	
-
 	useEffect(function() {		
 		return addClickListener(function({ buttonId }) {
 			if (buttonId === 'reset') {
@@ -161,6 +145,29 @@ function PushBlue(): JSX.Element {
 	}, []);
 
 	useEffect(() => {
+		const stackItem: ViewUpdate = {
+			stackItem: {
+				rightItems: [
+					{
+						id: 'reset',
+						title: 'Reset',
+					},
+				],
+				bar: {
+					background: {
+						color: '#b0c9ff',
+					},
+					buttons: {
+						color: '#0000ff',
+					},
+					title: {
+						color: '#0000ff',
+					}
+				},
+			},
+			title: 'Blue',
+		}
+
 		if (isScrolled) {
 			updateView({
 				...stackItem,
@@ -171,10 +178,10 @@ function PushBlue(): JSX.Element {
 							color: '#0000ff',
 						},
 						buttons: {
-							color: '#b0c9ffff',
+							color: '#b0c9ff',
 						},
 						title: {
-							color: '#b0c9ffff',
+							color: '#b0c9ff',
 						}
 					},
 				},
@@ -190,11 +197,11 @@ function PushBlue(): JSX.Element {
   
 	return (
 		<div>
-		<SetBodyAttribute attribute="theme" value="blue" />
-		<h1>Blue</h1>
-		<p>This is the blue themed navigation bar</p>
-		<ThemeButtons />
-		<TallContent />
+			<SetBodyAttribute attribute="theme" value="blue" />
+			<h1>Blue</h1>
+			<p>This is the blue themed navigation bar</p>
+			<ThemeButtons />
+			<TallContent />
 		</div>
 	)
 }
@@ -219,11 +226,6 @@ function PushGreen(): JSX.Element {
 					buttons: {
 						color: '#425f4f',
 					},
-					// android: {
-					// 	elevatedColor: {
-					// 		color: '#80ff9f',
-					// 	},
-					// }
 				},
 				
 			},

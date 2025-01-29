@@ -12,14 +12,3 @@ dd {
 	margin: 0.5em 0;
 	text-align: center;
 }
-
-/* body with data-theme="red" should be red */
-body[data-theme="red"] {
-	background-color: #ffe0e0;
-}
-body[data-theme="blue"] {
-	background-color: #e0e0ff;
-}
-body[data-theme="green"] {
-	background-color: #e0ffe0;
-}

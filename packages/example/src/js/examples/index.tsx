@@ -6,6 +6,7 @@ import Subnav from './Subnav'
 import TallContent from './TallContent'
 import Modals from './Modals'
 import MenuLeftItems from './MenuLeftItems'
+import PushTheming from './theming/PushTheming'
 
 export default function Examples() {
 	return (
@@ -16,6 +17,7 @@ export default function Examples() {
 			<Route path="tall-content" element={<TallContent />} />
 			<Route path="subnav/*" element={<Subnav />} />
 			<Route path="modals/*" element={<Modals />} />
+			{PushTheming()}
 		</Routes>
 	)
 }

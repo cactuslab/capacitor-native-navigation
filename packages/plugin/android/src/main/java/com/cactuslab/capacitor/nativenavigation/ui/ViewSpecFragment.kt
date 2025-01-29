@@ -109,10 +109,7 @@ class ViewSpecFragment : NativeNavigationFragment(), MenuProvider {
     ) {
         val previousState = previousState
 
-        if (previousState == state) {
-            return
-        }
-        if (previousState == null || duration == 0L) {
+        if (previousState == null || duration == 0L || previousState == state) {
             // Initial setting should not be animated
             setColors(state.baseToolbarColors.background, state.baseToolbarColors.titleColor, state.baseToolbarColors.buttonsColor)
             this.previousState = state

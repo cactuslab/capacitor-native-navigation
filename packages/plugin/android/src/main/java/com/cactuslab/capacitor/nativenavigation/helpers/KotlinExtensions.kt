@@ -213,10 +213,3 @@ fun Bitmap.setDensityFromScale(scale: Double) {
     }
     this.density = density
 }
-
-fun darkenColor(@ColorInt color: Int, factor: Float): Int {
-    val hsv = FloatArray(3)
-    Color.colorToHSV(color, hsv)
-    hsv[2] *= factor
-    return Color.HSVToColor(hsv)
-}

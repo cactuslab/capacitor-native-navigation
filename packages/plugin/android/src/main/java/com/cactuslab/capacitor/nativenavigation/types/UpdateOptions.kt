@@ -14,4 +14,8 @@ class UpdateOptions(val id: String, val animated: Boolean, val update: JSObject?
         }
     }
 
+    override fun toString(): String {
+        return "UpdateOptions(id='$id', animated=$animated, update=$update)"
+    }
+
 }

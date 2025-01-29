@@ -9,15 +9,18 @@ class BarSpec(
     var title: LabelSpec? = null,
     var buttons: LabelSpec? = null,
     var visible: Boolean? = null,
-    var onScrollThreshold: Double? = null
     ) {
+
     fun toJSObject(): JSObject {
         val obj = JSObject()
         background?.let { obj.put(BACKGROUND_KEY, it.toJSObject()) }
         title?.let { obj.put(TITLE_KEY, it.toJSObject()) }
         buttons?.let { obj.put(BUTTONS_KEY, it.toJSObject()) }
         visible?.let { obj.put(VISIBLE_KEY, it) }
-        onScrollThreshold?.let { obj.put(ON_SCROLL_THRESHOLD_KEY, it) }
+
+        val androidObj = JSObject()
+        obj.put(ANDROID_KEY, androidObj)
+
         return obj
     }
 
@@ -27,12 +30,11 @@ class BarSpec(
         spec.buttons = LabelSpec.merge(other?.buttons, buttons)
         spec.visible = other?.visible ?: this.visible
         spec.background = other?.background ?: this.background
-        spec.onScrollThreshold = other?.onScrollThreshold ?: this.onScrollThreshold
         return spec
     }
 
     companion object {
-        private const val ON_SCROLL_THRESHOLD_KEY = "onScrollThreshold"
+        private const val ANDROID_KEY = "android"
         private const val VISIBLE_KEY = "visible"
         private const val BACKGROUND_KEY = "background"
         private const val TITLE_KEY = "title"
@@ -43,8 +45,8 @@ class BarSpec(
             val title = jsObject.getJSObject(TITLE_KEY)?.let { LabelSpec.fromJSObject(it) }
             val buttons = jsObject.getJSObject(BUTTONS_KEY)?.let { LabelSpec.fromJSObject(it) }
             val visible = jsObject.getBool(VISIBLE_KEY)
-            val onScrollThreshold = if (jsObject.has(ON_SCROLL_THRESHOLD_KEY)) jsObject.getDouble(ON_SCROLL_THRESHOLD_KEY) else null
-            return BarSpec(background = background, title = title, buttons = buttons, visible = visible, onScrollThreshold = onScrollThreshold)
+
+            return BarSpec(background = background, title = title, buttons = buttons, visible = visible)
         }
 
         fun updateFromContainer(jsObject: JSObject, key: String, existingValue: BarSpec?): BarSpec? {
@@ -55,7 +57,6 @@ class BarSpec(
                 result.title = LabelSpec.updateFromContainer(obj, TITLE_KEY, result.title)
                 result.buttons = LabelSpec.updateFromContainer(obj, BUTTONS_KEY, result.buttons)
                 result.visible = Boolean.updateFromContainer(obj, VISIBLE_KEY, result.visible)
-                result.onScrollThreshold = Double.updateFromContainer(obj, ON_SCROLL_THRESHOLD_KEY, result.onScrollThreshold)
                 result
             }
         }

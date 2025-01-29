@@ -12,6 +12,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.text.Spannable
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.AbsoluteSizeSpan
@@ -56,6 +57,8 @@ class ViewSpecFragment : NativeNavigationFragment(), MenuProvider {
 
     private val viewModel : NativeNavigationViewModel by activityViewModels()
     private val webviewViewModel: WebviewViewModel by viewModels()
+    private val barConfigurationViewModel: BarConfigurationViewModel by viewModels()
+
     private var componentId: String? = null
 
     private var webView: WebView? = null
@@ -65,55 +68,82 @@ class ViewSpecFragment : NativeNavigationFragment(), MenuProvider {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        Log.d(TAG, "onCreateView - ViewSpecFragment")
         return FragmentBlankBinding.inflate(inflater, container, false).also {
             binding = it
         }.root
     }
 
+    private var appBarAnimator: ValueAnimator? = null
 
-    var appBarLayoutBackgroundColor: Int = Color.WHITE
-    private fun updateAppBarColor(
-        appBarLayout: AppBarLayout,
-        startColor: Int,
-        endColor: Int,
-        progress: Float
-    ) {
-        val color = ArgbEvaluator().evaluate(progress, startColor, endColor) as Int
-        appBarLayout.setBackgroundColor(color)
-        appBarLayoutBackgroundColor = color
-        val titleColor = ArgbEvaluator().evaluate(progress, ColorUtils.setAlphaComponent(Color.BLACK, 0), Color.BLACK) as Int
-        binding?.toolbar?.setTitleTextColor(titleColor)
+    private var previousState: BarConfigurationViewModel.BarValues? = null
+
+    private fun setColors(backgroundColor: Int, titleColor: Int, buttonsColor: Int) {
+        Log.d(TAG, "Setting colors: $backgroundColor, $titleColor, $buttonsColor")
+        val appBarLayout = binding?.appBarLayout ?: return
+        val toolbar = binding?.toolbar ?: return
+
+        appBarLayout.setBackgroundColor(backgroundColor)
+        toolbar.setTitleTextColor(titleColor)
+
+        toolbar.navigationIcon?.mutate()?.setTint(buttonsColor)
+        for (i in 0 until toolbar.menu.size()) {
+            val menuItem = toolbar.menu.getItem(i)
+            // Handle icon tint
+            menuItem.icon?.mutate()?.setTint(buttonsColor)
+            // Handle text color
+            val spanString = SpannableString(menuItem.title)
+            spanString.setSpan(
+                ForegroundColorSpan(buttonsColor),
+                0,
+                spanString.length,
+                Spannable.SPAN_INCLUSIVE_INCLUSIVE
+            )
+            menuItem.title = spanString
+        }
     }
 
-    private var isElevated = false
-    @ColorInt
-    private var elevatedColor: Int = Color.TRANSPARENT
-    @ColorInt
-    private var nonElevatedColor: Int = Color.TRANSPARENT
-
-    private var appBarAnimator: ValueAnimator? = null
     private fun animateAppBarColor(
-        appBarLayout: AppBarLayout,
-        isElevated: Boolean
+        state: BarConfigurationViewModel.BarValues,
+        duration: Long
     ) {
-        if (isElevated == this.isElevated) {
+        val previousState = previousState
+
+        if (previousState == state) {
             return
         }
-        this.isElevated = isElevated
+        if (previousState == null || duration == 0L) {
+            // Initial setting should not be animated
+            setColors(state.baseToolbarColors.background, state.baseToolbarColors.titleColor, state.baseToolbarColors.buttonsColor)
+            this.previousState = state
+            return
+        }
 
-        var fromColor = if (isElevated) nonElevatedColor else elevatedColor
-        val toColor = if (isElevated) elevatedColor else nonElevatedColor
+        var fromTheme = previousState.baseToolbarColors
+        val toTheme = state.baseToolbarColors
+        this.previousState = state
 
         val animator = appBarAnimator
         if (animator?.isRunning == true) {
-            fromColor = animator.getAnimatedValue() as Int
+            val progress = animator.animatedValue as Float
+            fromTheme = fromTheme.copy(
+                background = ArgbEvaluator().evaluate(progress, fromTheme.background, toTheme.background) as Int,
+                titleColor = ArgbEvaluator().evaluate(progress, fromTheme.titleColor, toTheme.titleColor) as Int,
+                buttonsColor = ArgbEvaluator().evaluate(progress, fromTheme.buttonsColor, toTheme.buttonsColor) as Int
+            )
             animator.cancel()
         }
 
-        appBarAnimator = ValueAnimator.ofObject(ArgbEvaluator(), fromColor, toColor).apply {
-            duration = 200 // Adjust for desired smoothness
+        appBarAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
+            this.duration = duration
             addUpdateListener { animator ->
-                appBarLayout.setBackgroundColor(animator.animatedValue as Int)
+                val progress = animator.animatedFraction
+
+                val currentBackground = ArgbEvaluator().evaluate(progress, fromTheme.background, toTheme.background) as Int
+                val currentTitleColor = ArgbEvaluator().evaluate(progress, fromTheme.titleColor, toTheme.titleColor) as Int
+                val currentButtonsColor = ArgbEvaluator().evaluate(progress, fromTheme.buttonsColor, toTheme.buttonsColor) as Int
+
+                setColors(currentBackground, currentTitleColor, currentButtonsColor)
             }
             start()
         }
@@ -182,7 +212,8 @@ class ViewSpecFragment : NativeNavigationFragment(), MenuProvider {
             when (signal) {
                 is NativeNavigationViewModel.Signal.Update -> {
                     Log.d(TAG, "update Received $optionsId pushing to viewModel")
-                    updateToolbar()
+
+                    updateToolbar(signal.options.animated)
                     setupMenu()
                 }
             }
@@ -227,7 +258,8 @@ class ViewSpecFragment : NativeNavigationFragment(), MenuProvider {
         }
     }
 
-    private fun updateToolbar() {
+    private fun updateToolbar(animated: Boolean = false) {
+        val animationDuration: Long = if (animated) 200 else 0
         val binding = binding ?: return
         val toolbar = binding.toolbar
         val appBarLayout = binding.appBarLayout
@@ -238,78 +270,33 @@ class ViewSpecFragment : NativeNavigationFragment(), MenuProvider {
             viewModel.nativeNavigation?.componentSpecForId(it) as? StackSpec
         }
 
-        val isStack = stackOptions?.type == ComponentType.STACK
-        val barSpec = stackOptions?.bar?.merge(spec.stackItem?.bar) ?: spec.stackItem?.bar
+        val state = barConfigurationViewModel.updateSpec(stackOptions, spec)
+        toolbar.visibility = if (state.visible) View.VISIBLE else View.GONE
+        webviewViewModel.updateToolbarVisible(state.visible)
 
-        barSpec?.let { bar ->
-            bar.background?.color?.let { color ->
-                val colorInt = color.parseRGBAColor()
-                changeStatusBarColor(colorInt)
-            }
-        }
+        changeStatusBarColor(state.baseToolbarColors.background, animationDuration)
 
         toolbar.onMeasuredSize { _, height ->
             webviewViewModel.updateToolbarHeight(height)
         }
 
-        Log.d(TAG, "viewModel update being applied $componentId")
-        if (spec.stackItem == null && stackOptions?.bar == null || !isStack) {
-            toolbar.visibility = View.GONE
-            webviewViewModel.updateToolbarVisible(false)
-        } else {
-            val isToolbarVisible = barSpec?.visible ?: true
-            toolbar.visibility = if (isToolbarVisible) View.VISIBLE else View.GONE
-            val titleSpan = spec.title?.toSpannable()
-
-            webviewViewModel.updateToolbarVisible(isToolbarVisible)
-
-            barSpec?.let { bar ->
-                bar.background?.color?.let { color ->
-                    val colorInt = color.parseRGBAColor()
-                    nonElevatedColor = colorInt
-                    elevatedColor = darkenColor(colorInt, 0.9f)
-                    appBarLayout.setBackgroundColor(colorInt)
-
-                    webView?.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
-                        val maxScroll = 300
-                        val progress = scrollY > maxScroll.toFloat()
-                        animateAppBarColor(appBarLayout, progress)
-                    }
-                }
-                bar.title?.let { labelOptions ->
-                    labelOptions.color?.let { color ->
-                        toolbar.setTitleTextColor(color.parseRGBAColor())
-                    }
-                    labelOptions.font?.let { fontOptions ->
-                        fontOptions.name?.let { fontName ->
-                            val typeface = FontManager.getTypeface(requireContext(), fontName, Typeface.NORMAL, requireContext().assets)
-                            titleSpan?.setSpan(CustomTypefaceSpan(typeface), 0, titleSpan.length, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
-                        }
-                        fontOptions.size?.let { fontSize ->
-                            titleSpan?.setSpan(AbsoluteSizeSpan(fontSize.spToPx(requireContext())), 0, titleSpan.length, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
-                        }
-                    }
-                }
-
-                bar.buttons?.let { labelOptions ->
-                    labelOptions.color?.let { color ->
-                        toolbar.setNavigationIconTint(color.parseRGBAColor())
-                    }
-                }
-            }
-
-            toolbar.title = titleSpan
-        }
+        animateAppBarColor(state, animationDuration)
 
         toolbar.invalidateMenu()
 
-        var tintColor: Int? = null
-
-        barSpec?.buttons?.let { labelOptions ->
-            labelOptions.color?.let { color ->
-                tintColor = color.parseRGBAColor()
+        val titleSpan = state.title?.toSpannable()
+        state.titleFont?.let { fontOptions ->
+            fontOptions.name?.let { fontName ->
+                val typeface = FontManager.getTypeface(requireContext(), fontName, Typeface.NORMAL, requireContext().assets)
+                titleSpan?.setSpan(CustomTypefaceSpan(typeface), 0, titleSpan.length, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
+            }
+            fontOptions.size?.let { fontSize ->
+                titleSpan?.setSpan(AbsoluteSizeSpan(fontSize.spToPx(requireContext())), 0, titleSpan.length, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
             }
         }
+        toolbar.title = titleSpan
+
+        val tintColor: Int = state.baseToolbarColors.buttonsColor
 
         val navigationItem = spec.stackItem?.navigationItem()
         if (navigationItem != null) {
@@ -324,6 +311,7 @@ class ViewSpecFragment : NativeNavigationFragment(), MenuProvider {
         } else {
             if (findNavController().previousBackStackEntry != null && spec.stackItem?.leftItems == null) {
                 toolbar.setNavigationIcon(androidx.appcompat.R.drawable.abc_ic_ab_back_material)
+                toolbar.navigationIcon?.mutate()?.setTint(tintColor)
             } else {
                 toolbar.navigationIcon = null
             }
@@ -391,12 +379,15 @@ class ViewSpecFragment : NativeNavigationFragment(), MenuProvider {
             stackItem.rightItems?.let { items.addAll(it) }
             items.forEach { item ->
                 val spanString = SpannableString(item.title)
-                var tintColor: Int? = null
 
                 barSpec?.buttons?.let { labelOptions ->
-                    labelOptions.color?.let { color ->
-                        tintColor = color.parseRGBAColor()
-                        spanString.setSpan(ForegroundColorSpan(color.parseRGBAColor()), 0, spanString.length, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
+                    previousState?.baseToolbarColors?.buttonsColor?.let { tintColor ->
+                        spanString.setSpan(
+                            ForegroundColorSpan(tintColor),
+                            0,
+                            spanString.length,
+                            Spanned.SPAN_INCLUSIVE_INCLUSIVE
+                        )
                     }
                     labelOptions.font?.let { fontOptions ->
                         fontOptions.name?.let { fontName ->
@@ -412,7 +403,7 @@ class ViewSpecFragment : NativeNavigationFragment(), MenuProvider {
                 val menuItem = menu.add(0, item.id.hashCode(), 0, spanString)
 
                 item.image?.let { path ->
-                    fetchDrawable(path, tintColor) { icon ->
+                    fetchDrawable(path, previousState?.baseToolbarColors?.buttonsColor) { icon ->
                         menuItem.icon = icon
                     }
                 }

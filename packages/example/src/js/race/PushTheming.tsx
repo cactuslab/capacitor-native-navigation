@@ -1,6 +1,6 @@
-import { NativeNavigation } from 'capacitor-native-navigation'
+import { NativeNavigation, ViewUpdate } from 'capacitor-native-navigation'
 import { useNativeNavigationViewContext } from 'capacitor-native-navigation-react'
-import React, { useCallback, useEffect, useLayoutEffect } from 'react'
+import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import { Route, useNavigate } from 'react-router-dom'
 import TallContent from '../examples/TallContent';
 
@@ -82,11 +82,6 @@ function PushRed(): JSX.Element {
 					buttons: {
 						color: '#ff0000',
 					},
-					android: {
-						elevatedColor: {
-							color: '#ff8080',
-						},
-					}
 				},
 			},
 			title: 'Red',
@@ -112,41 +107,87 @@ function PushRed(): JSX.Element {
 
 function PushBlue(): JSX.Element {
 	const navigate = useNavigate()
-	const { updateView, addClickListener } = useNativeNavigationViewContext()
+	const { updateView, addClickListener, viewWindow } = useNativeNavigationViewContext()
 	
-	useEffect(function() {
-		updateView({
-			stackItem: {
-				rightItems: [
-					{
-						id: 'reset',
-						title: 'Reset',
-					},
-				],
-				bar: {
-					background: {
-						color: '#b0c9ffff',
-					},
-					buttons: {
-						color: '#0000ff',
-					},
-					android: {
-						elevatedColor: {
-							color: '#80aaff',
-						},
-					}
+	const [stackItem, setStackItem] = useState<ViewUpdate>({
+		stackItem: {
+			rightItems: [
+				{
+					id: 'reset',
+					title: 'Reset',
 				},
+			],
+			bar: {
+				background: {
+					color: '#b0c9ffff',
+				},
+				buttons: {
+					color: '#0000ff',
+				},
+				title: {
+					color: '#0000ff',
+				}
 			},
-			title: 'Blue',
-		})
-		
+		},
+		title: 'Blue',
+	})
+
+	useEffect(function() {
+		updateView(stackItem)
+	}, [stackItem, updateView])
+	
+
+	useEffect(function() {		
 		return addClickListener(function({ buttonId }) {
 			if (buttonId === 'reset') {
 				NativeNavigation.reset()
 			}
 		})
-	}, [addClickListener, navigate, updateView])
+	}, [addClickListener, navigate])
 	
+	const [isScrolled, setIsScrolled] = useState(false);
+
+	useEffect(() => {
+		const handleScroll = () => {
+			if (viewWindow.scrollY > 100) {
+				setIsScrolled(true);
+			} else {
+				setIsScrolled(false);
+			}
+		};
+
+		viewWindow.addEventListener("scroll", handleScroll);
+		return () => viewWindow.removeEventListener("scroll", handleScroll);
+	}, []);
+
+	useEffect(() => {
+		if (isScrolled) {
+			updateView({
+				...stackItem,
+				stackItem: {
+					...stackItem.stackItem,
+					bar: {
+						background: {
+							color: '#0000ff',
+						},
+						buttons: {
+							color: '#b0c9ffff',
+						},
+						title: {
+							color: '#b0c9ffff',
+						}
+					},
+				},
+				animated: true,
+			})
+		} else {
+			updateView({
+				...stackItem,
+				animated: true,
+			})
+		}
+	}, [isScrolled]);
+  
 	return (
 		<div>
 		<SetBodyAttribute attribute="theme" value="blue" />
@@ -178,11 +219,11 @@ function PushGreen(): JSX.Element {
 					buttons: {
 						color: '#425f4f',
 					},
-					android: {
-						elevatedColor: {
-							color: '#80ff9f',
-						},
-					}
+					// android: {
+					// 	elevatedColor: {
+					// 		color: '#80ff9f',
+					// 	},
+					// }
 				},
 				
 			},

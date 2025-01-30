@@ -94,6 +94,9 @@ function PushRed(): JSX.Element {
 					buttons: {
 						color: '#ff0000',
 					},
+					iOS: {
+						hideShadow: true,
+					},
 				},
 			},
 			title: 'Red',
@@ -133,7 +136,7 @@ function PushBlue(): JSX.Element {
 
 	useEffect(() => {
 		const handleScroll = () => {
-			if (viewWindow.scrollY > 100) {
+			if (viewWindow.scrollY > 10) {
 				setIsScrolled(true);
 			} else {
 				setIsScrolled(false);
@@ -155,13 +158,16 @@ function PushBlue(): JSX.Element {
 				],
 				bar: {
 					background: {
-						color: '#b0c9ff',
+						color: '#e0e0ff',
 					},
 					buttons: {
 						color: '#0000ff',
 					},
 					title: {
 						color: '#0000ff',
+					},
+					iOS: {
+						hideShadow: true,
 					}
 				},
 			},

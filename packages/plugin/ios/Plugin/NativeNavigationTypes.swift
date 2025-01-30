@@ -525,6 +525,7 @@ struct BarSpec : PluginResultable, JSObjectUpdatable, JSObjectDecodable {
     var buttons: LabelSpec?
     var visible: Bool?
     var hideShadow: Bool?
+    var translucent: Bool?
     
     /// Create a new bar spec that combines the fallback values where this instance is nil.
     /// This is useful for merging a view's `BarSpec` with it's container stack `BarSpec`
@@ -537,6 +538,7 @@ struct BarSpec : PluginResultable, JSObjectUpdatable, JSObjectDecodable {
         spec.buttons = LabelSpec.merge(primary: buttons, fallback: fallback.buttons)
         spec.visible = visible ?? fallback.visible
         spec.hideShadow = hideShadow ?? fallback.hideShadow
+        spec.translucent = translucent ?? fallback.translucent
         return spec
     }
     
@@ -556,6 +558,9 @@ struct BarSpec : PluginResultable, JSObjectUpdatable, JSObjectDecodable {
             if let hideShadow = iOSOpts.getBool("hideShadow") {
                 result.hideShadow = hideShadow
             }
+            if let translucent = iOSOpts.getBool("translucent") {
+                result.translucent = translucent
+            }
         }
         return result
     }
@@ -569,6 +574,7 @@ struct BarSpec : PluginResultable, JSObjectUpdatable, JSObjectDecodable {
         try Nullable<Bool>.fromJSObjectOrNil(object, key: "visible")?.apply({spec.visible = $0})
         if let iOSOpts = object.getObject("iOS") {
             try Nullable<Bool>.fromJSObjectOrNil(iOSOpts, key: "hideShadow")?.apply({spec.hideShadow = $0})
+            try Nullable<Bool>.fromJSObjectOrNil(iOSOpts, key: "translucent")?.apply({spec.translucent = $0})
         }
         
         existingObj = spec
@@ -591,6 +597,9 @@ struct BarSpec : PluginResultable, JSObjectUpdatable, JSObjectDecodable {
         var iOSOpts: PluginCallResultData = [:]
         if let value = hideShadow {
             iOSOpts["hideShadow"] = value
+        }
+        if let value = translucent {
+            iOSOpts["translucent"] = value
         }
         if !iOSOpts.isEmpty {
             result["iOS"] = iOSOpts

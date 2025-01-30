@@ -246,14 +246,13 @@ Send a message to a component.
 
 #### BarSpec
 
-| Prop             | Type                                                      |
-| ---------------- | --------------------------------------------------------- |
-| **`background`** | <code><a href="#fillspec">FillSpec</a></code>             |
-| **`title`**      | <code><a href="#labelspec">LabelSpec</a></code>           |
-| **`buttons`**    | <code><a href="#labelspec">LabelSpec</a></code>           |
-| **`visible`**    | <code>boolean</code>                                      |
-| **`iOS`**        | <code><a href="#barspecios">BarSpecIOS</a></code>         |
-| **`android`**    | <code><a href="#barspecandroid">BarSpecAndroid</a></code> |
+| Prop             | Type                                              |
+| ---------------- | ------------------------------------------------- |
+| **`background`** | <code><a href="#fillspec">FillSpec</a></code>     |
+| **`title`**      | <code><a href="#labelspec">LabelSpec</a></code>   |
+| **`buttons`**    | <code><a href="#labelspec">LabelSpec</a></code>   |
+| **`visible`**    | <code>boolean</code>                              |
+| **`iOS`**        | <code><a href="#barspecios">BarSpecIOS</a></code> |
 
 
 #### FillSpec
@@ -281,28 +280,10 @@ Send a message to a component.
 
 #### BarSpecIOS
 
-| Prop              | Type                                                    | Description                                                                                                                    |
-| ----------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| **`hideShadow`**  | <code>boolean</code>                                    | Default behaviour is to show the shadow                                                                                        |
-| **`translucent`** | <code>boolean</code>                                    | A flag to indicate Apple's translucency behaviour when content is scrolled. It can be used in conjunction with onScroll colors |
-| **`elevation`**   | <code><a href="#elevationspec">ElevationSpec</a></code> | A configuration to modify the navigation bar when the content is scrolled                                                      |
-
-
-#### ElevationSpec
-
-| Prop                 | Type                                            | Description                                         |
-| -------------------- | ----------------------------------------------- | --------------------------------------------------- |
-| **`background`**     | <code><a href="#fillspec">FillSpec</a></code>   | The elevation color of the bar                      |
-| **`title`**          | <code><a href="#labelspec">LabelSpec</a></code> |                                                     |
-| **`buttons`**        | <code><a href="#labelspec">LabelSpec</a></code> |                                                     |
-| **`scrollDistance`** | <code>number</code>                             | The required scroll distance to start the elevation |
-
-
-#### BarSpecAndroid
-
-| Prop            | Type                                                    | Description                                                        |
-| --------------- | ------------------------------------------------------- | ------------------------------------------------------------------ |
-| **`elevation`** | <code><a href="#elevationspec">ElevationSpec</a></code> | A configuration to modify the toolbar when the content is scrolled |
+| Prop              | Type                 | Description                                                                                                                    |
+| ----------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| **`hideShadow`**  | <code>boolean</code> | Default behaviour is to show the shadow                                                                                        |
+| **`translucent`** | <code>boolean</code> | A flag to indicate Apple's translucency behaviour when content is scrolled. It can be used in conjunction with onScroll colors |
 
 
 #### TabsSpec

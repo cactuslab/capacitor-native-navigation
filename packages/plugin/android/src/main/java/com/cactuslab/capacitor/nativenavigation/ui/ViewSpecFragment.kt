@@ -79,7 +79,6 @@ class ViewSpecFragment : NativeNavigationFragment(), MenuProvider {
     private var previousState: BarConfigurationViewModel.BarValues? = null
 
     private fun setColors(backgroundColor: Int, titleColor: Int, buttonsColor: Int) {
-        Log.d(TAG, "Setting colors: $backgroundColor, $titleColor, $buttonsColor")
         val appBarLayout = binding?.appBarLayout ?: return
         val toolbar = binding?.toolbar ?: return
 

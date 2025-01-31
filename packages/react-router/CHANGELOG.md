@@ -1,5 +1,17 @@
 # capacitor-native-navigation-react-router
 
+## 7.4.1
+
+### Patch Changes
+
+- Updated dependencies [4c3e387]
+- Updated dependencies [5fe2132]
+- Updated dependencies [51710b7]
+- Updated dependencies [d5d87b8]
+- Updated dependencies [15aec09]
+  - capacitor-native-navigation@0.10.0
+  - capacitor-native-navigation-react@6.3.2
+
 ## 7.4.0
 
 ### Minor Changes

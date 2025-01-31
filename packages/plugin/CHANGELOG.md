@@ -1,5 +1,18 @@
 # capacitor-native-navigation
 
+## 0.10.0
+
+### Minor Changes
+
+- 5fe2132: Improved android toolbar behaviour
+
+### Patch Changes
+
+- 4c3e387: ios: Carry capacitor configurations into the Native Navigation webview
+- 51710b7: iOS: Apply button color to the Back button arrow
+- d5d87b8: Android: Use animated changes when updating the status bar color
+- 15aec09: android: fixed jvm and kotlin toolchain inconsistency
+
 ## 0.9.1
 
 ### Patch Changes

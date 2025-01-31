@@ -1,5 +1,25 @@
 # capacitor-app
 
+## 2.5.0
+
+### Minor Changes
+
+- 5fe2132: Improved android toolbar behaviour
+
+### Patch Changes
+
+- 4c3e387: ios: Carry capacitor configurations into the Native Navigation webview
+- 51710b7: iOS: Apply button color to the Back button arrow
+- 15aec09: android: fixed jvm and kotlin toolchain inconsistency
+- Updated dependencies [4c3e387]
+- Updated dependencies [5fe2132]
+- Updated dependencies [51710b7]
+- Updated dependencies [d5d87b8]
+- Updated dependencies [15aec09]
+  - capacitor-native-navigation@0.10.0
+  - capacitor-native-navigation-react@6.3.2
+  - capacitor-native-navigation-react-router@7.4.1
+
 ## 2.4.2
 
 ### Patch Changes

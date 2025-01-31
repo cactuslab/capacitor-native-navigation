@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import ResetButton from '../ResetButton'
-import { useNativeNavigationViewContext } from 'capacitor-native-navigation-react'
 
 export default function TallContent() {
 

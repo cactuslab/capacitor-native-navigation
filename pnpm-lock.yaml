@@ -194,6 +194,9 @@ importers:
       react-dom:
         specifier: ~18
         version: 18.3.1(react@18.3.1)
+      react-router:
+        specifier: ~6
+        version: 6.28.0(react@18.3.1)
     devDependencies:
       '@capacitor/core':
         specifier: ^6.1.2

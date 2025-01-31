@@ -1,5 +1,7 @@
 package com.cactuslab.capacitor.nativenavigation.ui
 
+import android.animation.ArgbEvaluator
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.graphics.BitmapFactory
 import android.graphics.Color
@@ -8,6 +10,9 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.text.Spannable
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.AbsoluteSizeSpan
@@ -17,8 +22,11 @@ import android.util.Log
 import android.view.*
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
+import androidx.annotation.ColorInt
 import androidx.appcompat.widget.Toolbar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.animation.doOnEnd
+import androidx.core.graphics.ColorUtils
 import androidx.core.text.toSpannable
 import androidx.core.view.MenuProvider
 import androidx.core.view.WindowInsetsCompat
@@ -26,6 +34,7 @@ import androidx.core.view.doOnLayout
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewModelScope
@@ -48,6 +57,8 @@ class ViewSpecFragment : NativeNavigationFragment(), MenuProvider {
 
     private val viewModel : NativeNavigationViewModel by activityViewModels()
     private val webviewViewModel: WebviewViewModel by viewModels()
+    private val barConfigurationViewModel: BarConfigurationViewModel by viewModels()
+
     private var componentId: String? = null
 
     private var webView: WebView? = null
@@ -57,9 +68,81 @@ class ViewSpecFragment : NativeNavigationFragment(), MenuProvider {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        Log.d(TAG, "onCreateView - ViewSpecFragment")
         return FragmentBlankBinding.inflate(inflater, container, false).also {
             binding = it
         }.root
+    }
+
+    private var appBarAnimator: ValueAnimator? = null
+
+    private var previousState: BarConfigurationViewModel.BarValues? = null
+
+    private fun setColors(backgroundColor: Int, titleColor: Int, buttonsColor: Int) {
+        val appBarLayout = binding?.appBarLayout ?: return
+        val toolbar = binding?.toolbar ?: return
+
+        appBarLayout.setBackgroundColor(backgroundColor)
+        toolbar.setTitleTextColor(titleColor)
+
+        toolbar.navigationIcon?.mutate()?.setTint(buttonsColor)
+        for (i in 0 until toolbar.menu.size()) {
+            val menuItem = toolbar.menu.getItem(i)
+            // Handle icon tint
+            menuItem.icon?.mutate()?.setTint(buttonsColor)
+            // Handle text color
+            val spanString = SpannableString(menuItem.title)
+            spanString.setSpan(
+                ForegroundColorSpan(buttonsColor),
+                0,
+                spanString.length,
+                Spannable.SPAN_INCLUSIVE_INCLUSIVE
+            )
+            menuItem.title = spanString
+        }
+    }
+
+    private fun animateAppBarColor(
+        state: BarConfigurationViewModel.BarValues,
+        duration: Long
+    ) {
+        val previousState = previousState
+
+        if (previousState == null || duration == 0L || previousState == state) {
+            // Initial setting should not be animated
+            setColors(state.baseToolbarColors.background, state.baseToolbarColors.titleColor, state.baseToolbarColors.buttonsColor)
+            this.previousState = state
+            return
+        }
+
+        var fromTheme = previousState.baseToolbarColors
+        val toTheme = state.baseToolbarColors
+        this.previousState = state
+
+        val animator = appBarAnimator
+        if (animator?.isRunning == true) {
+            val progress = animator.animatedValue as Float
+            fromTheme = fromTheme.copy(
+                background = ArgbEvaluator().evaluate(progress, fromTheme.background, toTheme.background) as Int,
+                titleColor = ArgbEvaluator().evaluate(progress, fromTheme.titleColor, toTheme.titleColor) as Int,
+                buttonsColor = ArgbEvaluator().evaluate(progress, fromTheme.buttonsColor, toTheme.buttonsColor) as Int
+            )
+            animator.cancel()
+        }
+
+        appBarAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
+            this.duration = duration
+            addUpdateListener { animator ->
+                val progress = animator.animatedFraction
+
+                val currentBackground = ArgbEvaluator().evaluate(progress, fromTheme.background, toTheme.background) as Int
+                val currentTitleColor = ArgbEvaluator().evaluate(progress, fromTheme.titleColor, toTheme.titleColor) as Int
+                val currentButtonsColor = ArgbEvaluator().evaluate(progress, fromTheme.buttonsColor, toTheme.buttonsColor) as Int
+
+                setColors(currentBackground, currentTitleColor, currentButtonsColor)
+            }
+            start()
+        }
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -125,7 +208,8 @@ class ViewSpecFragment : NativeNavigationFragment(), MenuProvider {
             when (signal) {
                 is NativeNavigationViewModel.Signal.Update -> {
                     Log.d(TAG, "update Received $optionsId pushing to viewModel")
-                    updateToolbar()
+
+                    updateToolbar(signal.options.animated)
                     setupMenu()
                 }
             }
@@ -133,51 +217,48 @@ class ViewSpecFragment : NativeNavigationFragment(), MenuProvider {
             signal.consumed = true
         }
 
-        lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                webviewViewModel.state.collect() { state ->
-                    val webview = webView ?: return@collect
-                    val ctx = context ?: return@collect
+        viewLifecycleOwner.lifecycleScope.launch {
+            webviewViewModel.state.flowWithLifecycle(viewLifecycleOwner.lifecycle).collect { state ->
+                val webview = webView ?: return@collect
+                val ctx = context ?: return@collect
 
-                    val topInset = if (state.isToolbarTransparent && state.isToolbarVisible) {
-                        state.toolbarHeight + state.safeDrawing.top
-                    } else if (!state.isToolbarVisible) {
-                        state.safeDrawing.top
-                    } else {
-                        0
-                    }
-                    webview.injectCSS("""
-                    :root { --native-navigation-inset-top: ${topInset.pxToDp(requireContext())}px; }
-                    :root { --native-navigation-inset-bottom: ${state.safeDrawing.bottom.pxToDp(requireContext())}px; }
-                    :root { --native-navigation-inset-left: ${state.safeDrawing.left.pxToDp(requireContext())}px; }
-                    :root { --native-navigation-inset-right: ${state.safeDrawing.right.pxToDp(requireContext())}px; }
-                                
-                    :root { --native-navigation-safe-content-inset-top: ${state.safeContent.top.pxToDp(ctx)}px; }
-                    :root { --native-navigation-safe-content-inset-bottom: ${state.safeContent.bottom.pxToDp(ctx)}px; }
-                    :root { --native-navigation-safe-content-inset-left: ${state.safeContent.left.pxToDp(ctx)}px; }
-                    :root { --native-navigation-safe-content-inset-right: ${state.safeContent.right.pxToDp(ctx)}px; }
-                    
-                    :root { --native-navigation-safe-drawing-inset-top: ${state.safeDrawing.top.pxToDp(ctx)}px; }
-                    :root { --native-navigation-safe-drawing-inset-bottom: ${state.safeDrawing.bottom.pxToDp(ctx)}px; }
-                    :root { --native-navigation-safe-drawing-inset-left: ${state.safeDrawing.left.pxToDp(ctx)}px; }
-                    :root { --native-navigation-safe-drawing-inset-right: ${state.safeDrawing.right.pxToDp(ctx)}px; }
-                    
-                    :root { --native-navigation-safe-gestures-inset-top: ${state.safeGestures.top.pxToDp(ctx)}px; }
-                    :root { --native-navigation-safe-gestures-inset-bottom: ${state.safeGestures.bottom.pxToDp(ctx)}px; }
-                    :root { --native-navigation-safe-gestures-inset-left: ${state.safeGestures.left.pxToDp(ctx)}px; }
-                    :root { --native-navigation-safe-gestures-inset-right: ${state.safeGestures.right.pxToDp(ctx)}px; }
-                    
-                    :root { --native-navigation-toolbar-height: ${state.toolbarHeight.pxToDp(ctx)}px; }
-                    """.trimIndent(), id = "native-navigation-inset")
+                val topInset = if (!state.isToolbarVisible) {
+                    state.safeDrawing.top
+                } else {
+                    0
                 }
+                webview.injectCSS("""
+                :root { --native-navigation-inset-top: ${topInset.pxToDp(requireContext())}px; }
+                :root { --native-navigation-inset-bottom: ${state.safeDrawing.bottom.pxToDp(requireContext())}px; }
+                :root { --native-navigation-inset-left: ${state.safeDrawing.left.pxToDp(requireContext())}px; }
+                :root { --native-navigation-inset-right: ${state.safeDrawing.right.pxToDp(requireContext())}px; }
+                            
+                :root { --native-navigation-safe-content-inset-top: ${state.safeContent.top.pxToDp(ctx)}px; }
+                :root { --native-navigation-safe-content-inset-bottom: ${state.safeContent.bottom.pxToDp(ctx)}px; }
+                :root { --native-navigation-safe-content-inset-left: ${state.safeContent.left.pxToDp(ctx)}px; }
+                :root { --native-navigation-safe-content-inset-right: ${state.safeContent.right.pxToDp(ctx)}px; }
+                
+                :root { --native-navigation-safe-drawing-inset-top: ${state.safeDrawing.top.pxToDp(ctx)}px; }
+                :root { --native-navigation-safe-drawing-inset-bottom: ${state.safeDrawing.bottom.pxToDp(ctx)}px; }
+                :root { --native-navigation-safe-drawing-inset-left: ${state.safeDrawing.left.pxToDp(ctx)}px; }
+                :root { --native-navigation-safe-drawing-inset-right: ${state.safeDrawing.right.pxToDp(ctx)}px; }
+                
+                :root { --native-navigation-safe-gestures-inset-top: ${state.safeGestures.top.pxToDp(ctx)}px; }
+                :root { --native-navigation-safe-gestures-inset-bottom: ${state.safeGestures.bottom.pxToDp(ctx)}px; }
+                :root { --native-navigation-safe-gestures-inset-left: ${state.safeGestures.left.pxToDp(ctx)}px; }
+                :root { --native-navigation-safe-gestures-inset-right: ${state.safeGestures.right.pxToDp(ctx)}px; }
+                
+                :root { --native-navigation-toolbar-height: ${state.toolbarHeight.pxToDp(ctx)}px; }
+                """.trimIndent(), id = "native-navigation-inset")
             }
         }
-
     }
 
-    private fun updateToolbar() {
-        val toolbar = binding?.toolbar ?: return
-        val appBarLayout = binding?.appBarLayout ?: return
+    private fun updateToolbar(animated: Boolean = false) {
+        val animationDuration: Long = if (animated) 200 else 0
+        val binding = binding ?: return
+        val toolbar = binding.toolbar
+        val appBarLayout = binding.appBarLayout
         val componentId = componentId ?: return
         val spec = viewModel.nativeNavigation?.viewSpecForId(componentId) ?: return
 
@@ -185,92 +266,33 @@ class ViewSpecFragment : NativeNavigationFragment(), MenuProvider {
             viewModel.nativeNavigation?.componentSpecForId(it) as? StackSpec
         }
 
-        val isStack = stackOptions?.type == ComponentType.STACK
-        val barSpec = stackOptions?.bar?.merge(spec.stackItem?.bar) ?: spec.stackItem?.bar
+        val state = barConfigurationViewModel.updateSpec(stackOptions, spec)
+        toolbar.visibility = if (state.visible) View.VISIBLE else View.GONE
+        webviewViewModel.updateToolbarVisible(state.visible)
 
-        barSpec?.let { bar ->
-            bar.background?.color?.let { color ->
-                val colorInt = color.parseRGBAColor()
-                changeStatusBarColor(colorInt)
-            }
-        }
+        changeStatusBarColor(state.baseToolbarColors.background, animationDuration)
 
         toolbar.onMeasuredSize { _, height ->
             webviewViewModel.updateToolbarHeight(height)
         }
 
-        Log.d(TAG, "viewModel update being applied $componentId")
-        if (spec.stackItem == null && stackOptions?.bar == null || !isStack) {
-            toolbar.visibility = View.GONE
-            webviewViewModel.updateToolbarVisible(false)
-        } else {
-            val isToolbarVisible = barSpec?.visible ?: true
-            toolbar.visibility = if (isToolbarVisible) View.VISIBLE else View.GONE
-            val titleSpan = spec.title?.toSpannable()
-
-            webviewViewModel.updateToolbarVisible(isToolbarVisible)
-
-            barSpec?.let { bar ->
-                bar.background?.color?.let { color ->
-                    val colorInt = color.parseRGBAColor()
-
-                    toolbar.setBackgroundColor(colorInt)
-                    appBarLayout.setBackgroundColor(colorInt)
-
-                    val alpha = Color.alpha(colorInt)
-                    val isTransparent = alpha < 255
-
-                    if (isTransparent) {
-                        val layoutParams = CoordinatorLayout.LayoutParams(
-                            CoordinatorLayout.LayoutParams.MATCH_PARENT,
-                            CoordinatorLayout.LayoutParams.MATCH_PARENT
-                        )
-                        this.webView?.layoutParams = layoutParams
-                    } else {
-                        val layoutParams = CoordinatorLayout.LayoutParams(
-                            CoordinatorLayout.LayoutParams.MATCH_PARENT,
-                            CoordinatorLayout.LayoutParams.MATCH_PARENT
-                        )
-                        layoutParams.behavior = AppBarLayout.ScrollingViewBehavior()
-                        this.webView?.layoutParams = layoutParams
-                    }
-
-                    webviewViewModel.updateToolbarTransparent(isTransparent)
-                }
-                bar.title?.let { labelOptions ->
-                    labelOptions.color?.let { color ->
-                        toolbar.setTitleTextColor(color.parseRGBAColor())
-                    }
-                    labelOptions.font?.let { fontOptions ->
-                        fontOptions.name?.let { fontName ->
-                            val typeface = FontManager.getTypeface(requireContext(), fontName, Typeface.NORMAL, requireContext().assets)
-                            titleSpan?.setSpan(CustomTypefaceSpan(typeface), 0, titleSpan.length, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
-                        }
-                        fontOptions.size?.let { fontSize ->
-                            titleSpan?.setSpan(AbsoluteSizeSpan(fontSize.spToPx(requireContext())), 0, titleSpan.length, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
-                        }
-                    }
-                }
-
-                bar.buttons?.let { labelOptions ->
-                    labelOptions.color?.let { color ->
-                        toolbar.setNavigationIconTint(color.parseRGBAColor())
-                    }
-                }
-            }
-
-            toolbar.title = titleSpan
-        }
+        animateAppBarColor(state, animationDuration)
 
         toolbar.invalidateMenu()
 
-        var tintColor: Int? = null
-
-        barSpec?.buttons?.let { labelOptions ->
-            labelOptions.color?.let { color ->
-                tintColor = color.parseRGBAColor()
+        val titleSpan = state.title?.toSpannable()
+        state.titleFont?.let { fontOptions ->
+            fontOptions.name?.let { fontName ->
+                val typeface = FontManager.getTypeface(requireContext(), fontName, Typeface.NORMAL, requireContext().assets)
+                titleSpan?.setSpan(CustomTypefaceSpan(typeface), 0, titleSpan.length, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
+            }
+            fontOptions.size?.let { fontSize ->
+                titleSpan?.setSpan(AbsoluteSizeSpan(fontSize.spToPx(requireContext())), 0, titleSpan.length, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
             }
         }
+        toolbar.title = titleSpan
+
+        val tintColor: Int = state.baseToolbarColors.buttonsColor
 
         val navigationItem = spec.stackItem?.navigationItem()
         if (navigationItem != null) {
@@ -285,6 +307,7 @@ class ViewSpecFragment : NativeNavigationFragment(), MenuProvider {
         } else {
             if (findNavController().previousBackStackEntry != null && spec.stackItem?.leftItems == null) {
                 toolbar.setNavigationIcon(androidx.appcompat.R.drawable.abc_ic_ab_back_material)
+                toolbar.navigationIcon?.mutate()?.setTint(tintColor)
             } else {
                 toolbar.navigationIcon = null
             }
@@ -302,28 +325,7 @@ class ViewSpecFragment : NativeNavigationFragment(), MenuProvider {
         updateToolbar()
         setupMenu()
         viewModel.nativeNavigation?.plugin?.notifyViewWillAppear(componentId!!)
-        val animation = view?.animation
-//        if (animation != null) {
-//            animation.setAnimationListener(object: Animation.AnimationListener {
-//                override fun onAnimationStart(animation: Animation?) {
-//                    Log.d(TAG, "ANIMATOR RESUME START")
-//
-//                }
-//
-//                override fun onAnimationEnd(animation: Animation?) {
-//                    Log.d(TAG, "ANIMATOR RESUME END")
-//                    viewModel.nativeNavigation?.plugin?.notifyViewDidAppear(componentId!!)
-//                }
-//
-//                override fun onAnimationRepeat(animation: Animation?) {
-//                    Log.d(TAG, "ANIMATOR RESUME REPEAT")
-//                }
-//
-//            })
-//        } else {
         viewModel.nativeNavigation?.plugin?.notifyViewDidAppear(componentId!!)
-//        }
-
     }
 
     private fun setupMenu() {
@@ -373,12 +375,15 @@ class ViewSpecFragment : NativeNavigationFragment(), MenuProvider {
             stackItem.rightItems?.let { items.addAll(it) }
             items.forEach { item ->
                 val spanString = SpannableString(item.title)
-                var tintColor: Int? = null
 
                 barSpec?.buttons?.let { labelOptions ->
-                    labelOptions.color?.let { color ->
-                        tintColor = color.parseRGBAColor()
-                        spanString.setSpan(ForegroundColorSpan(color.parseRGBAColor()), 0, spanString.length, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
+                    previousState?.baseToolbarColors?.buttonsColor?.let { tintColor ->
+                        spanString.setSpan(
+                            ForegroundColorSpan(tintColor),
+                            0,
+                            spanString.length,
+                            Spanned.SPAN_INCLUSIVE_INCLUSIVE
+                        )
                     }
                     labelOptions.font?.let { fontOptions ->
                         fontOptions.name?.let { fontName ->
@@ -394,7 +399,7 @@ class ViewSpecFragment : NativeNavigationFragment(), MenuProvider {
                 val menuItem = menu.add(0, item.id.hashCode(), 0, spanString)
 
                 item.image?.let { path ->
-                    fetchDrawable(path, tintColor) { icon ->
+                    fetchDrawable(path, previousState?.baseToolbarColors?.buttonsColor) { icon ->
                         menuItem.icon = icon
                     }
                 }

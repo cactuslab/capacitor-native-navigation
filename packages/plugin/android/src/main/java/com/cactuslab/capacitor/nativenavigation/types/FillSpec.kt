@@ -8,13 +8,15 @@ data class FillSpec(var color: String? = null) {
     fun toJSObject(): JSObject {
         val obj = JSObject()
         color?.let {
-            obj.put("color", it)
+            obj.put(COLOR_KEY, it)
         }
         return obj
     }
     companion object {
+        private const val COLOR_KEY = "color"
+
         fun fromJSObject(jsObject: JSObject): FillSpec {
-            val color = jsObject.getString("color")
+            val color = jsObject.getString(COLOR_KEY)
             return FillSpec(color)
         }
 
@@ -22,7 +24,7 @@ data class FillSpec(var color: String? = null) {
             return checkNullOrUndefined(jsObject, key, existingValue) {
                 val obj = jsObject.getJSObject(key)!!
                 val result = existingValue ?: FillSpec()
-                result.color = String.updateFromContainer(obj, "color", result.color)
+                result.color = String.updateFromContainer(obj, COLOR_KEY, result.color)
                 result
             }
         }

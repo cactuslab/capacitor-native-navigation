@@ -1,5 +1,6 @@
 package com.cactuslab.capacitor.nativenavigation.ui
 
+import android.animation.ValueAnimator
 import android.app.Activity
 import android.graphics.drawable.Drawable
 import android.os.Build
@@ -10,6 +11,7 @@ import androidx.annotation.ColorInt
 import androidx.annotation.StringRes
 import androidx.appcompat.graphics.drawable.DrawerArrowDrawable
 import androidx.appcompat.widget.Toolbar
+import androidx.core.graphics.ColorUtils
 import androidx.core.view.WindowCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
@@ -191,13 +193,25 @@ private fun matchDestinations(destination: NavDestination?, destinationIds: Set<
     return false
 }
 
-fun Fragment.changeStatusBarColor(@ColorInt color: Int) {
-    requireActivity().changeStatusBarColor(color)
+private const val defaultAnimationDuration: Long = 150
+
+fun Fragment.changeStatusBarColor(@ColorInt color: Int, duration: Long = defaultAnimationDuration) {
+    requireActivity().changeStatusBarColor(color, duration)
 }
 
-fun Activity.changeStatusBarColor(@ColorInt color: Int) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-        window.statusBarColor = color
-        WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = !color.isColorDark()
+fun Activity.changeStatusBarColor(@ColorInt color: Int, duration: Long = defaultAnimationDuration) {
+    val transparentColor = ColorUtils.setAlphaComponent(color, 0)
+    if (duration == 0L) {
+        window.statusBarColor = transparentColor
+    } else {
+        val animator = ValueAnimator.ofArgb(window.statusBarColor, transparentColor).apply {
+            this.duration = duration
+            addUpdateListener { valueAnimator ->
+                val animatedValue = valueAnimator.animatedValue as Int
+                window.statusBarColor = animatedValue
+            }
+        }
+        animator.start()
     }
+    WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = !color.isColorDark()
 }

@@ -6,6 +6,8 @@ import Subnav from './Subnav'
 import TallContent from './TallContent'
 import Modals from './Modals'
 import MenuLeftItems from './MenuLeftItems'
+import PushTheming from './theming/PushTheming'
+import TransparentMenu from './TransparentMenu'
 
 export default function Examples() {
 	return (
@@ -13,9 +15,10 @@ export default function Examples() {
 			<Route path="links" element={<Links />} />
 			<Route path="menu" element={<Menu />} />
 			<Route path="menu-left" element={<MenuLeftItems />} />
-			<Route path="tall-content" element={<TallContent />} />
+			<Route path="tall-content" element={<TransparentMenu />} />
 			<Route path="subnav/*" element={<Subnav />} />
 			<Route path="modals/*" element={<Modals />} />
+			{PushTheming()}
 		</Routes>
 	)
 }

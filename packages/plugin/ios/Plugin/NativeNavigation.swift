@@ -743,17 +743,19 @@ class NativeNavigation: NSObject {
         }
         
         if let barOptions = options.bar {
+            
             /* There doesn't seem to be an easy way to tint the back button item */
             if let color = barOptions.buttons?.color {
                 viewController.navigationBar.tintColor = color
             }
             
-            if barOptions.background != nil {
-                viewController.navigationBar.scrollEdgeAppearance = customiseBarAppearance(UINavigationBarAppearance(), options: barOptions)
-            } else {
-                viewController.navigationBar.scrollEdgeAppearance = nil
+            let appearance = self.customiseBarAppearance(UINavigationBarAppearance(), options: barOptions)
+            viewController.navigationBar.standardAppearance = appearance
+            viewController.navigationBar.scrollEdgeAppearance = appearance
+            viewController.navigationBar.compactAppearance = appearance
+            if #available(iOS 15.0, *) {
+                viewController.navigationBar.compactScrollEdgeAppearance = appearance
             }
-            viewController.navigationBar.standardAppearance = customiseBarAppearance(UINavigationBarAppearance(), options: barOptions)
         }
     }
     
@@ -819,16 +821,22 @@ class NativeNavigation: NSObject {
                 barSpec = barSpec.barSpecWithFallback(spec)
             }
             
-            let appearance = stackItem.bar != nil ? customiseBarAppearance(UINavigationBarAppearance(), options: barSpec) : nil
+            let appearance = stackItem.bar != nil ? self.customiseBarAppearance(UINavigationBarAppearance(), options: barSpec) : nil
             viewController.navigationItem.standardAppearance = appearance
             viewController.navigationItem.scrollEdgeAppearance = appearance
             viewController.navigationItem.compactAppearance = appearance
+            if #available(iOS 15.0, *) {
+                viewController.navigationItem.compactScrollEdgeAppearance = appearance
+            }
             
             if let navigationController = viewController.navigationController {
                 if navigationController.topViewController == viewController {
                     /* This controller is the topmost in this stack so apply options that may show or hide settings for the whole navigation controller */
                     if let barOptions = stackItem.bar {
                         navigationController.setNavigationBarHidden(barOptions.visible == false, animated: animated)
+                        if let tintColor = barOptions.buttons?.color {
+                            navigationController.navigationBar.tintColor = tintColor
+                        }
                     }
                     
                 }
@@ -896,7 +904,12 @@ class NativeNavigation: NSObject {
     private func customiseBarAppearance(_ a: UINavigationBarAppearance, options barOptions: BarSpec) -> UINavigationBarAppearance {
         let aa = UINavigationBarAppearance(barAppearance: a)
         if let color = barOptions.background?.color {
-            aa.backgroundColor = color
+            if barOptions.translucent == true {
+                aa.backgroundColor = color.withAlphaComponent(0.5)
+                aa.backgroundEffect = UIBlurEffect(style: .regular)
+            } else {
+                aa.backgroundColor = color
+            }
             aa.shadowColor = barOptions.hideShadow == true ? UIColor.clear : cachedSystemShadowColor
             aa.shadowImage = barOptions.hideShadow == true ? UIImage() : nil
         }
@@ -945,6 +958,10 @@ class NativeNavigation: NSObject {
         let newWebView = WKWebView(frame: .zero, configuration: configuration)
         newWebView.uiDelegate = self.webViewDelegate
         newWebView.navigationDelegate = self.webViewDelegate
+        if #available(iOS 16.4, *) {
+            newWebView.isInspectable = self.bridge.config.isWebDebuggable
+        }
+        newWebView.scrollView.contentInsetAdjustmentBehavior = self.bridge.config.contentInsetAdjustmentBehavior
 
         _ = newWebView.loadHTMLString(html, baseURL: webView.url!)
         view.viewController.webView = newWebView
@@ -1021,6 +1038,9 @@ extension NativeNavigation: UINavigationControllerDelegate {
 
                 if navigationController.isNavigationBarHidden == barVisible {
                     navigationController.setNavigationBarHidden(!barVisible, animated: animated)
+                }
+                if let color = barSpec.buttons?.color {
+                    navigationController.navigationBar.tintColor = color
                 }
             } else {
                 throw NativeNavigatorError.illegalState(message: "Component for UINavigationController is not a ViewModel")

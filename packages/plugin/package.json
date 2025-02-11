@@ -1,6 +1,6 @@
 {
   "name": "capacitor-native-navigation",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "Native navigation for Capacitor apps",
   "type": "module",
   "main": "dist/plugin.cjs.js",

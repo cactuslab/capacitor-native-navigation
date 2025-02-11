@@ -1,5 +1,11 @@
 # capacitor-native-navigation
 
+## 0.10.1
+
+### Patch Changes
+
+- 324bfee: iOS: Introduced option to prevent bounce scrolling on the webview.
+
 ## 0.10.0
 
 ### Minor Changes

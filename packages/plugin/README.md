@@ -205,14 +205,15 @@ Send a message to a component.
 
 #### ViewSpec
 
-| Prop            | Type                                                    | Description                                                                                                                                                 |
-| --------------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`type`**      | <code>'view'</code>                                     |                                                                                                                                                             |
-| **`path`**      | <code>string</code>                                     | The path representing the view.                                                                                                                             |
-| **`state`**     | <code><a href="#stateobject">StateObject</a></code>     |                                                                                                                                                             |
-| **`title`**     | <code>string</code>                                     | The title is shown in the title bar when the view is shown in a stack. Titles may also be used in other ways by the native environment and are a good idea. |
-| **`stackItem`** | <code><a href="#stackitemspec">StackItemSpec</a></code> | Options for when the component is used in a stack                                                                                                           |
-| **`android`**   | <code>{ backButtonId?: string; }</code>                 | Options for Android specific features                                                                                                                       |
+| Prop            | Type                                                                | Description                                                                                                                                                 |
+| --------------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`type`**      | <code>'view'</code>                                                 |                                                                                                                                                             |
+| **`path`**      | <code>string</code>                                                 | The path representing the view.                                                                                                                             |
+| **`state`**     | <code><a href="#stateobject">StateObject</a></code>                 |                                                                                                                                                             |
+| **`title`**     | <code>string</code>                                                 | The title is shown in the title bar when the view is shown in a stack. Titles may also be used in other ways by the native environment and are a good idea. |
+| **`stackItem`** | <code><a href="#stackitemspec">StackItemSpec</a></code>             | Options for when the component is used in a stack                                                                                                           |
+| **`android`**   | <code>{ backButtonId?: string; }</code>                             | Options for Android specific features                                                                                                                       |
+| **`iOS`**       | <code>{ preventBounce?: boolean; preventPreview?: boolean; }</code> | Options for iOS specific features                                                                                                                           |
 
 
 #### StackItemSpec

@@ -210,6 +210,7 @@ struct ViewSpec: TabableSpec, JSObjectDecodable {
     
     var title: String?
     var stackItem: StackItemSpec?
+    var preventBounce: Bool?
     
     var path: String?
     var state: JSObject?
@@ -227,6 +228,10 @@ struct ViewSpec: TabableSpec, JSObjectDecodable {
         if let jsStackItem = object.getObject("stackItem") {
             spec.stackItem = try StackItemSpec.fromJSObject(jsStackItem)
         }
+        
+        if let iOSSpec = object.getObject("iOS") {
+            spec.preventBounce = iOSSpec.getBool("preventBounce")
+        }
                 
         return spec
     }
@@ -234,6 +239,11 @@ struct ViewSpec: TabableSpec, JSObjectDecodable {
     mutating func update(_ object: JSObjectLike) throws {
         try Nullable<String>.fromJSObjectOrNil(object, key: "title")?.apply({self.title = $0})
         try StackItemSpec.updateOrCreate(object, key: "stackItem", existingObject: &stackItem)
+        if let iOSSpec = object.getObject("iOS") {
+            if iOSSpec.has("preventBounce") {
+                preventBounce = iOSSpec.getBool("preventBounce")
+            }
+        }
     }
     
     func toPluginResult() -> PluginCallResultData {

@@ -1,4 +1,4 @@
-import { NativeNavigation, StackSpec } from 'capacitor-native-navigation'
+import { NativeNavigation, StackSpec, ViewSpec } from 'capacitor-native-navigation'
 import { NativeNavigationModal, NativeNavigationProvider } from 'capacitor-native-navigation-react'
 
 import diamond from '../assets/imgs/diamond@2x.png'
@@ -71,6 +71,7 @@ export default function Home(): React.ReactElement {
 					<dd><button onClick={() => setupStack({ path: '/examples/menu-left', title: 'Menu Left' })}>Menu Left</button></dd>
 					<dd><button onClick={() => setupStack({ path: '/examples/subnav/first', title: 'Subnav' })}>Subnav</button></dd>
 					<dd><button onClick={() => setupStack({ path: '/examples/tall-content', title: 'Tall Content', options: { bar: { background: { color: '#23ABED60' } } } })}>Transparent Menu</button></dd>
+					<dd><button onClick={() => setupStack({ path: '/examples/tall-content', title: 'No Bounce', options: { bar: { background: { color: '#23ABED60' } } }, viewOptions: {iOS: {preventBounce: true}} })}>No Bounce</button></dd>
 					<dd><button onClick={() => setupStack({ path: '/examples/modals', title: 'Modals' })}>Modals</button></dd>
 					<dd><button onClick={() => setupStack({ path: '/examples/modals', title: 'Modals', options: { bar: { visible: false } } })}>Hidden Navbar Stack</button></dd>
 					<dd><button onClick={() => setupStack({ path: '/examples/push-theming/red', title: 'Themes', options: { bar: { background: { color: '#23ABED60' } } } })}>Color Theming</button></dd>
@@ -123,7 +124,7 @@ export default function Home(): React.ReactElement {
 	)
 }
 
-async function setupStack(options: { path: string; title: string; options?: Partial<StackSpec> }) {
+async function setupStack(options: { path: string; title: string; options?: Partial<StackSpec>, viewOptions?: Partial<ViewSpec> }) {
 	const stackRoot = await NativeNavigation.present({
 		component: {
 			alias: 'rootStack',
@@ -133,6 +134,7 @@ async function setupStack(options: { path: string; title: string; options?: Part
 					type: 'view',
 					path: options?.path,
 					title: options?.title,
+					...options.viewOptions,
 				},
 			],
 			state: {

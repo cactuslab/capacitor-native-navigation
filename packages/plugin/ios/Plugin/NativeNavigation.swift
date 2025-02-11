@@ -789,6 +789,10 @@ class NativeNavigation: NSObject {
             nc.navigationBar.setNeedsLayout()
         }
         
+        if let webView = viewController.webView {
+            configure(webView: webView, with: options)
+        }
+        
         if let stackItem = options.stackItem {
             if let backItem = stackItem.backItem {
                 viewController.navigationItem.backButtonTitle = backItem.title
@@ -940,6 +944,12 @@ class NativeNavigation: NSObject {
     }
 
     //MARK: - Internal
+    /** Apply configuration options from ViewSpec on the webview */
+    private func configure(webView: WKWebView, with spec: ViewSpec) {
+        if let preventBounce = spec.preventBounce {
+            webView.scrollView.bounces = !preventBounce
+        }
+    }
     
     /** Create a new WKWebView for the given component */
     func webView(forComponent componentId: String, configuration: WKWebViewConfiguration) throws -> WKWebView? {
@@ -963,6 +973,8 @@ class NativeNavigation: NSObject {
         }
         newWebView.scrollView.contentInsetAdjustmentBehavior = self.bridge.config.contentInsetAdjustmentBehavior
 
+        configure(webView: newWebView, with: view.spec)
+        
         _ = newWebView.loadHTMLString(html, baseURL: webView.url!)
         view.viewController.webView = newWebView
 

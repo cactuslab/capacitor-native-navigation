@@ -191,6 +191,12 @@ export interface ViewSpec extends ComponentSpec {
 		 */
 		backButtonId?: string
 	}
+
+	/** Options for iOS specific features */
+	iOS?: {
+		/** Prevent the bouncing on scroll for vertical and horizontal scrolling */
+		preventBounce?: boolean
+	}
 }
 
 export interface ViewModel extends ViewSpec {

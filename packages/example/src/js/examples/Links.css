@@ -1,0 +1,24 @@
+/**
+ * Disables the long-press context menu (useful for images and links).
+ * Prevents iOS users from seeing the "Preview" action.
+ */
+.-no-callout {
+    -webkit-touch-callout: none;
+}
+
+/**
+ * Prevents text selection.
+ * Useful for non-editable UI elements to avoid accidental highlights.
+ */
+.-no-text-select {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/**
+ * Disables drag-and-drop interactions.
+ * Prevents images, links, and other elements from being dragged.
+ */
+.-no-drag {
+    -webkit-user-drag: none;
+}

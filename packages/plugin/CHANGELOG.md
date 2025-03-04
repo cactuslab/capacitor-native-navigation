@@ -1,5 +1,11 @@
 # capacitor-native-navigation
 
+## 0.10.2
+
+### Patch Changes
+
+- 68d43f2: Fix: Running media no longer requires user gestures on Android
+
 ## 0.10.1
 
 ### Patch Changes

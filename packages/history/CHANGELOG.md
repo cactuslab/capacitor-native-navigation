@@ -1,5 +1,12 @@
 # capacitor-native-navigation-history
 
+## 6.3.4
+
+### Patch Changes
+
+- Updated dependencies [68d43f2]
+  - capacitor-native-navigation@0.10.2
+
 ## 6.3.3
 
 ### Patch Changes

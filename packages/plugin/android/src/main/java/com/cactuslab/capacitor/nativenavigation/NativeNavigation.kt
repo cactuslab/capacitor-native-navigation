@@ -415,6 +415,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         val settings = webView.settings
         settings.javaScriptEnabled = true
         settings.domStorageEnabled = true
+        settings.mediaPlaybackRequiresUserGesture = false
         settings.setGeolocationEnabled(true)
         settings.databaseEnabled = true
         settings.javaScriptCanOpenWindowsAutomatically = true

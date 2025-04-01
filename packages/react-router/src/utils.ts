@@ -9,14 +9,14 @@ export function findModalConfig(path: string, options: NativeNavigationNavigator
 
 	for (const aModal of modals) {
 		if (typeof aModal.path === 'string') {
-			if (aModal.path.indexOf(':') !== -1) {
-				/* Contains react-router param markers */
-				if (pathToRegexp(aModal.path).regexp.test(path)) {
+			if (pathToRegexp(aModal.path).regexp.test(path)) {
+				return aModal
+			}
+		} else if (Array.isArray(aModal.path)) {
+			for (const aModalPath of aModal.path) {
+				if (pathToRegexp(aModalPath).regexp.test(path)) {
 					return aModal
 				}
-			}
-			if (path.startsWith(aModal.path)) {
-				return aModal
 			}
 		} else if (aModal.path instanceof RegExp) {
 			if (aModal.path.test(path)) {

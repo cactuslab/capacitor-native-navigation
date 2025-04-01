@@ -52,7 +52,7 @@ export interface ModalConfig {
 	/**
 	 * The path prefix under which this modal lives.
 	 */
-	path: string | RegExp
+	path: string | string[] | RegExp
 	presentOptions(path: string, state?: StateObject): PresentOptions
 }
 

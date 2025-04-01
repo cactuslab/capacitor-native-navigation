@@ -1,4 +1,5 @@
 import { ModalConfig, NativeNavigationNavigationState, NativeNavigationNavigatorOptions, Path } from './types'
+import { pathToRegexp } from 'path-to-regexp'
 
 export function findModalConfig(path: string, options: NativeNavigationNavigatorOptions): ModalConfig | undefined {
 	const modals = options.modals
@@ -8,6 +9,12 @@ export function findModalConfig(path: string, options: NativeNavigationNavigator
 
 	for (const aModal of modals) {
 		if (typeof aModal.path === 'string') {
+			if (aModal.path.indexOf(':') !== -1) {
+				/* Contains react-router param markers */
+				if (pathToRegexp(aModal.path).regexp.test(path)) {
+					return aModal
+				}
+			}
 			if (path.startsWith(aModal.path)) {
 				return aModal
 			}

@@ -13,7 +13,7 @@
     "sourceMap": true,
     "strict": true,
     "target": "es2020",
-    "jsx": "react"
+    "jsx": "react-jsx"
   },
   "files": ["src/index.ts"]
 }

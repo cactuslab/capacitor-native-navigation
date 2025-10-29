@@ -339,7 +339,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
     private fun popNavContext() {
         try {
-            val navContext = navContexts.removeLast()
+            val navContext = navContexts.removeAt(navContexts.lastIndex)
             removeNavContext(navContext)
         } catch (_: NoSuchElementException) {
 
@@ -402,7 +402,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                         activity.moveTaskToBack(true)
                     }
                 } else {
-                    navContext.virtualStack.removeLast()
+                    navContext.virtualStack.removeAt(navContext.virtualStack.lastIndex)
                 }
             }
         }.also { activity.onBackPressedDispatcher.addCallback(activity, it) }
@@ -664,7 +664,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                         if (options.popCount > 0) {
                             Log.d(TAG, "Popping ${options.popCount} views first")
                             for (i in 1..options.popCount) {
-                                lastRemovedId = navContext.virtualStack.removeLast()
+                                lastRemovedId = navContext.virtualStack.removeAt(navContext.virtualStack.lastIndex)
                             }
                         }
 

@@ -1,5 +1,28 @@
 # capacitor-native-navigation-react-router
 
+## 8.0.0
+
+### Major Changes
+
+- 19688e1: Modal config paths no longer match as prefixes, they now support path-to-regexp
+
+  To retain the old behaviour, add a `*` at the end of your exiting modal paths that need to match as a path prefix.
+  The modal config `path` attribute now also supports an array of paths.
+
+### Minor Changes
+
+- 17a7658: Update dependencies
+- 7265197: Add support for path params in modal config
+- a648a2c: Use react-jsx in TypeScript
+
+### Patch Changes
+
+- Updated dependencies [17a7658]
+- Updated dependencies [2781b03]
+- Updated dependencies [a648a2c]
+  - capacitor-native-navigation@0.11.0
+  - capacitor-native-navigation-react@6.4.0
+
 ## 7.4.3
 
 ### Patch Changes

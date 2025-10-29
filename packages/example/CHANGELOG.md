@@ -1,5 +1,23 @@
 # capacitor-app
 
+## 2.6.0
+
+### Minor Changes
+
+- 17a7658: Update dependencies
+
+### Patch Changes
+
+- aa8c9e8: ios: bump native dependencies
+- Updated dependencies [17a7658]
+- Updated dependencies [19688e1]
+- Updated dependencies [7265197]
+- Updated dependencies [2781b03]
+- Updated dependencies [a648a2c]
+  - capacitor-native-navigation-react-router@8.0.0
+  - capacitor-native-navigation@0.11.0
+  - capacitor-native-navigation-react@6.4.0
+
 ## 2.5.2
 
 ### Patch Changes

@@ -1,5 +1,15 @@
 # capacitor-native-navigation
 
+## 0.11.0
+
+### Minor Changes
+
+- 17a7658: Update dependencies
+
+### Patch Changes
+
+- 2781b03: Fix: Android 15 compatiblity warning about incorrect usage of removeLast
+
 ## 0.10.2
 
 ### Patch Changes

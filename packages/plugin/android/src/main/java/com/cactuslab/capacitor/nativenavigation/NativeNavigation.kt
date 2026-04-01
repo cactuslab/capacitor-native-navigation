@@ -5,6 +5,8 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Message
 import android.util.Log
+import android.view.Menu
+import android.view.View
 import android.webkit.WebView
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
@@ -31,10 +33,10 @@ import com.cactuslab.capacitor.nativenavigation.ui.ViewSpecFragment
 import com.cactuslab.capacitor.nativenavigation.ui.HostFragment
 import com.cactuslab.capacitor.nativenavigation.ui.changeStatusBarColor
 import com.getcapacitor.PluginCall
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
-import kotlin.NoSuchElementException
 import kotlin.collections.set
 
 
@@ -65,6 +67,11 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
          * This stack allows us to inspect what a stack will look like before it is presented.
          */
         val virtualStack: MutableList<String> = mutableListOf()
+
+        /** For tabs: list of root component IDs, one per tab */
+        var tabEntries: List<String>? = null
+        /** For tabs: the tabs component ID */
+        var tabsComponentId: String? = null
 
         fun getBinding(): ActivityNavigationBinding? {
             return fragment.binding
@@ -568,8 +575,139 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                 notifyCreateView(lastViewSpec.id)
             }
             is TabsSpec -> {
+                val tabSpecs = component.tabSpecs
+                if (tabSpecs.isEmpty()) {
+                    call.reject("Tabs must have at least one tab")
+                    return
+                }
 
+                // Collect all view specs from all tabs - each tab's component is a Stack or View
+                data class TabEntry(val tabSpec: TabSpec, val componentSpec: TabsOptionsTabs, val viewSpecs: List<ViewSpec>, val rootId: String)
+                val tabEntries = mutableListOf<TabEntry>()
 
+                for (tab in tabSpecs) {
+                    when (val tabComponent = tab.component) {
+                        is StackSpec -> {
+                            val stack = tabComponent.components ?: listOf()
+                            val rootId = stack.firstOrNull()?.id ?: tabComponent.id
+                            tabEntries.add(TabEntry(tab, tabComponent, stack, rootId))
+                        }
+                        is ViewSpec -> {
+                            tabEntries.add(TabEntry(tab, tabComponent, listOf(tabComponent), tabComponent.id))
+                        }
+                    }
+                }
+
+                // Set up the first tab as the initial route in the nav context
+                val firstTabEntry = tabEntries.first()
+                navContext.virtualStack.clear()
+                for (viewSpec in firstTabEntry.viewSpecs) {
+                    navContext.virtualStack.add(viewSpec.id)
+                }
+
+                // Create webviews for ALL tab views
+                for (entry in tabEntries) {
+                    for (viewSpec in entry.viewSpecs) {
+                        val webView = makeWebView(viewSpec.id)
+                        viewModel.postWebView(webView, viewSpec.id)
+                    }
+                }
+
+                navContext.fragment.onEnterEnd = Runnable {
+                    Log.d(TAG, "TABS: ANIMATOR ON ENTER END")
+                    val result = PresentResult(component.id)
+                    call.resolve(result.toJSObject())
+                }
+
+                // The last view of the first tab triggers setup
+                val lastViewOfFirstTab = firstTabEntry.viewSpecs.last()
+                viewActions[lastViewOfFirstTab.id] = {
+                    val transaction = plugin.activity.supportFragmentManager.beginTransaction()
+                    navContext.tryAddToActivity(transaction)
+                    transaction.commitNow()
+
+                    // Set up nav graph with routes for all tab root views
+                    val host = navContext.getBinding()?.navigationHost?.getFragment<NavHostFragment>()
+                        ?: throw Exception("The navigation host is null")
+                    val firstRootId = firstTabEntry.rootId
+                    val graph = host.createGraph(
+                        startDestination = "${component.id}/{${nav_arguments.component_id}}",
+                        route = "${component.id}/$firstRootId"
+                    ) {
+                        fragment<ViewSpecFragment>("${component.id}/{${nav_arguments.component_id}}") {
+                            argument(nav_arguments.component_id) {
+                                type = NavType.StringType
+                            }
+                        }
+                    }
+                    host.navController.setGraph(graph, bundleOf(nav_arguments.component_id to firstRootId))
+                    navContext.startRoute = "${component.id}/$firstRootId"
+
+                    // Push any additional views in the first tab's stack
+                    val firstTabViews = firstTabEntry.viewSpecs
+                    firstTabViews.forEachIndexed { index, viewSpec ->
+                        if (index != 0) {
+                            host.navController.navigate("${component.id}/${viewSpec.id}")
+                        }
+                    }
+
+                    // Set up the BottomNavigationView
+                    val bottomNav = navContext.getBinding()?.bottomNavigationView ?: return@let
+                    bottomNav.visibility = View.VISIBLE
+                    bottomNav.menu.clear()
+
+                    tabEntries.forEachIndexed { index, entry ->
+                        val menuTitle = entry.tabSpec.title ?: "Tab ${index + 1}"
+                        val menuItem = bottomNav.menu.add(Menu.NONE, index, index, menuTitle)
+                        menuItem.setIcon(android.R.drawable.ic_menu_compass)
+                    }
+
+                    // Store tab metadata on the navContext
+                    navContext.tabEntries = tabEntries.map { it.rootId }
+                    navContext.tabsComponentId = component.id
+
+                    bottomNav.setOnItemSelectedListener { menuItem ->
+                        val tabIndex = menuItem.itemId
+                        val targetEntry = tabEntries.getOrNull(tabIndex) ?: return@setOnItemSelectedListener false
+                        val targetRootId = targetEntry.rootId
+
+                        // Navigate to the selected tab's root
+                        val navController = navContext.navController() ?: return@setOnItemSelectedListener false
+
+                        // Pop to root first, then navigate to the tab's root
+                        navContext.startRoute?.let { startRoute ->
+                            navController.popBackStack(startRoute, inclusive = false)
+                        }
+                        if (tabIndex != 0) {
+                            navController.navigate("${component.id}/$targetRootId")
+                        }
+
+                        // Update virtualStack
+                        navContext.virtualStack.clear()
+                        for (viewSpec in targetEntry.viewSpecs) {
+                            navContext.virtualStack.add(viewSpec.id)
+                        }
+
+                        // Push any additional views in this tab's stack
+                        targetEntry.viewSpecs.forEachIndexed { index, viewSpec ->
+                            if (index != 0) {
+                                navController.navigate("${component.id}/${viewSpec.id}")
+                            }
+                        }
+
+                        true
+                    }
+                }
+
+                // Notify creation for all views across all tabs (last one first to trigger viewActions)
+                for (entry in tabEntries.reversed()) {
+                    for (viewSpec in entry.viewSpecs.reversed()) {
+                        if (viewSpec.id != lastViewOfFirstTab.id) {
+                            notifyCreateView(viewSpec.id)
+                        }
+                    }
+                }
+                notifyCreateView(lastViewOfFirstTab.id)
             }
         }
     }

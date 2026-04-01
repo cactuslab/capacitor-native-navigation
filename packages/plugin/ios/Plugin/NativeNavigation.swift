@@ -1059,11 +1059,11 @@ extension NativeNavigation: UINavigationControllerDelegate {
             }
             
         } catch {
-            fatalError(error.localizedDescription)
+            CAPLog.print("🤖 NativeNavigation: navigationController willShow error: \(error.localizedDescription)")
         }
-        
+
     }
-    
+
     /**
      We maintain the array of views in our push and pop methods, so this is often a NOOP, however this catches when the user goes back using native controls.
      */
@@ -1075,26 +1075,26 @@ extension NativeNavigation: UINavigationControllerDelegate {
             guard let viewController = viewController as? NativeNavigationViewController else {
                 throw NativeNavigatorError.illegalState(message: "Unexpected UIViewController implementation")
             }
-            
+
             guard let component = try self.component(navigationController.componentId) as? StackModel else {
                 throw NativeNavigatorError.illegalState(message: "Component for UINavigationController is not a StackModel")
             }
-            
+
             guard let topIndex = component.views.firstIndex(of: viewController.componentId) else {
                 /* This view has been removed from the model. It will be removed from the navigation controller later. */
                 return
             }
-            
+
             self.removeComponents(Array(component.views[(topIndex + 1)...]))
             component.views.removeSubrange((topIndex + 1)...)
         } catch {
-            fatalError(error.localizedDescription)
+            CAPLog.print("🤖 NativeNavigation: navigationController didShow error: \(error.localizedDescription)")
         }
     }
 }
 
 extension NativeNavigation: UITabBarControllerDelegate {
-    
+
     func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
         do {
             guard let tabBarController = tabBarController as? NativeNavigationTabBarController else {
@@ -1103,21 +1103,21 @@ extension NativeNavigation: UITabBarControllerDelegate {
             guard let viewController = viewController as? NativeNavigationViewController else {
                 throw NativeNavigatorError.illegalState(message: "Unexpected UIViewController implementation: \(viewController)")
             }
-            
+
             guard let component = try self.component(tabBarController.componentId) as? TabsModel else {
                 throw NativeNavigatorError.illegalState(message: "Component for UITabBarController is not a TabsModel")
             }
-            
+
             guard let selectedIndex = component.tabs.firstIndex(of: viewController.componentId) else {
                 throw NativeNavigatorError.illegalState(message: "Selected component of UITabBarController is not known: \(viewController.componentId)")
             }
-            
+
             component.selectedIndex = selectedIndex
         } catch {
-            fatalError(error.localizedDescription)
+            CAPLog.print("🤖 NativeNavigation: tabBarController didSelect error: \(error.localizedDescription)")
         }
     }
-    
+
 }
 
 extension NativeNavigation: UIAdaptivePresentationControllerDelegate {

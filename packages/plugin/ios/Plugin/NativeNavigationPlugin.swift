@@ -86,21 +86,24 @@ public class NativeNavigationPlugin: CAPPlugin {
             guard let id = call.getString("id") else {
                 throw NativeNavigatorError.missingParameter(name: "id")
             }
-            
+
             guard let implementation = self.implementation else {
                 throw NativeNavigatorError.illegalState(message: "Implementation is missing")
             }
-            
+
             let updateOptions = try UpdateOptions.fromJSObject(call)
             if let options = updateOptions.update {
                 var componentSpec = try implementation.findComponent(id: id).spec
                 try componentSpec.update(options)
                 let updatedSpec = componentSpec
-                do {
-                    try implementation.update(updateOptions, updatedSpec: updatedSpec)
-                    call.resolve()
-                } catch {
-                    call.reject("Failed to update: \(error.localizedDescription)")
+
+                Task {
+                    do {
+                        try implementation.update(updateOptions, updatedSpec: updatedSpec)
+                        call.resolve()
+                    } catch {
+                        call.reject("Failed to update: \(error.localizedDescription)")
+                    }
                 }
             }
         } catch {

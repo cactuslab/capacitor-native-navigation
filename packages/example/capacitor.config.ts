@@ -5,7 +5,6 @@ const config: CapacitorConfig = {
 	appId: 'com.example.plugin',
 	appName: 'Native Navigation Example',
 	webDir: 'dist',
-	bundledWebRuntime: false,
 	android: {
 		path: 'android',
 	},

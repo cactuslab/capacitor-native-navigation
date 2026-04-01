@@ -118,10 +118,10 @@ export class NativeNavigationHistory implements History {
 			result += to.pathname
 		}
 		if (to.search) {
-			result += `?${to.search}`
+			result += to.search.startsWith('?') ? to.search : `?${to.search}`
 		}
 		if (to.hash) {
-			result += `#${to.hash}`
+			result += to.hash.startsWith('#') ? to.hash : `#${to.hash}`
 		}
 		return result
 	}

@@ -124,10 +124,10 @@ export class NavigationHistoryWrapper implements History {
 			result += location.pathname
 		}
 		if (location.search) {
-			result += `?${location.search}`
+			result += location.search.startsWith('?') ? location.search : `?${location.search}`
 		}
 		if (location.hash) {
-			result += `#${location.hash}`
+			result += location.hash.startsWith('#') ? location.hash : `#${location.hash}`
 		}
 		return result
 	}

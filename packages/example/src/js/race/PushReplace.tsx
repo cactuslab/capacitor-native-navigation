@@ -3,7 +3,7 @@ import { useNativeNavigationViewContext } from 'capacitor-native-navigation-reac
 import React, { useEffect } from 'react'
 import { Route, useNavigate } from 'react-router-dom'
 
-export default function PushReplace(): JSX.Element {
+export default function PushReplace(): React.ReactElement {
 	return (
 		<Route path="push-replace">
 			<Route path="one" element={<PushReplace1 />} />
@@ -13,7 +13,7 @@ export default function PushReplace(): JSX.Element {
 	)
 }
 
-function PushReplace1(): JSX.Element {
+function PushReplace1(): React.ReactElement {
 	const navigate = useNavigate()
 	const { updateView, addClickListener } = useNativeNavigationViewContext()
 
@@ -45,7 +45,7 @@ function PushReplace1(): JSX.Element {
 	)
 }
 
-function PushReplace2(): JSX.Element {
+function PushReplace2(): React.ReactElement {
 	const navigate = useNavigate()
 
 	useEffect(function() {
@@ -62,7 +62,7 @@ function PushReplace2(): JSX.Element {
 	)
 }
 
-function PushReplace3(): JSX.Element {
+function PushReplace3(): React.ReactElement {
 	return (
 		<div>
 			<h1>Push Replace 3</h1>

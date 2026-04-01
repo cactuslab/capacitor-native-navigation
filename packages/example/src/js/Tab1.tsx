@@ -3,7 +3,7 @@ import React, { useCallback } from 'react'
 
 let badgeCounter = 1
 
-export default function Tab1(): JSX.Element {
+export default function Tab1(): React.ReactElement {
 	const { updateTab } = useNativeNavigationViewContext()
 
 	const handleUpdateBadge = useCallback(function(evt: React.MouseEvent) {

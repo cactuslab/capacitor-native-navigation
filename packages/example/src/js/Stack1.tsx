@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router-dom'
 
 let counter = 1
 
-export default function Stack1(): JSX.Element {
+export default function Stack1(): React.ReactElement {
 	const { updateView, addClickListener } = useNativeNavigationViewContext()
 	const navigate = useNavigate()
 

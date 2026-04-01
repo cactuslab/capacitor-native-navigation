@@ -3,7 +3,7 @@ import { useNativeNavigationViewContext } from 'capacitor-native-navigation-reac
 import React, { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-export default function StackImmediatePush(): JSX.Element {
+export default function StackImmediatePush(): React.ReactElement {
 	const navigate = useNavigate()
 	const { updateView, addClickListener } = useNativeNavigationViewContext()
 

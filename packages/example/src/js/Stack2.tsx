@@ -3,7 +3,7 @@ import { useNativeNavigationViewContext } from 'capacitor-native-navigation-reac
 import React, { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
-export default function Stack2(): JSX.Element {
+export default function Stack2(): React.ReactElement {
 	const navigate = useNavigate()
 	
 	const handleShowModal = useCallback(function(evt: React.MouseEvent) {

@@ -3,7 +3,7 @@ import { useNativeNavigationViewContext } from 'capacitor-native-navigation-reac
 import React, { useCallback, useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
-export default function View1(): JSX.Element {
+export default function View1(): React.ReactElement {
 	const { dismiss, addClickListener } = useNativeNavigationViewContext()
 	const location = useLocation()
 	const [got, setGot] = useState('')

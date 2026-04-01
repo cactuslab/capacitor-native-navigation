@@ -7,7 +7,7 @@ export function ModalContent() {
 		<>
 			<h1>Hello World</h1>
 			<p>Component id: {componentId || 'Not in native navigation'}</p>
-			<button onClick={evt => dismiss()}>Dismiss</button>
+			<button onClick={() => dismiss()}>Dismiss</button>
 		</>
 	)
 }

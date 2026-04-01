@@ -2,7 +2,7 @@ import { NativeNavigation, ViewUpdate } from 'capacitor-native-navigation'
 import { useNativeNavigationViewContext } from 'capacitor-native-navigation-react'
 import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import { Route, useNavigate } from 'react-router-dom'
-import TallContent from '../TallContent';
+import TallContent from '../TallContent'
 
 import './PushTheming.css'
 
@@ -20,24 +20,24 @@ import './PushTheming.css'
 const SetBodyAttribute: React.FC<{ attribute: string; value: string | null }> = ({ attribute, value }) => {
 	const context = useNativeNavigationViewContext()
 	useLayoutEffect(() => {
-		const attrName = `data-${attribute}`;
+		const attrName = `data-${attribute}`
 		
 		if (value !== null) {
-			context.viewWindow.document.body.setAttribute(attrName, value);
+			context.viewWindow.document.body.setAttribute(attrName, value)
 		} else {
-			context.viewWindow.document.body.removeAttribute(attrName);
+			context.viewWindow.document.body.removeAttribute(attrName)
 		}
 		
 		// Cleanup function to remove the attribute when the component unmounts
 		return () => {
-			context.viewWindow.document.body.removeAttribute(attrName);
-		};
-	}, [attribute, value, context.viewWindow]); // Dependencies to re-run effect if these change
+			context.viewWindow.document.body.removeAttribute(attrName)
+		}
+	}, [attribute, value, context.viewWindow]) // Dependencies to re-run effect if these change
 	
-	return null; // No UI rendering
+	return null // No UI rendering
 }
 
-export default function PushTheming(): JSX.Element {
+export default function PushTheming(): React.ReactElement {
 	return (
 		<Route path="push-theming">
 			<Route path="red" element={<PushRed />} />
@@ -47,7 +47,7 @@ export default function PushTheming(): JSX.Element {
 	)
 }
 
-function ThemeButtons(): JSX.Element {
+function ThemeButtons(): React.ReactElement {
 	const navigate = useNavigate()
 	
 	const handleRed = useCallback(function(evt: React.MouseEvent) {
@@ -74,7 +74,7 @@ function ThemeButtons(): JSX.Element {
 	)
 }
 
-function PushRed(): JSX.Element {
+function PushRed(): React.ReactElement {
 	const navigate = useNavigate()
 	const { updateView, addClickListener } = useNativeNavigationViewContext()
 	
@@ -120,7 +120,7 @@ function PushRed(): JSX.Element {
 	)
 }
 
-function PushBlue(): JSX.Element {
+function PushBlue(): React.ReactElement {
 	const navigate = useNavigate()
 	const { updateView, addClickListener, viewWindow } = useNativeNavigationViewContext()
 	
@@ -132,20 +132,20 @@ function PushBlue(): JSX.Element {
 		})
 	}, [addClickListener, navigate])
 	
-	const [isScrolled, setIsScrolled] = useState(false);
+	const [isScrolled, setIsScrolled] = useState(false)
 
 	useEffect(() => {
 		const handleScroll = () => {
 			if (viewWindow.scrollY > 10) {
-				setIsScrolled(true);
+				setIsScrolled(true)
 			} else {
-				setIsScrolled(false);
+				setIsScrolled(false)
 			}
-		};
+		}
 
-		viewWindow.addEventListener("scroll", handleScroll);
-		return () => viewWindow.removeEventListener("scroll", handleScroll);
-	}, [viewWindow]);
+		viewWindow.addEventListener('scroll', handleScroll)
+		return () => viewWindow.removeEventListener('scroll', handleScroll)
+	}, [viewWindow])
 
 	useEffect(() => {
 		const stackItem: ViewUpdate = {
@@ -168,7 +168,7 @@ function PushBlue(): JSX.Element {
 					},
 					iOS: {
 						hideShadow: true,
-					}
+					},
 				},
 			},
 			title: 'Blue',
@@ -188,7 +188,7 @@ function PushBlue(): JSX.Element {
 						},
 						title: {
 							color: '#b0c9ff',
-						}
+						},
 					},
 				},
 				animated: true,
@@ -199,7 +199,7 @@ function PushBlue(): JSX.Element {
 				animated: true,
 			})
 		}
-	}, [isScrolled, updateView]);
+	}, [isScrolled, updateView])
   
 	return (
 		<div>
@@ -212,7 +212,7 @@ function PushBlue(): JSX.Element {
 	)
 }
 
-function PushGreen(): JSX.Element {
+function PushGreen(): React.ReactElement {
 	const navigate = useNavigate()
 	const { updateView, addClickListener } = useNativeNavigationViewContext()
 	

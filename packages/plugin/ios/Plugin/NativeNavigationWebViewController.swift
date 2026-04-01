@@ -55,7 +55,7 @@ class NativeNavigationWebViewController: UIViewController, NativeNavigationViewC
     }
     
     deinit {
-        self.plugin.notifyListeners("destroyView", data: ["id": self.componentId], retainUntilConsumed: true)
+        self.plugin?.notifyListeners("destroyView", data: ["id": self.componentId], retainUntilConsumed: true)
     }
 
     override var debugDescription: String {

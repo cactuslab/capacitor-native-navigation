@@ -32,7 +32,7 @@ const SetBodyAttribute: React.FC<{ attribute: string; value: string | null }> = 
 		return () => {
 			context.viewWindow.document.body.removeAttribute(attrName);
 		};
-	}, [attribute, value]); // Dependencies to re-run effect if these change
+	}, [attribute, value, context.viewWindow]); // Dependencies to re-run effect if these change
 	
 	return null; // No UI rendering
 }
@@ -145,7 +145,7 @@ function PushBlue(): JSX.Element {
 
 		viewWindow.addEventListener("scroll", handleScroll);
 		return () => viewWindow.removeEventListener("scroll", handleScroll);
-	}, []);
+	}, [viewWindow]);
 
 	useEffect(() => {
 		const stackItem: ViewUpdate = {
@@ -199,7 +199,7 @@ function PushBlue(): JSX.Element {
 				animated: true,
 			})
 		}
-	}, [isScrolled]);
+	}, [isScrolled, updateView]);
   
 	return (
 		<div>

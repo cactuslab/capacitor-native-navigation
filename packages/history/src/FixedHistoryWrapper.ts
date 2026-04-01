@@ -48,7 +48,7 @@ export class FixedHistoryWrapper implements History {
 		this.location = toLocation(toLocationDescriptorObject(location, undefined))
 		this.action = action
 
-		for (const listener of this.listeners) {
+		for (const listener of [...this.listeners]) {
 			listener(this.location, this.action)
 		}
 	}

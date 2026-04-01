@@ -84,7 +84,7 @@ export interface MessageOptions<D = unknown> {
 /**
  * The data sent with the message event.
  */
-export interface MessageEventData<D = any> {
+export interface MessageEventData<D = unknown> {
 	target: ComponentId
 	type: string
 	value: D

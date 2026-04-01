@@ -162,14 +162,15 @@ export function useNativeNavigationNavigator(options: NativeNavigationNavigatorO
 
 	/* Handle navigate requests from closing modals */
 	useEffect(function() {
-		function navigateMessageListener(data: MessageEventData<NavigateMessageData>) {
-			const targetPath = navigator.createHref(data.value.to)
-	
+		function navigateMessageListener(data: MessageEventData) {
+			const value = data.value as NavigateMessageData
+			const targetPath = navigator.createHref(value.to)
+
 			/* Decide whether to replace what's already here, or to push */
 			if (currentPath === targetPath) {
-				navigator.replace(data.value.to, data.value.state, data.value.opts)
+				navigator.replace(value.to, value.state, value.opts)
 			} else {
-				navigator.push(data.value.to, data.value.state, data.value.opts)
+				navigator.push(value.to, value.state, value.opts)
 			}
 		}
 

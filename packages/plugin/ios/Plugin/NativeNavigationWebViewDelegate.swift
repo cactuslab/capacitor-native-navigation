@@ -4,10 +4,10 @@ import WebKit
 
 class NativeNavigationWebViewDelegate : NSObject, WKUIDelegate, WKNavigationDelegate {
 
-    private let wrappedUIDelegate: WKUIDelegate?
-    private let wrappedNavigationDelegate: WKNavigationDelegate?
+    private weak var wrappedUIDelegate: WKUIDelegate?
+    private weak var wrappedNavigationDelegate: WKNavigationDelegate?
     private let mainWebView: WKWebView
-    private let implementation: NativeNavigation
+    private weak var implementation: NativeNavigation?
 
     init(mainWebView: WKWebView, implementation: NativeNavigation) {
         self.wrappedUIDelegate = mainWebView.uiDelegate
@@ -30,7 +30,8 @@ class NativeNavigationWebViewDelegate : NSObject, WKUIDelegate, WKNavigationDele
                otherwise whatever happens in Capacitor's webview will not be visible as our UI will cover it.
              */
             CAPLog.print("🤖 NativeNavigation: resetting plugin due to page load")
-            Task {
+            Task { [weak self] in
+                guard let implementation = self?.implementation else { return }
                 do {
                     try await implementation.reset(ResetOptions(animated: false))
                 } catch {
@@ -89,13 +90,21 @@ class NativeNavigationWebViewDelegate : NSObject, WKUIDelegate, WKNavigationDele
     // See WebViewDelegationHandler for the funcs that we must proxy through
 
     func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
-        Task {
+        Task { [weak self] in
+            guard let implementation = self?.implementation else {
+                completionHandler()
+                return
+            }
             await implementation.alert(message, completionHandler: completionHandler)
         }
     }
 
     func webView(_ webView: WKWebView, runJavaScriptConfirmPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (Bool) -> Void) {
-        Task {
+        Task { [weak self] in
+            guard let implementation = self?.implementation else {
+                completionHandler(false)
+                return
+            }
             await implementation.confirm(message, completionHandler: completionHandler)
         }
     }
@@ -105,7 +114,11 @@ class NativeNavigationWebViewDelegate : NSObject, WKUIDelegate, WKNavigationDele
         if prompt.starts(with: "{") {
             self.wrappedUIDelegate?.webView?(webView, runJavaScriptTextInputPanelWithPrompt: prompt, defaultText: defaultText, initiatedByFrame: frame, completionHandler: completionHandler)
         } else {
-            Task {
+            Task { [weak self] in
+                guard let implementation = self?.implementation else {
+                    completionHandler(nil)
+                    return
+                }
                 await implementation.prompt(prompt, defaultText: defaultText, completionHandler: completionHandler)
             }
         }
@@ -115,9 +128,11 @@ class NativeNavigationWebViewDelegate : NSObject, WKUIDelegate, WKNavigationDele
         guard let path = navigationAction.request.url?.path, path.starts(with: "/capacitor-native-navigation/") else {
             return self.wrappedUIDelegate?.webView?(webView, createWebViewWith: configuration, for: navigationAction, windowFeatures: windowFeatures)
         }
-        
+
         let viewId = (path as NSString).lastPathComponent
-        
+
+        guard let implementation = self.implementation else { return nil }
+
         do {
             return try implementation.webView(forComponent: String(viewId), configuration: configuration)
         } catch {

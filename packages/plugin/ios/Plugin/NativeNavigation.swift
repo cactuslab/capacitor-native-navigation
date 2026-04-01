@@ -848,8 +848,8 @@ class NativeNavigation: NSObject {
         }
 
         func setOrCreateBarButtonItem(_ stackItem: StackBarButtonItem, buttonItem: UIBarButtonItem?) throws -> UIBarButtonItem {
-            let action = UIAction(title: stackItem.title) { [weak component] _ in
-                guard let component = component else {
+            let action = UIAction(title: stackItem.title) { [weak component, weak self] _ in
+                guard let component = component, let self = self else {
                     return
                 }
                 let data = ["buttonId": stackItem.id, "componentId": component.componentId]

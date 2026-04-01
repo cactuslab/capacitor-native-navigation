@@ -46,14 +46,14 @@
     "prepublishOnly": "pnpm run build"
   },
   "devDependencies": {
-    "@capacitor/android": "^7.2.0",
-    "@capacitor/core": "^7.2.0",
-    "@capacitor/docgen": "^0.3.0",
-    "@capacitor/ios": "^7.2.0",
+    "@capacitor/android": "^8.3.0",
+    "@capacitor/core": "^8.3.0",
+    "@capacitor/docgen": "^0.3.1",
+    "@capacitor/ios": "^8.3.0",
     "@ionic/prettier-config": "^4.0.0",
     "@ionic/swiftlint-config": "^2.0.0",
-    "prettier": "~3.5.3",
-    "prettier-plugin-java": "~2.6.7",
+    "prettier": "~3.8.1",
+    "prettier-plugin-java": "~2.8.1",
     "swiftlint": "^2.0.0"
   },
   "peerDependencies": {

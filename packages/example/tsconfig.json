@@ -6,7 +6,7 @@
     "inlineSources": true,
     "lib": ["dom", "ESNext"],
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "noFallthroughCasesInSwitch": true,
     "outDir": "dist/esm",
     "pretty": true,

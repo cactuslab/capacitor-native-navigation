@@ -102,7 +102,7 @@ export default function NativeNavigationModal(props: React.PropsWithChildren<Nat
 
 	useEffect(function() {
 		const state = stateHolder.current
-		let debounceTimer: NodeJS.Timeout | undefined
+		let debounceTimer: ReturnType<typeof setTimeout> | undefined
 
 		async function createModal() {
 			state.presented = true

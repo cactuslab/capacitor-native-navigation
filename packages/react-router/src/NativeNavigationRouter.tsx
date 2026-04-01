@@ -147,6 +147,7 @@ function NativeNavigationRoot(props: React.PropsWithChildren<NativeNavigationRea
 					state: componentProps.state,
 					...parsePath(componentProps.path),
 					key: componentProps.id,
+					unstable_mask: undefined,
 				}
 			},
 			navigate: async function(to: To | number | null, opts?: RouterNavigateOptions) {

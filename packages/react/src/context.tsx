@@ -239,7 +239,7 @@ export function NativeNavigationViewContextProvider(props: React.PropsWithChildr
 
 export function useNativeNavigationViewContext(options?: ViewUpdate): NativeNavigationViewContext {
 	const context = useContext(Context)
-	const previousOptions = useRef<ViewUpdate>()
+	const previousOptions = useRef<ViewUpdate | undefined>(undefined)
 
 	/* We want to update the options before layout occurs */
 	useLayoutEffect(function() {

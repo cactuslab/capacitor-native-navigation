@@ -52,7 +52,6 @@ fun Fragment.setupToolbar(
 }
 
 private fun NavController.lastDestination(clazz: Class<out Fragment>): NavDestination? {
-    return null
     val isCurrent = currentDestination?.let { checkDestination(it, clazz) } ?: false
     return if (isCurrent) {
         currentDestination
@@ -182,13 +181,13 @@ fun getLabelDestination(
 }
 
 private fun matchDestinations(destination: NavDestination?, destinationIds: Set<Int?>): Boolean {
-    var currentDestination: NavDestination? = destination
-    do {
-        if (destinationIds.contains(currentDestination!!.id)) {
+    var currentDestination: NavDestination? = destination ?: return false
+    while (currentDestination != null) {
+        if (destinationIds.contains(currentDestination.id)) {
             return true
         }
         currentDestination = currentDestination.parent
-    } while (currentDestination != null)
+    }
 
     return false
 }

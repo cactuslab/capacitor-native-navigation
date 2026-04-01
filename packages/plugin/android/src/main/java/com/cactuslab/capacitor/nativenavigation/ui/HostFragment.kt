@@ -22,6 +22,11 @@ class HostFragment: NativeNavigationFragment() {
         return ActivityNavigationBinding.inflate(inflater, container, false).also { this.binding = it }.root
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
+    }
+
     companion object {
         private const val TAG = "HostFragment"
     }

@@ -336,7 +336,7 @@ class ViewSpecFragment : NativeNavigationFragment(), MenuProvider {
 
     override fun onDestroyView() {
         super.onDestroyView()
-
+        binding = null
         Log.d(TAG, "Fragment View Destroyed $this")
     }
 

@@ -8,6 +8,7 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "noFallthroughCasesInSwitch": true,
+    "rootDir": "src",
     "outDir": "dist/esm",
     "pretty": true,
     "sourceMap": true,

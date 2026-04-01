@@ -8,22 +8,24 @@ const menu64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/N
 export default function Menu() {
 	const { updateView, addClickListener } = useNativeNavigationViewContext()
 
-	updateView({
-		stackItem: {
-			rightItems: [
-				{
-					id: 'menu',
-					title: 'Menu',
-					image: menu,
-				},
-				{
-					id: 'menu',
-					title: 'Menu',
-					image: menu64,
-				},
-			],
-		},
-	})
+	useEffect(function() {
+		updateView({
+			stackItem: {
+				rightItems: [
+					{
+						id: 'menu-asset',
+						title: 'Menu',
+						image: menu,
+					},
+					{
+						id: 'menu-base64',
+						title: 'Menu',
+						image: menu64,
+					},
+				],
+			},
+		})
+	}, [updateView])
 
 	useEffect(function() {
 		return addClickListener(function() {

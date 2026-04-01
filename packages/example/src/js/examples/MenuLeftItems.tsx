@@ -8,28 +8,30 @@ const menu64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/N
 export default function MenuLeftItems() {
 	const { updateView, addClickListener } = useNativeNavigationViewContext()
 
-	updateView({
-		title: 'Left Items',
-		stackItem: {
-			leftItems: [
-				{
-					id: 'menu',
-					title: 'Menu',
-					android: {
-						image: menu,
+	useEffect(function() {
+		updateView({
+			title: 'Left Items',
+			stackItem: {
+				leftItems: [
+					{
+						id: 'menu-asset',
+						title: 'Menu',
+						android: {
+							image: menu,
+						},
 					},
-				},
-				{
-					id: 'menu',
-					title: 'Menu',
-					image: menu64,
-				},
-			],
-		},
-		android: {
-			backButtonId: 'andy-back',
-		},
-	})
+					{
+						id: 'menu-base64',
+						title: 'Menu',
+						image: menu64,
+					},
+				],
+			},
+			android: {
+				backButtonId: 'andy-back',
+			},
+		})
+	}, [updateView])
 
 	useEffect(function() {
 		return addClickListener(function(id) {

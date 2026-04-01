@@ -82,26 +82,20 @@ export class NativeNavigationHistory implements History {
 
 	public go(n: number): void {
 		if (n < 0) {
-			try {
-				NativeNavigation.pop({
-					count: -n,
-				})
-			} catch (error) {
+			NativeNavigation.pop({
+				count: -n,
+			}).catch((error) => {
 				this.reportError('pop', error)
-				throw error
-			}
+			})
 		} else if (n > 0) {
 			throw new Error('NativeNavigationHistory.go forward not implemented')
 		}
 	}
 
 	public goBack(): void {
-		try {
-			NativeNavigation.pop({})
-		} catch (error) {
+		NativeNavigation.pop({}).catch((error) => {
 			this.reportError('pop', error)
-			throw error
-		}
+		})
 	}
 
 	public goForward(): void {

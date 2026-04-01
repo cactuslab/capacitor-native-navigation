@@ -319,6 +319,11 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
         viewModel.reset()
 
+        componentsById.clear()
+        componentsByAlias.clear()
+        webviewsCache.values.forEach { it.destroy() }
+        webviewsCache.clear()
+
         Log.d(TAG, "--- RESET COMPLETE ---")
     }
 

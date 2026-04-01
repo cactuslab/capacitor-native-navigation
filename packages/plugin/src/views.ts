@@ -74,11 +74,14 @@ export async function initViewHandler(options: Options): Promise<void> {
 		handler.createView(view, data)
 	}
 	
-	function attemptLoad(view: Window, data: CreateViewEventData) {
+	function attemptLoad(view: Window, data: CreateViewEventData, attempts = 0) {
+		const MAX_ATTEMPTS = 500 // ~4.5 seconds at 9ms intervals
 		if (handler.ready(view)) {
 			loadView(view, data)
+		} else if (attempts >= MAX_ATTEMPTS) {
+			console.error(`NativeNavigation: view ${data.id} failed to become ready after ${MAX_ATTEMPTS} attempts`)
 		} else {
-			setTimeout(() => attemptLoad(view, data), 9)
+			setTimeout(() => attemptLoad(view, data, attempts + 1), 9)
 		}
 	}
 }

@@ -143,8 +143,20 @@ struct TabsSpec: ComponentSpec {
     }
     
     mutating func update(_ object: JSObjectLike) throws {
-        // TODO: Unimplemented
-        fatalError("Updating a tabspec is unimplemented")
+        if let titleValue = object.getString("title") {
+            self.title = titleValue
+        }
+        if let tabObjects = object.getArray("tabs") as? [JSObject] {
+            for (index, tabObject) in tabObjects.enumerated() {
+                if index < self.tabs.count {
+                    var existingTab: TabSpec? = self.tabs[index]
+                    try TabSpec.updateOrCreate(tabObject, existingObj: &existingTab)
+                    if let updatedTab = existingTab {
+                        self.tabs[index] = updatedTab
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -178,27 +190,42 @@ struct TabSpec: PluginResultable, JSObjectUpdatable, JSObjectDecodable {
     }
     
     static func fromJSObject(_ object: JSObjectLike) throws -> TabSpec {
-        // TODO: Review this commented out code an update it for correctness
-        fatalError("This method is not implemented")
-//        guard let componentObject = object.getObject("component") else {
-//            throw NativeNavigatorError.missingParameter(name: "component")
-//        }
-//
-//        let componentSpec = try tabableSpecFromJSObject(componentObject)
-//
-//        var result = TabSpec(component: componentSpec)
-//
-//        result.id = object.getString("id")
-//        result.badgeValue = object.getString("badgeValue")
-//        result.image = try ImageObject.fromJSObject(object, key: "image")
-//        result.title = object.getString("title")
-//
-//        return result
+        guard let componentObject = object.getObject("component") else {
+            throw NativeNavigatorError.missingParameter(name: "component")
+        }
+
+        let componentSpec = try tabableSpecFromJSObject(componentObject)
+
+        var result = TabSpec(component: componentSpec)
+
+        result.id = object.getString("id")
+        result.badgeValue = object.getString("badgeValue")
+        result.image = try ImageObject.fromJSObject(object, key: "image")
+        result.title = object.getString("title")
+
+        if let state = object.getObject("state") {
+            result.state = state
+        }
+
+        return result
     }
     
     static func updateOrCreate(_ object: JSObjectLike, existingObj: inout TabSpec?) throws {
-        // TODO: Unimplemented
-        fatalError("Updating a tabspec is unimplemented")
+        if existingObj != nil {
+            if let title = object.getString("title") {
+                existingObj?.title = title
+            }
+            if let badgeValue = object.getString("badgeValue") {
+                existingObj?.badgeValue = badgeValue
+            } else if object.has("badgeValue") {
+                existingObj?.badgeValue = nil
+            }
+            if let image = try ImageObject.fromJSObject(object, key: "image") {
+                existingObj?.image = image
+            }
+        } else {
+            existingObj = try TabSpec.fromJSObject(object)
+        }
     }
 }
 

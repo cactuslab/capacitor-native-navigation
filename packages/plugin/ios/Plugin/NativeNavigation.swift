@@ -642,22 +642,32 @@ class NativeNavigation: NSObject {
         let componentId = generateId()
         let tc = NativeNavigationTabBarController(componentId: componentId)
         let model = TabsModel(componentId: componentId, spec: spec, viewController: tc, tabs: [], selectedIndex: 0, container: container?.componentId)
-        
-        try self.configureViewController(model, options: spec, animated: false)
-    
-        // TODO: Fix tabs to work with tabSpec
-        fatalError("Unimplemented processing of tabComponents in createTabs")
-//        let tabComponents = try spec.tabs.map {
-//            try self.createComponent($0, container: model)
-//        }
-        
-//        model.tabs = tabComponents.map { $0.componentId }
-        
-//        tc.viewControllers = tabComponents.map { $0.viewController }
-//        tc.delegate = self
 
-//        try storeComponent(model)
-//        return model
+        try storeComponent(model)
+
+        var viewControllers = [UIViewController]()
+        for tabSpec in spec.tabs {
+            let tabComponent = try self.createComponent(tabSpec.component, container: model)
+            model.tabs.append(tabComponent.componentId)
+
+            let tabVC = tabComponent.viewController
+            tabVC.tabBarItem = UITabBarItem(
+                title: tabSpec.title,
+                image: try tabSpec.image.flatMap { try toImage($0) },
+                tag: viewControllers.count
+            )
+            if let badgeValue = tabSpec.badgeValue {
+                tabVC.tabBarItem.badgeValue = badgeValue
+            }
+            viewControllers.append(tabVC)
+        }
+
+        tc.viewControllers = viewControllers
+        tc.delegate = self
+
+        try self.configureViewController(model, options: spec, animated: false)
+
+        return model
     }
 
     @MainActor
@@ -767,17 +777,19 @@ class NativeNavigation: NSObject {
         if let nc = viewController.navigationController {
             nc.navigationBar.setNeedsLayout()
         }
-        // TODO: Fix up the code below to work with the new TabsSpec
-//        if let tabOptions = options.tab {
-//            if let badgeValue = tabOptions.badgeValue {
-//                viewController.tabBarItem.badgeValue = badgeValue
-//            } else {
-//                viewController.tabBarItem.badgeValue = nil
-//            }
-//            if let image = tabOptions.image {
-//                viewController.tabBarItem.image = try toImage(image)
-//            }
-//        }
+
+        /* Update tab bar items from the spec */
+        if let viewControllers = viewController.viewControllers {
+            for (index, tabSpec) in options.tabs.enumerated() {
+                guard index < viewControllers.count else { break }
+                let tabVC = viewControllers[index]
+                tabVC.tabBarItem.title = tabSpec.title
+                tabVC.tabBarItem.badgeValue = tabSpec.badgeValue
+                if let image = tabSpec.image {
+                    tabVC.tabBarItem.image = try toImage(image)
+                }
+            }
+        }
     }
 
     @MainActor
@@ -868,41 +880,42 @@ class NativeNavigation: NSObject {
             return result
         }
 
-        func toImage(_ image: ImageObject) throws -> UIImage {
-            guard let url = URL(string: image.uri, relativeTo: self.bridge.webView?.url) else {
-                throw NativeNavigatorError.illegalState(message: "Cannot construct URL for path: \(image.uri)")
-            }
-
-            let data: Data
-            do {
-                data = try Data(contentsOf: url)
-            } catch {
-                throw NativeNavigatorError.illegalState(message: "Failed to load image \"\(image.uri)\": \(error)")
-            }
-            
-            let scale = image.scale ?? determineImageScale(image.uri)
-            if let uiImage = UIImage(data: data, scale: scale) {
-                if (image.disableTint == true) {
-                    return uiImage.withRenderingMode(.alwaysOriginal)
-                }
-                return uiImage
-            } else {
-                throw NativeNavigatorError.illegalState(message: "Not an image at \"\(image.uri)\"")
-            }
-        }
-        
-        func determineImageScale(_ path: String) -> CGFloat {
-            let filename = ((path as NSString).lastPathComponent as NSString).deletingPathExtension
-            if filename.hasSuffix("@2x") {
-                return 2
-            } else if filename.hasSuffix("@3x") {
-                return 3
-            } else {
-                return 1
-            }
-        }
     }
     
+    func toImage(_ image: ImageObject) throws -> UIImage {
+        guard let url = URL(string: image.uri, relativeTo: self.bridge.webView?.url) else {
+            throw NativeNavigatorError.illegalState(message: "Cannot construct URL for path: \(image.uri)")
+        }
+
+        let data: Data
+        do {
+            data = try Data(contentsOf: url)
+        } catch {
+            throw NativeNavigatorError.illegalState(message: "Failed to load image \"\(image.uri)\": \(error)")
+        }
+
+        let scale = image.scale ?? determineImageScale(image.uri)
+        if let uiImage = UIImage(data: data, scale: scale) {
+            if image.disableTint == true {
+                return uiImage.withRenderingMode(.alwaysOriginal)
+            }
+            return uiImage
+        } else {
+            throw NativeNavigatorError.illegalState(message: "Not an image at \"\(image.uri)\"")
+        }
+    }
+
+    private func determineImageScale(_ path: String) -> CGFloat {
+        let filename = ((path as NSString).lastPathComponent as NSString).deletingPathExtension
+        if filename.hasSuffix("@2x") {
+            return 2
+        } else if filename.hasSuffix("@3x") {
+            return 3
+        } else {
+            return 1
+        }
+    }
+
     private let cachedSystemShadowColor = UINavigationBarAppearance().shadowColor
     
     private func customiseBarAppearance(_ a: UINavigationBarAppearance, options barOptions: BarSpec) -> UINavigationBarAppearance {

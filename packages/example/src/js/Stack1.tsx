@@ -43,7 +43,7 @@ export default function Stack1(): JSX.Element {
 				},
 			},
 		})
-	}, [iOSShadowHidden])
+	}, [iOSShadowHidden, updateView])
 
 	const handlePush = useCallback(function(evt: React.MouseEvent) {
 		evt.preventDefault()

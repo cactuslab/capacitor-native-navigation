@@ -60,6 +60,7 @@ class ViewSpecFragment : NativeNavigationFragment(), MenuProvider {
     private val barConfigurationViewModel: BarConfigurationViewModel by viewModels()
 
     private var componentId: String? = null
+    private val menuItemIdToButtonId = mutableMapOf<Int, String>()
 
     private var webView: WebView? = null
 
@@ -359,6 +360,7 @@ class ViewSpecFragment : NativeNavigationFragment(), MenuProvider {
     }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+        menuItemIdToButtonId.clear()
         val componentId = componentId ?: return
 
         val spec = viewModel.nativeNavigation?.viewSpecForId(componentId) ?: return
@@ -396,7 +398,9 @@ class ViewSpecFragment : NativeNavigationFragment(), MenuProvider {
                     }
                 }
 
-                val menuItem = menu.add(0, item.id.hashCode(), 0, spanString)
+                val menuItemId = View.generateViewId()
+                menuItemIdToButtonId[menuItemId] = item.id
+                val menuItem = menu.add(0, menuItemId, 0, spanString)
 
                 item.image?.let { path ->
                     fetchDrawable(path, previousState?.baseToolbarColors?.buttonsColor) { icon ->
@@ -499,19 +503,12 @@ class ViewSpecFragment : NativeNavigationFragment(), MenuProvider {
     }
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-        val spec = viewModel.nativeNavigation?.viewSpecForId(componentId!!)!!
+        val spec = viewModel.nativeNavigation?.viewSpecForId(componentId ?: return false) ?: return false
 
         val options = spec.stackItem ?: return false
         val componentId = componentId ?: return false
-        val items: MutableList<StackBarButtonItem> = mutableListOf()
-        options.nonNavigationLeftItems()?.let { items.addAll(it) }
-        options.rightItems?.let { items.addAll(it) }
-        for (item in items) {
-            if (menuItem.itemId == item.id.hashCode()) {
-                viewModel.nativeNavigation?.notifyClick(item.id, componentId)
-                return true
-            }
-        }
-        return false
+        val buttonId = menuItemIdToButtonId[menuItem.itemId] ?: return false
+        viewModel.nativeNavigation?.notifyClick(buttonId, componentId)
+        return true
     }
 }

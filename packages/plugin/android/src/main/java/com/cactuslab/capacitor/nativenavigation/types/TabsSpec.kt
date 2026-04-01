@@ -56,8 +56,8 @@ class TabsSpec(id: String? = null,
                     "type",
                     typeString
                 )
-            if (type != ComponentType.STACK) {
-                throw InvalidParameterException("type", "Type $type is incorrect for ViewOptions")
+            if (type != ComponentType.TABS) {
+                throw InvalidParameterException("type", "Type $type is incorrect for TabsSpec")
             }
 
             val state = jsObject.getJSObject("state")

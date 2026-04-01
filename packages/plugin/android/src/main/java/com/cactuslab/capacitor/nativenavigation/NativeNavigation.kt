@@ -200,7 +200,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         if (spec != null) {
 
             Log.d(TAG, "shouldOverrideLoad: Removing Webview in Cache for id: ${identifier}")
-            val webView = webviewsCache.remove(identifier)!!
+            val webView = webviewsCache.remove(identifier) ?: return false
 
             plugin.activity.lifecycleScope.launch(Dispatchers.Main) {
                 Log.d(TAG, "shouldOverrideLoad: Setting HTML on Webivew for component ${identifier}")
@@ -278,7 +278,10 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
     fun update(options: UpdateOptions) {
         Log.d(TAG, "update: -> $options")
-        val spec = componentSpecForId(options.id)!!
+        val spec = componentSpecForId(options.id) ?: run {
+            Log.w(TAG, "update: component not found for id ${options.id}")
+            return
+        }
 
         options.update?.let { obj ->
             spec.update(obj)
@@ -338,12 +341,9 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
     }
 
     private fun popNavContext() {
-        try {
-            val navContext = navContexts.removeAt(navContexts.lastIndex)
-            removeNavContext(navContext)
-        } catch (_: NoSuchElementException) {
-
-        }
+        if (navContexts.isEmpty()) return
+        val navContext = navContexts.removeAt(navContexts.lastIndex)
+        removeNavContext(navContext)
     }
 
     private fun setupBackPressedHandler() {
@@ -401,7 +401,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                          */
                         activity.moveTaskToBack(true)
                     }
-                } else {
+                } else if (navContext.virtualStack.isNotEmpty()) {
                     navContext.virtualStack.removeAt(navContext.virtualStack.lastIndex)
                 }
             }
@@ -453,14 +453,20 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
     fun notifyCreateView(id: String) {
         Log.d(TAG, "notifyCreateView: started for id: ${id}")
-        val component = componentSpecForId(id) as ViewSpec
+        val component = componentSpecForId(id) as? ViewSpec ?: run {
+            Log.w(TAG, "notifyCreateView: component $id is not a ViewSpec")
+            return
+        }
         nextWindowAction.add(component)
         plugin.notifyCreateView(component.path, component.id, component.alias, component.state, findStackComponentIdHosting(id))
     }
 
     fun notifyUpdateView(id: String) {
         Log.d(TAG, "notifyUpdateView: started for id: ${id}")
-        val component = componentSpecForId(id) as ViewSpec
+        val component = componentSpecForId(id) as? ViewSpec ?: run {
+            Log.w(TAG, "notifyUpdateView: component $id is not a ViewSpec")
+            return
+        }
         plugin.notifyUpdateView(component.path, component.id, component.alias, component.state, findStackComponentIdHosting(id))
     }
 
@@ -863,9 +869,12 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         Log.d(TAG, "windowOpen: started")
         val component = nextWindowAction.poll() ?: return false
 
-        Log.d(TAG, "windowOpen: with url ${view!!.url!!} for componentId ${component.id}")
+        Log.d(TAG, "windowOpen: with url ${view?.url} for componentId ${component.id}")
 
-        val webView = webviewsCache.get(component.id)!!
+        val webView = webviewsCache.get(component.id) ?: run {
+            Log.w(TAG, "windowOpen: no cached webview for component ${component.id}")
+            return false
+        }
 
         resultMsg?.let { message ->
             val webViewTransport = message.obj!! as WebView.WebViewTransport
@@ -879,7 +888,10 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
     fun viewReady(options: ViewReadyOptions) {
         Log.d(TAG, "viewReady: processing viewAction for ${options.id}")
-        val action = viewActions.remove(options.id)
+        val action = viewActions.remove(options.id) ?: run {
+            Log.w(TAG, "viewReady: no action found for ${options.id}")
+            return
+        }
         plugin.activity.runOnUiThread(action)
     }
 

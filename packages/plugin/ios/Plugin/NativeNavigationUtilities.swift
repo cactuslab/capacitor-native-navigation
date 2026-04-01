@@ -32,19 +32,18 @@ enum Nullable<T> {
 
 extension UIColor {
     func toHex() -> String? {
-        guard let components = self.cgColor.components else {
+        var r: CGFloat = 0
+        var g: CGFloat = 0
+        var b: CGFloat = 0
+        var a: CGFloat = 0
+        guard self.getRed(&r, green: &g, blue: &b, alpha: &a) else {
             return nil
         }
-        
-        let r = Float(components[0])
-        let g = Float(components[1])
-        let b = Float(components[2])
-        let a = Float(components[3])
-        
+
         let hasAlpha = a != 1.0
-        
+
         return String(format: "#%02lX%02lX%02lX%@",
-                      lroundf(r * 255), lroundf(g * 255), lroundf(b * 255),
-                      hasAlpha ? String(format: "%02lX", lroundf(a * 255)) : "")
+                      lroundf(Float(r) * 255), lroundf(Float(g) * 255), lroundf(Float(b) * 255),
+                      hasAlpha ? String(format: "%02lX", lroundf(Float(a) * 255)) : "")
     }
 }

@@ -21,7 +21,7 @@ let nextModalId = 0
 function leafComponentAlias(spec: AnyComponentSpec): string | undefined {
 	if (spec.type === 'stack') {
 		if (spec.components.length) {
-			return leafComponentAlias(spec.components[0])
+			return leafComponentAlias(spec.components[spec.components.length - 1])
 		}
 	} else if (spec.type === 'tabs') {
 		if (spec.tabs.length) {
@@ -34,11 +34,12 @@ function leafComponentAlias(spec: AnyComponentSpec): string | undefined {
 function updateLeafComponentAlias<T extends AnyComponentSpec>(spec: T, alias: string): T {
 	if (spec.type === 'stack') {
 		if (spec.components.length) {
+			const lastIndex = spec.components.length - 1
 			return {
 				...spec,
 				components: [
-					updateLeafComponentAlias(spec.components[spec.components.length - 1], alias),
-					...spec.components.slice(1),
+					...spec.components.slice(0, lastIndex),
+					updateLeafComponentAlias(spec.components[lastIndex], alias),
 				],
 			}
 		}

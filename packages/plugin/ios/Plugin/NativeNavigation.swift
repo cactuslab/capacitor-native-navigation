@@ -1162,23 +1162,28 @@ class CaptureDataURLSchemeTask: NSObject, WKURLSchemeTask {
     }
     
     func didFinish() {
+        guard let continuation = self.continuation else { return }
+        self.continuation = nil
+
         if let encoding = self.encoding {
             if let string = String(data: data, encoding: encoding) {
-                continuation?.resume(returning: string)
+                continuation.resume(returning: string)
             } else {
-                continuation?.resume(throwing: NativeNavigatorError.illegalState(message: "Cannot parse data"))
+                continuation.resume(throwing: NativeNavigatorError.illegalState(message: "Cannot parse data"))
             }
         } else {
             if let string = String(data: data, encoding: .utf8) {
-                continuation?.resume(returning: string)
+                continuation.resume(returning: string)
             } else {
-                continuation?.resume(throwing: NativeNavigatorError.illegalState(message: "Cannot parse data"))
+                continuation.resume(throwing: NativeNavigatorError.illegalState(message: "Cannot parse data"))
             }
         }
     }
-    
+
     func didFailWithError(_ error: Error) {
-        continuation?.resume(throwing: error)
+        guard let continuation = self.continuation else { return }
+        self.continuation = nil
+        continuation.resume(throwing: error)
     }
     
 }

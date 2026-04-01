@@ -177,7 +177,7 @@ function compareState(a: unknown, b: unknown) {
 		}
 
 		const aa = a as Record<string, unknown>
-		const bb = a as Record<string, unknown>
+		const bb = b as Record<string, unknown>
 
 		for (let i = 0; i < ka.length; i++) {
 			if (aa[ka[i]] !== bb[ka[i]]) {

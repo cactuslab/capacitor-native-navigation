@@ -649,21 +649,27 @@ class NativeNavigation: NSObject {
         for tabSpec in spec.tabs {
             let tabComponent = try self.createComponent(tabSpec.component, container: model)
             model.tabs.append(tabComponent.componentId)
-
-            let tabVC = tabComponent.viewController
-            tabVC.tabBarItem = UITabBarItem(
-                title: tabSpec.title,
-                image: try tabSpec.image.flatMap { try toImage($0) },
-                tag: viewControllers.count
-            )
-            if let badgeValue = tabSpec.badgeValue {
-                tabVC.tabBarItem.badgeValue = badgeValue
-            }
-            viewControllers.append(tabVC)
+            viewControllers.append(tabComponent.viewController)
         }
 
         tc.viewControllers = viewControllers
         tc.delegate = self
+
+        /* Configure tab bar items after viewControllers is set, so UIKit has
+           completed its initial layout and our items take precedence */
+        for (index, tabSpec) in spec.tabs.enumerated() {
+            guard index < viewControllers.count else { break }
+            let tabVC = viewControllers[index]
+            let item = UITabBarItem(
+                title: tabSpec.title,
+                image: try tabSpec.image.flatMap { try toImage($0) },
+                tag: index
+            )
+            if let badgeValue = tabSpec.badgeValue {
+                item.badgeValue = badgeValue
+            }
+            tabVC.tabBarItem = item
+        }
 
         try self.configureViewController(model, options: spec, animated: false)
 

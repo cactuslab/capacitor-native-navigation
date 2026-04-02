@@ -8,7 +8,7 @@ const DEFAULT_CONTEXT: NativeNavigationReact = {
 	views() {
 		throw new Error('Not inside NativeNavigationProvider')
 	},
-	view(id) {
+	view() {
 		throw new Error('Not inside NativeNavigationProvider')
 	},
 	addViewsListener() {

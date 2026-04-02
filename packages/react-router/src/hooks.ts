@@ -74,13 +74,13 @@ export function useNativeNavigationNavigator(options: NativeNavigationNavigatorO
 	}, [componentId, currentModal, plugin, reportError, stack])
 
 	/** Inject the router ID into view state so the owning router can identify its views */
-	function tagState(state: unknown): StateObject | undefined {
+	const tagState = useCallback(function(state: unknown): StateObject | undefined {
 		if (!routerId) return state as StateObject | undefined
 		if (state && typeof state === 'object') {
 			return { ...state as StateObject, [NN_ROUTER_ID_KEY]: routerId }
 		}
 		return { [NN_ROUTER_ID_KEY]: routerId }
-	}
+	}, [routerId])
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const push = useCallback(async function(to: To, state?: any, opts?: NavigateOptions | undefined): Promise<void> {
@@ -156,7 +156,7 @@ export function useNativeNavigationNavigator(options: NativeNavigationNavigatorO
 			reportError(replace ? 'replace' : 'push', error)
 			throw error
 		}
-	}, [componentId, currentModal, options, plugin, reportError, stack])
+	}, [componentId, currentModal, options, plugin, reportError, stack, tagState])
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const replace = useCallback(async function(to: To, state?: any, opts?: NavigateOptions | undefined): Promise<void> {

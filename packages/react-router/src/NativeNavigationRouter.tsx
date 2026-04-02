@@ -1,10 +1,10 @@
-import React, { useEffect, useId, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { NativeNavigationViewProps, useNativeNavigation } from 'capacitor-native-navigation-react'
 import { NativeNavigationViewContextProvider } from 'capacitor-native-navigation-react/context'
 import { NativeNavigationNavigatorOptions } from './index'
 import { useNativeNavigationNavigator } from './hooks'
-import { BrowserRouter, matchRoutes, RouteObject, Router, RouterProvider, RouterProviderProps, To } from 'react-router-dom'
+import { BrowserRouter, matchRoutes, RouteObject, Router, RouterProvider, RouterProviderProps } from 'react-router-dom'
 import { parsePath } from './utils'
 import { isNativeNavigationAvailable } from 'capacitor-native-navigation'
 import NativeNavigationDataRouter from './NativeNavigationDataRouter'
@@ -92,7 +92,7 @@ export default function NativeNavigationRouter(props: React.PropsWithChildren<Na
 	 *    - Data routers match by route tree.
 	 *    - Children-based routers accept if no data router matches the path.
 	 */
-	function ownsView(viewId: string, path: string, viewState: unknown): boolean {
+	const ownsView = useCallback(function(viewId: string, path: string, viewState: unknown): boolean {
 		const taggedRouterId = getRouterIdFromState(viewState)
 		if (taggedRouterId) {
 			return taggedRouterId === routerId
@@ -109,7 +109,7 @@ export default function NativeNavigationRouter(props: React.PropsWithChildren<Na
 			}
 		}
 		return true
-	}
+	}, [routerId, routes])
 
 	/* Work around React double-firing useEffect in development mode */
 	const state = useRef<NativeNavigationRouterInternalState>({
@@ -145,7 +145,7 @@ export default function NativeNavigationRouter(props: React.PropsWithChildren<Na
 				}, 1)
 			}
 		})
-	}, [nativeNavigationReact, routes])
+	}, [nativeNavigationReact, ownsView])
 
 	/* If CNN isn't available, render the default router */
 	if (!isNativeNavigationAvailable()) {

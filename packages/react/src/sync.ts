@@ -116,12 +116,13 @@ export function initSync(views: Record<ComponentId, NativeNavigationReactView>):
 	 * Emotion uses insertRule in production / speed mode rather than modifying the DOM.
 	 */
 	function monitorStylesheets() {
-		// eslint-disable-next-line @typescript-eslint/prefer-for-of
 		for (let i = 0; i < window.document.styleSheets.length; i++) {
 			const styleSheet = window.document.styleSheets[i]
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			if ((styleSheet as any).nativeNavigationMonitored) {
 				continue
 			}
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			(styleSheet as any).nativeNavigationMonitored = true
 	
 			/* Override insertRule so each time it is used we copy the new rule to the corresponding stylesheet in other windows */
@@ -179,7 +180,7 @@ function findMatchingStyleSheet(source: CSSStyleSheet, view: Window): CSSStyleSh
 		return undefined
 	}
 
-	// eslint-disable-next-line @typescript-eslint/prefer-for-of
+	 
 	for (let j = 0; j < view.document.styleSheets.length; j++) {
 		const targetStyleSheet = view.document.styleSheets[j]
 		if ((targetStyleSheet.ownerNode as HTMLElement).dataset['capacitorNativeNavigationId'] === nodeId) {
@@ -201,7 +202,7 @@ function findStyleSheetForNode(node: Node): CSSStyleSheet | undefined {
 		return undefined
 	}
 
-	// eslint-disable-next-line @typescript-eslint/prefer-for-of
+	 
 	for (let i = 0; i < doc.styleSheets.length; i++) {
 		const styleSheet = doc.styleSheets[i]
 		if (styleSheet.ownerNode === node) {

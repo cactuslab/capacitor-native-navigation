@@ -39,7 +39,7 @@ let pendingHandoff: PendingHandoff | null = null
  * the loader.
  */
 export default function NativeNavigationDataRouter(props: Props) {
-	const { sourceRouter, navigator, componentProps, dontAwaitLoaders, routerId } = props
+	const { sourceRouter, navigator, componentProps, dontAwaitLoaders } = props
 
 	const viewRouter = useMemo(() => {
 		const initialPath = parsePath(componentProps.path)
@@ -59,6 +59,7 @@ export default function NativeNavigationDataRouter(props: Props) {
 		})
 
 		return createNativeNavigationRouterProxy(router, initialPath, navigator, sourceRouter, dontAwaitLoaders)
+	// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []) /* Intentionally empty deps — router is created once per view portal */
 
 	useEffect(() => {

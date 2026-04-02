@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/prefer-for-of */
 import type { LocationDescriptorObject } from 'history'
 
 import { defaultDecider } from './NavigationDecider'

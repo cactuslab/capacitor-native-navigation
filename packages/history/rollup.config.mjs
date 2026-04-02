@@ -16,4 +16,4 @@ export default [
       'react-dom/client',
     ],
   },
-];
+]

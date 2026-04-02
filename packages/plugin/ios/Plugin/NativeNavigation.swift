@@ -295,7 +295,7 @@ class NativeNavigation: NSObject {
         
     func update(_ options: UpdateOptions, updatedSpec: any ComponentSpec) throws {
         let component = try self.component(options.id)
-        
+
         switch (component, updatedSpec) {
         case let (model as TabsModel, spec as TabsSpec):
             Task {
@@ -305,15 +305,95 @@ class NativeNavigation: NSObject {
         case let (model as ViewModel, spec as ViewSpec):
             Task {
                 try await self.configureViewController(model, options: spec, animated: options.animated)
+                if let update = options.update {
+                    try await self.updateTabIfNeeded(componentId: options.id, update: update)
+                }
             }
             model.spec = spec
         case let (model as StackModel, spec as StackSpec):
             Task {
                 try await self.configureViewController(model, options: spec, animated: options.animated)
+                if let update = options.update {
+                    try await self.updateTabIfNeeded(componentId: options.id, update: update)
+                }
             }
             model.spec = spec
         default:
             throw NativeNavigatorError.illegalState(message: "Component and Spec did not match types \(component.self), \(updatedSpec.self)")
+        }
+    }
+
+    /** If a component is inside a tabs container, update the tab's badge/title/image */
+    @MainActor
+    private func updateTabIfNeeded(componentId: ComponentId, update: JSObjectLike) throws {
+        guard update.has("badgeValue") || update.has("image") else {
+            return
+        }
+
+        /* Walk up to find the parent TabsModel */
+        let component = try self.component(componentId)
+        guard let containerId = component.container,
+              let tabsModel = try? self.component(containerId) as? TabsModel else {
+            /* Component might be nested deeper (view inside stack inside tabs) */
+            if let containerId = component.container,
+               let stackModel = try? self.component(containerId) as? StackModel,
+               let tabsContainerId = stackModel.container,
+               let tabsModel = try? self.component(tabsContainerId) as? TabsModel {
+                try applyTabUpdate(tabsModel: tabsModel, childId: containerId, update: update)
+            }
+            return
+        }
+        try applyTabUpdate(tabsModel: tabsModel, childId: componentId, update: update)
+    }
+
+    @MainActor
+    private func applyTabUpdate(tabsModel: TabsModel, childId: ComponentId, update: JSObjectLike) throws {
+        guard let tabIndex = tabsModel.tabs.firstIndex(of: childId) else {
+            return
+        }
+        guard tabIndex < tabsModel.spec.tabs.count else {
+            return
+        }
+
+        /* Update the spec */
+        if update.has("badgeValue") {
+            tabsModel.spec.tabs[tabIndex].badgeValue = update.getString("badgeValue")
+        }
+        if let imageObj = try ImageObject.fromJSObject(update, key: "image") {
+            tabsModel.spec.tabs[tabIndex].image = imageObj
+        }
+        if let title = update.getString("title") {
+            tabsModel.spec.tabs[tabIndex].title = title
+        }
+
+        /* Apply to the UI */
+        let tc = tabsModel.viewController
+        if #available(iOS 26.0, *) {
+            if tabIndex < tc.tabs.count {
+                let tab = tc.tabs[tabIndex]
+                if update.has("badgeValue") {
+                    tab.badgeValue = update.getString("badgeValue")
+                }
+                if let title = update.getString("title") {
+                    tab.title = title
+                }
+                if let imageObj = try ImageObject.fromJSObject(update, key: "image") {
+                    tab.image = try toImage(imageObj)
+                }
+            }
+        } else {
+            if let viewControllers = tc.viewControllers, tabIndex < viewControllers.count {
+                let tabVC = viewControllers[tabIndex]
+                if update.has("badgeValue") {
+                    tabVC.tabBarItem.badgeValue = update.getString("badgeValue")
+                }
+                if let title = update.getString("title") {
+                    tabVC.tabBarItem.title = title
+                }
+                if let imageObj = try ImageObject.fromJSObject(update, key: "image") {
+                    tabVC.tabBarItem.image = try toImage(imageObj)
+                }
+            }
         }
     }
 

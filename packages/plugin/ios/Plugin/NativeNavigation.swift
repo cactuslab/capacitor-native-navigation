@@ -652,24 +652,40 @@ class NativeNavigation: NSObject {
             viewControllers.append(tabComponent.viewController)
         }
 
-        tc.viewControllers = viewControllers
-        tc.delegate = self
-
-        /* Configure tab bar items after viewControllers is set, so UIKit has
-           completed its initial layout and our items take precedence */
-        for (index, tabSpec) in spec.tabs.enumerated() {
-            guard index < viewControllers.count else { break }
-            let tabVC = viewControllers[index]
-            let item = UITabBarItem(
-                title: tabSpec.title,
-                image: try tabSpec.image.flatMap { try toImage($0) },
-                tag: index
-            )
-            if let badgeValue = tabSpec.badgeValue {
-                item.badgeValue = badgeValue
+        if #available(iOS 26.0, *) {
+            /* iOS 26 uses the UITab API for correct Liquid Glass tab bar layout */
+            var tabs = [UITab]()
+            for (index, tabSpec) in spec.tabs.enumerated() {
+                guard index < viewControllers.count else { break }
+                let tabVC = viewControllers[index]
+                let identifier = model.tabs[index]
+                let tab = UITab(title: tabSpec.title ?? "", image: try tabSpec.image.flatMap { try toImage($0) }, identifier: identifier) { _ in
+                    return tabVC
+                }
+                if let badgeValue = tabSpec.badgeValue {
+                    tab.badgeValue = badgeValue
+                }
+                tabs.append(tab)
             }
-            tabVC.tabBarItem = item
+            tc.tabs = tabs
+        } else {
+            for (index, tabSpec) in spec.tabs.enumerated() {
+                guard index < viewControllers.count else { break }
+                let tabVC = viewControllers[index]
+                let item = UITabBarItem(
+                    title: tabSpec.title,
+                    image: try tabSpec.image.flatMap { try toImage($0) },
+                    tag: index
+                )
+                if let badgeValue = tabSpec.badgeValue {
+                    item.badgeValue = badgeValue
+                }
+                tabVC.tabBarItem = item
+            }
+            tc.setViewControllers(viewControllers, animated: false)
         }
+
+        tc.delegate = self
 
         try self.configureViewController(model, options: spec, animated: false)
 
@@ -736,13 +752,19 @@ class NativeNavigation: NSObject {
     private func waitForViewsReady(_ vc: UIViewController) async {
         if let vc = vc as? NativeNavigationWebViewController {
             await vc.createOpdateWebView()
-        } else if let nc = vc as? UINavigationController {
+        } else if let nc = vc as? NativeNavigationNavigationController {
             for vc in nc.viewControllers {
                 await waitForViewsReady(vc)
             }
-        } else if let tc = vc as? UITabBarController {
-            for vc in tc.viewControllers ?? [] {
-                await waitForViewsReady(vc)
+        } else if let tc = vc as? NativeNavigationTabBarController {
+            /* Walk our component model rather than tc.viewControllers, as the
+               UITab API on iOS 26 lazily loads view controllers */
+            if let tabsModel = try? self.component(tc.componentId) as? TabsModel {
+                for tabId in tabsModel.tabs {
+                    if let tabComponent = try? self.component(tabId) {
+                        await waitForViewsReady(tabComponent.viewController)
+                    }
+                }
             }
         }
     }

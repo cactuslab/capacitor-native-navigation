@@ -43,14 +43,14 @@ class TabsModel: ComponentModel {
     let componentId: ComponentId
     var spec: TabsSpec
     let viewController: NativeNavigationTabBarController
-    var tabs: [ComponentId]
+    var tabs: [ComponentId?]
     var selectedIndex: Int
     let container: ComponentId?
     var presentOptions: PresentOptions?
     var cancelled = false
     var presented = false
     
-    init(componentId: ComponentId, spec: TabsSpec, viewController: NativeNavigationTabBarController, tabs: [ComponentId], selectedIndex: Int, container: ComponentId? = nil) {
+    init(componentId: ComponentId, spec: TabsSpec, viewController: NativeNavigationTabBarController, tabs: [ComponentId?], selectedIndex: Int, container: ComponentId? = nil) {
         self.componentId = componentId
         self.spec = spec
         self.viewController = viewController
@@ -348,7 +348,7 @@ class NativeNavigation: NSObject {
 
     @MainActor
     private func applyTabUpdate(tabsModel: TabsModel, childId: ComponentId, update: JSObjectLike) throws {
-        guard let tabIndex = tabsModel.tabs.firstIndex(of: childId) else {
+        guard let tabIndex = tabsModel.tabs.firstIndex(where: { $0 == childId }) else {
             return
         }
         guard tabIndex < tabsModel.spec.tabs.count else {
@@ -658,7 +658,7 @@ class NativeNavigation: NSObject {
                 removeComponents(stack.views)
             } else if let tabs = component as? TabsModel {
                 tabs.cancelled = true
-                removeComponents(tabs.tabs)
+                removeComponents(tabs.tabs.compactMap { $0 })
             }
             
             componentsById.removeValue(forKey: id)
@@ -725,22 +725,45 @@ class NativeNavigation: NSObject {
 
         try storeComponent(model)
 
-        var viewControllers = [UIViewController]()
-        for tabSpec in spec.tabs {
-            let tabComponent = try self.createComponent(tabSpec.component, container: model)
-            model.tabs.append(tabComponent.componentId)
-            viewControllers.append(tabComponent.viewController)
-        }
-
         if #available(iOS 26.0, *) {
-            /* iOS 26 uses the UITab API for correct Liquid Glass tab bar layout */
+            /* iOS 26 uses the UITab API for correct Liquid Glass tab bar layout.
+               View controllers are created lazily: only the initially selected tab
+               is created eagerly; others are created on first selection via the
+               UITab content closure. Once created, they are kept. */
+            model.tabs = Array(repeating: nil, count: spec.tabs.count)
+
+            /* Eagerly create the initially selected tab so waitForViewsReady can
+               prepare its web views before the tab bar controller is presented. */
+            let initialIndex = 0
+            let initialComponent = try self.createComponent(spec.tabs[initialIndex].component, container: model)
+            model.tabs[initialIndex] = initialComponent.componentId
+
             var tabs = [UITab]()
             for (index, tabSpec) in spec.tabs.enumerated() {
-                guard index < viewControllers.count else { break }
-                let tabVC = viewControllers[index]
-                let identifier = model.tabs[index]
-                let tab = UITab(title: tabSpec.title ?? "", image: try tabSpec.image.flatMap { try toImage($0) }, identifier: identifier) { _ in
-                    return tabVC
+                let identifier = "\(componentId)_tab\(index)"
+                let tab = UITab(title: tabSpec.title ?? "", image: try tabSpec.image.flatMap { try toImage($0) }, identifier: identifier) { [weak self] _ in
+                    /* Return the existing view controller if already created */
+                    if let existingId = model.tabs[index],
+                       let existingComponent = try? self?.component(existingId) {
+                        return existingComponent.viewController
+                    }
+
+                    /* Lazily create the component on first selection */
+                    guard let self = self else { return UIViewController() }
+                    do {
+                        let tabComponent = try self.createComponent(tabSpec.component, container: model)
+                        model.tabs[index] = tabComponent.componentId
+
+                        /* Fire off async web view creation */
+                        Task { @MainActor in
+                            await self.waitForViewsReady(tabComponent.viewController)
+                        }
+
+                        return tabComponent.viewController
+                    } catch {
+                        CAPLog.print("🤖 NativeNavigation: Failed to lazily create tab \(index): \(error.localizedDescription)")
+                        return UIViewController()
+                    }
                 }
                 if let badgeValue = tabSpec.badgeValue {
                     tab.badgeValue = badgeValue
@@ -749,6 +772,13 @@ class NativeNavigation: NSObject {
             }
             tc.tabs = tabs
         } else {
+            var viewControllers = [UIViewController]()
+            for tabSpec in spec.tabs {
+                let tabComponent = try self.createComponent(tabSpec.component, container: model)
+                model.tabs.append(tabComponent.componentId)
+                viewControllers.append(tabComponent.viewController)
+            }
+
             for (index, tabSpec) in spec.tabs.enumerated() {
                 guard index < viewControllers.count else { break }
                 let tabVC = viewControllers[index]
@@ -838,10 +868,11 @@ class NativeNavigation: NSObject {
             }
         } else if let tc = vc as? NativeNavigationTabBarController {
             /* Walk our component model rather than tc.viewControllers, as the
-               UITab API on iOS 26 lazily loads view controllers */
+               UITab API on iOS 26 lazily loads view controllers. Only process
+               tabs whose components have already been created. */
             if let tabsModel = try? self.component(tc.componentId) as? TabsModel {
                 for tabId in tabsModel.tabs {
-                    if let tabComponent = try? self.component(tabId) {
+                    if let tabId = tabId, let tabComponent = try? self.component(tabId) {
                         await waitForViewsReady(tabComponent.viewController)
                     }
                 }
@@ -1229,7 +1260,7 @@ extension NativeNavigation: UITabBarControllerDelegate {
                 throw NativeNavigatorError.illegalState(message: "Component for UITabBarController is not a TabsModel")
             }
 
-            guard let selectedIndex = component.tabs.firstIndex(of: viewController.componentId) else {
+            guard let selectedIndex = component.tabs.firstIndex(where: { $0 == viewController.componentId }) else {
                 throw NativeNavigatorError.illegalState(message: "Selected component of UITabBarController is not known: \(viewController.componentId)")
             }
 

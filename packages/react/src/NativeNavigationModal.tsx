@@ -1,7 +1,7 @@
 import { useRef, useEffect, useMemo } from 'react'
 import type React from 'react'
 import { createPortal } from 'react-dom'
-import { AnyComponentSpec, ComponentAlias, NativeNavigation, PresentationStyle } from 'capacitor-native-navigation'
+import { AnyComponentSpec, NativeNavigation, PresentationStyle } from 'capacitor-native-navigation'
 import { useNativeNavigation, useNativeNavigationView } from './internal'
 import { NativeNavigationViewContextProvider } from './context'
 import { ReactViewListenerUnsubscribeFunc } from './types'

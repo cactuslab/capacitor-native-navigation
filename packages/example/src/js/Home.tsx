@@ -21,6 +21,7 @@ import { ModalContent } from './ModalContent'
 import { nativeNavigationNavigatorOptions, nativeNavigationReact } from './init'
 import ModalsRace from './race/ModalsRace'
 import LinkModal, { LinkModalPage2 } from './LinkModal'
+import { dataRouterAwait, dataRouterImmediate, setupDataRouterAwait, setupDataRouterImmediate } from './data-router/DataRouterExample'
 
 export default function Home(): React.ReactElement {
 	const [showModal, setShowModal] = useState(false)
@@ -59,6 +60,8 @@ export default function Home(): React.ReactElement {
 					})}>Stack</button></dd>
 					<dd><button style={{ fontSize: '2rem' }} onClick={setupTabs}>Tabs</button></dd>
 					<dd><button style={{ fontSize: '2rem' }} onClick={setupView}>View</button></dd>
+					<dd><button style={{ fontSize: '2rem' }} onClick={setupDataRouterAwait}>Data Router (await)</button></dd>
+					<dd><button style={{ fontSize: '2rem' }} onClick={setupDataRouterImmediate}>Data Router (immediate)</button></dd>
 					<h2>Races</h2>
 					<dd><button onClick={() => setupStack({ path: '/race/stack-immediate-push', title: 'Stack Immediate Push' })}>Immediate push</button></dd>
 					<dd><button onClick={() => setupStack({ path: '/race/stack-immediate-replace', title: 'Stack Immediate Replace' })}>Immediate replace</button></dd>
@@ -100,6 +103,10 @@ export default function Home(): React.ReactElement {
 						</Route>
 					</Routes>
 				</NativeNavigationRouter>
+
+				{/* Data router examples — each only handles views matching its routes */}
+				<NativeNavigationRouter navigation={nativeNavigationNavigatorOptions} router={dataRouterAwait} />
+				<NativeNavigationRouter navigation={nativeNavigationNavigatorOptions} router={dataRouterImmediate} dontAwaitLoaders />
 
 				{/* Modals */}
 				{/* This modal is always mounted and its presentation is controlled by the open prop, so it retains the same modal component id */}

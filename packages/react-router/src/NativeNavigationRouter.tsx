@@ -4,7 +4,7 @@ import { NativeNavigationViewProps, useNativeNavigation } from 'capacitor-native
 import { NativeNavigationViewContextProvider } from 'capacitor-native-navigation-react/context'
 import { NativeNavigationNavigatorOptions } from './index'
 import { useNativeNavigationNavigator } from './hooks'
-import { resolvePath, Router, RouterProvider, RouterProviderProps, To } from 'react-router-dom'
+import { BrowserRouter, resolvePath, Router, RouterProvider, RouterProviderProps, To } from 'react-router-dom'
 import { parsePath } from './utils'
 import { isNativeNavigationAvailable } from 'capacitor-native-navigation'
 
@@ -72,7 +72,11 @@ export default function NativeNavigationRouter(props: React.PropsWithChildren<Na
 				<RouterProvider router={router} />
 			)
 		} else {
-			return children
+			return (
+				<BrowserRouter>
+					{children}
+				</BrowserRouter>
+			)
 		}
 	}
 

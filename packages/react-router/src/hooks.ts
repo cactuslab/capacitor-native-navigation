@@ -1,7 +1,8 @@
-import type { MessageEventData } from 'capacitor-native-navigation'
+import type { MessageEventData, StateObject } from 'capacitor-native-navigation'
 import { useNativeNavigation, useNativeNavigationViewContext } from 'capacitor-native-navigation-react'
 import { useCallback, useEffect, useMemo } from 'react'
 import type { NavigateOptions, Navigator, To } from 'react-router-dom'
+import { NN_ROUTER_ID_KEY } from './NativeNavigationRouter'
 import { NativeNavigationNavigatorOptions } from './types'
 import { findModalConfig, ignoreUntilDone, toNativeNavigationNavigationState } from './utils'
 
@@ -11,7 +12,7 @@ const NAVIGATOR_NAVIGATE_MESSAGE_TYPE = 'capacitor-native-navigation-react-route
  * A Navigator implementation to provide to react-router that handles navigation requests
  * using Capacitor Native Navigation.
  */
-export function useNativeNavigationNavigator(options: NativeNavigationNavigatorOptions): Navigator {
+export function useNativeNavigationNavigator(options: NativeNavigationNavigatorOptions, routerId?: string): Navigator {
 	const { plugin } = useNativeNavigation()
 
 	const { componentId, stack, path: currentPath, addMessageListener, removeMessageListener } = useNativeNavigationViewContext()
@@ -72,9 +73,18 @@ export function useNativeNavigationNavigator(options: NativeNavigationNavigatorO
 		}
 	}, [componentId, currentModal, plugin, reportError, stack])
 
+	/** Inject the router ID into view state so the owning router can identify its views */
+	function tagState(state: unknown): StateObject | undefined {
+		if (!routerId) return state as StateObject | undefined
+		if (state && typeof state === 'object') {
+			return { ...state as StateObject, [NN_ROUTER_ID_KEY]: routerId }
+		}
+		return { [NN_ROUTER_ID_KEY]: routerId }
+	}
+
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const push = useCallback(async function(to: To, state?: any, opts?: NavigateOptions | undefined): Promise<void> {
-		const actualState = state || opts?.state
+		const actualState = tagState(state || opts?.state)
 		const navigationState = toNativeNavigationNavigationState(actualState)
 
 		if (typeof navigationState?.dismiss === 'string') {

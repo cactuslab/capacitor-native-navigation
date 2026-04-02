@@ -1,5 +1,33 @@
 # capacitor-native-navigation
 
+## 0.12.0
+
+### Minor Changes
+
+- 37421db: Implement Android tabs support using `BottomNavigationView` with dynamic menu items and tab switching
+- a250fe2: Implement iOS tabs support with `UITabBarController`, tab bar items with titles/images/badges
+- c968383: Implement iOS 26 `UITab` API for correct Liquid Glass tab bar layout
+- 01a3b10: Implement tab badge/title/image updates via `updateTab`
+
+### Patch Changes
+
+- 06028f0: Fix: add max retry limit to `attemptLoad` polling loop
+- 9ab9cc2: Fix: clear view binding references in `onDestroyView`
+- 4f74a59: Fix: `UIColor.toHex()` crash on grayscale colors
+- 2ce3aa6: Fix: nil out `CaptureDataURLSchemeTask` continuation after resume to prevent double resume
+- 8f13b0b: Fix: use optional chaining for weak `plugin` reference in `deinit`
+- abcdf1c: Fix: replace `fatalError` with logging in UIKit delegate callbacks
+- 5d9ad98: Fix: replace force-unwraps with safe access to prevent crashes
+- 74a8392: Fix: remove early `return null` in `lastDestination` and fix NPE in `matchDestinations`
+- 255e42f: Fix: use unique IDs for menu items instead of `String.hashCode()`
+- 8e9f41f: Fix: use `unknown` instead of `any` for `MessageEventData` default generic
+- 543dce3: Fix: clear component maps and destroy WebViews on `reset()`
+- 708d089: Fix: break retain cycle in `NativeNavigationWebViewDelegate` by using weak references
+- 79d2144: Fix: set tab bar items after assigning viewControllers to `UITabBarController`
+- 26d91bb: Fix: `TabsSpec` type check validates against `STACK` instead of `TABS`
+- cfba1eb: Fix: capture `self` weakly in UIAction closure to prevent retain cycle
+- cb6640e: Fix: wrap `update()` plugin method in `Task` for main actor dispatch
+
 ## 0.11.0
 
 ### Minor Changes

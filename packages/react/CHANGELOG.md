@@ -1,5 +1,32 @@
 # capacitor-native-navigation-react
 
+## 6.4.1
+
+### Patch Changes
+
+- 6cd68f5: Fix `leafComponentAlias` and `updateLeafComponentAlias` to target the last (deepest) component in a stack
+- Updated dependencies [06028f0]
+- Updated dependencies [9ab9cc2]
+- Updated dependencies [4f74a59]
+- Updated dependencies [2ce3aa6]
+- Updated dependencies [8f13b0b]
+- Updated dependencies [abcdf1c]
+- Updated dependencies [5d9ad98]
+- Updated dependencies [74a8392]
+- Updated dependencies [255e42f]
+- Updated dependencies [8e9f41f]
+- Updated dependencies [543dce3]
+- Updated dependencies [708d089]
+- Updated dependencies [79d2144]
+- Updated dependencies [26d91bb]
+- Updated dependencies [cfba1eb]
+- Updated dependencies [cb6640e]
+- Updated dependencies [37421db]
+- Updated dependencies [a250fe2]
+- Updated dependencies [c968383]
+- Updated dependencies [01a3b10]
+  - capacitor-native-navigation@0.12.0
+
 ## 6.4.0
 
 ### Minor Changes

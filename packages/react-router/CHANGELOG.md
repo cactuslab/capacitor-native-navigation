@@ -1,5 +1,46 @@
 # capacitor-native-navigation-react-router
 
+## 8.1.0
+
+### Minor Changes
+
+- d725df7: Add data router support with loader handoff, view ownership, and `dontAwaitLoaders` prop
+- d725df7: Add data router support with loader handoff:
+  - Support react-router data routers via the `router` prop on `NativeNavigationRouter`
+  - Loaders run before native push by default, with loaded data handed off to the new view via `hydrationData` (no double-load)
+  - Current view shows `navigation.state === 'loading'` via standard `useNavigation()` while loaders run
+  - Add `dontAwaitLoaders` prop to push immediately with `Suspense`/`Await` loading instead
+  - Multiple `NativeNavigationRouter` instances can coexist via view ownership tagging
+
+### Patch Changes
+
+- 1d82b67: Wrap web fallback in `BrowserRouter` when native navigation is not available
+- 93033a2: Remove debug `console.log` statements and unused `delay` function
+- e5b3a90: Adapt hooks to `MessageEventData` `unknown` default generic
+- Updated dependencies [06028f0]
+- Updated dependencies [9ab9cc2]
+- Updated dependencies [4f74a59]
+- Updated dependencies [2ce3aa6]
+- Updated dependencies [8f13b0b]
+- Updated dependencies [abcdf1c]
+- Updated dependencies [5d9ad98]
+- Updated dependencies [74a8392]
+- Updated dependencies [6cd68f5]
+- Updated dependencies [255e42f]
+- Updated dependencies [8e9f41f]
+- Updated dependencies [543dce3]
+- Updated dependencies [708d089]
+- Updated dependencies [79d2144]
+- Updated dependencies [26d91bb]
+- Updated dependencies [cfba1eb]
+- Updated dependencies [cb6640e]
+- Updated dependencies [37421db]
+- Updated dependencies [a250fe2]
+- Updated dependencies [c968383]
+- Updated dependencies [01a3b10]
+  - capacitor-native-navigation@0.12.0
+  - capacitor-native-navigation-react@6.4.1
+
 ## 8.0.0
 
 ### Major Changes

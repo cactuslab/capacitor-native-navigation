@@ -53,6 +53,19 @@ function getRouterIdFromState(state: unknown): string | undefined {
 	return undefined
 }
 
+/**
+ * Defer `fireViewReady` so React can finish rendering before the native layer drops loading chrome.
+ * Prefer `queueMicrotask` over `setTimeout(..., 1)` to avoid a visible flash after native tab transitions;
+ * fall back to `setTimeout` when `queueMicrotask` is unavailable (older runtimes).
+ */
+function scheduleViewReadyCallback(callback: () => void): void {
+	if (typeof queueMicrotask === 'function') {
+		queueMicrotask(callback)
+	} else {
+		setTimeout(callback, 1)
+	}
+}
+
 /** Registry of data router route trees, so children-based routers can
  *  defer to them for untagged views. */
 const dataRouterRoutes = new Map<string, RouteObject[]>()
@@ -140,9 +153,9 @@ export default function NativeNavigationRouter(props: React.PropsWithChildren<Na
 			setCounter(counter => counter + 1)
 
 			if (event === 'create' || event === 'update') {
-				setTimeout(function() {
+				scheduleViewReadyCallback(function() {
 					nativeNavigationReact.fireViewReady(view.id)
-				}, 1)
+				})
 			}
 		})
 	}, [nativeNavigationReact, ownsView])

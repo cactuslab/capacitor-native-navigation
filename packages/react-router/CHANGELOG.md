@@ -1,5 +1,11 @@
 # capacitor-native-navigation-react-router
 
+## 8.2.0
+
+### Minor Changes
+
+- fd719d7: Improve native tab switch performance by using `queueMicrotask` to report view ready
+
 ## 8.1.0
 
 ### Minor Changes

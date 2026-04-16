@@ -1,6 +1,6 @@
 {
   "name": "capacitor-native-navigation-react-router",
-  "version": "8.1.0",
+  "version": "8.2.0",
   "description": "React Router support for Native navigation for Capacitor apps",
   "type": "module",
   "main": "dist/plugin.cjs.js",

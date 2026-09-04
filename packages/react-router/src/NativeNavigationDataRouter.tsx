@@ -138,29 +138,39 @@ function createNativeNavigationRouterProxy(
 			const resolved = resolvePath(to, initialPath.pathname)
 
 			if (!dontAwaitLoaders) {
-				/* Navigate the inner router to trigger loaders.
-				   Our subscribe interceptor will expose navigation.state = 'loading'
-				   while keeping the current route rendered. */
-				originalNavigate(to, opts)
-
-				/* Wait for the inner router to settle */
+				/* Wait for the inner router to settle.
+				   Subscribe before we navigate. A route with no loaders settles synchronously
+				   inside originalNavigate, so a subscriber added after that call never hears
+				   about it, and this promise never settles. */
 				await new Promise<void>(resolve => {
+					let settled = false
+
 					const unsubscribe = innerRouter.subscribe(state => {
-						if (state.navigation.state === 'idle' && state.location.pathname !== initialPath.pathname) {
-							unsubscribe()
+						if (settled || state.navigation.state !== 'idle') {
+							return
+						}
 
-							/* Capture the loader data as a handoff for the new view */
-							pendingHandoff = {
-								pathname: resolved.pathname,
-								loaderData: state.loaderData,
-							}
+						settled = true
+						unsubscribe()
 
+						/* Capture the loader data as a handoff for the new view */
+						pendingHandoff = {
+							pathname: resolved.pathname,
+							loaderData: state.loaderData,
+						}
+
+						if (state.location.pathname !== initialPath.pathname) {
 							/* Reset the inner router back to our location */
 							originalNavigate(initialPath, { replace: true })
-
-							resolve()
 						}
+
+						resolve()
 					})
+
+					/* Navigate the inner router to trigger loaders.
+					   Our subscribe interceptor will expose navigation.state = 'loading'
+					   while keeping the current route rendered. */
+					originalNavigate(to, opts)
 				})
 
 				/* Push the native view — the new view will pick up the handoff */

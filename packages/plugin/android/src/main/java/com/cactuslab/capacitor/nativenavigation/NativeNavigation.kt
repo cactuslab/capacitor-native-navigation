@@ -434,6 +434,13 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
         webView.webViewClient = NativeNavigationWebViewClient(plugin.bridge)
 
+        /* Install a chrome client so console output from this webview reaches the log */
+        try {
+            webView.webChromeClient = NativeNavigationChromeClient(plugin.capacitorChromeClient(), this, id)
+        } catch (e: Exception) {
+            Log.w(TAG, "makeWebView: could not install a chrome client for id:${id}", e)
+        }
+
         id?.let {
             Log.d(TAG, "makeWebView: Putting webview in cache for id:${id}")
             webviewsCache.put(id, webView)

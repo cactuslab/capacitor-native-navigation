@@ -157,7 +157,7 @@ class NativeNavigationPlugin : Plugin() {
         }
     }
 
-    private fun capacitorChromeClient(): WebChromeClient = if (WebViewFeature.isFeatureSupported(WebViewFeature.GET_WEB_CHROME_CLIENT)) {
+    internal fun capacitorChromeClient(): WebChromeClient = if (WebViewFeature.isFeatureSupported(WebViewFeature.GET_WEB_CHROME_CLIENT)) {
         when (val client = WebViewCompat.getWebChromeClient(bridge.webView)) {
             is BridgeWebChromeClient -> {
                 client

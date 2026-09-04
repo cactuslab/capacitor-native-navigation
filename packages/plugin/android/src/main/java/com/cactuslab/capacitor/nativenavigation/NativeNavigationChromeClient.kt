@@ -5,8 +5,12 @@ import android.os.Message
 import android.util.Log
 import android.view.View
 import android.webkit.*
+import com.getcapacitor.Logger
 
-class NativeNavigationChromeClient(val bridgeChromeClient: WebChromeClient, val nativeNavigation: NativeNavigation) : WebChromeClient() {
+/**
+ * @param componentId the id of the view this webview presents, or null if this is Capacitor's own webview
+ */
+class NativeNavigationChromeClient(val bridgeChromeClient: WebChromeClient, val nativeNavigation: NativeNavigation, val componentId: String? = null) : WebChromeClient() {
 
     override fun onShowCustomView(view: View?, callback: CustomViewCallback?) {
         bridgeChromeClient.onShowCustomView(view, callback)
@@ -64,7 +68,19 @@ class NativeNavigationChromeClient(val bridgeChromeClient: WebChromeClient, val 
     }
 
     override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
-        return bridgeChromeClient.onConsoleMessage(consoleMessage)
+        if (componentId == null || consoleMessage == null) {
+            return bridgeChromeClient.onConsoleMessage(consoleMessage)
+        }
+
+        /* Log messages from the webviews we create ourselves, so we can report which view they came from */
+        val message = "View $componentId - File: ${consoleMessage.sourceId()} - Line ${consoleMessage.lineNumber()} - Msg: ${consoleMessage.message()}"
+        when (consoleMessage.messageLevel()) {
+            ConsoleMessage.MessageLevel.ERROR -> Log.e(CONSOLE_TAG, message)
+            ConsoleMessage.MessageLevel.WARNING -> Log.w(CONSOLE_TAG, message)
+            ConsoleMessage.MessageLevel.TIP -> Log.d(CONSOLE_TAG, message)
+            else -> Log.i(CONSOLE_TAG, message)
+        }
+        return true
     }
 
     override fun onCreateWindow(
@@ -88,5 +104,6 @@ class NativeNavigationChromeClient(val bridgeChromeClient: WebChromeClient, val 
 
     companion object {
         private const val TAG = "NavChromeClient"
+        private val CONSOLE_TAG = Logger.tags("Console")
     }
 }

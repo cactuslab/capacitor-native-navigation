@@ -35,7 +35,7 @@ export function initSync(views: Record<ComponentId, NativeNavigationReactView>):
 								continue
 							}
 
-							target.replaceWith(node.cloneNode(true))
+							target.replaceWith(copyOfHeadNode(node))
 						}
 					} else {
 						console.warn(`Node to update did not have an id: ${node.nodeName}`)
@@ -74,7 +74,7 @@ export function initSync(views: Record<ComponentId, NativeNavigationReactView>):
 						let marker = prevSibling
 
 						for (const node of add) {
-							const clone = node.cloneNode(true) as Element
+							const clone = copyOfHeadNode(node) as Element
 							marker.insertAdjacentElement('afterend', clone)
 							marker = clone
 						}
@@ -128,67 +128,127 @@ export function initSync(views: Record<ComponentId, NativeNavigationReactView>):
 			/* Override insertRule so each time it is used we copy the new rule to the corresponding stylesheet in other windows */
 			const originalInsertRule = styleSheet.insertRule
 			styleSheet.insertRule = function(rule, index) {
-				const nodeId = (styleSheet.ownerNode as HTMLElement).dataset['capacitorNativeNavigationId']
+				const nodeId = styleSheetNodeId(styleSheet)
 				if (nodeId) {
 					for (const view of Object.values(views)) {
-						const targetStyleSheet = findMatchingStyleSheet(styleSheet, view.window)
-						if (targetStyleSheet) {
-							try {
-								targetStyleSheet.insertRule(rule, index)
-							} catch (error) {
-								console.warn(`Failed to sync cssRule to ${view.id}: ${error instanceof Error ? error.message : error}: @${index} ${rule}`)
-							}
-						}
+						queueRuleCopy(view.window, nodeId, rule)
 					}
 				}
 
 				return originalInsertRule.bind(styleSheet)(rule, index)
 			}
-	
-			/* Copy the initial set of rules to other windows */
-			for (const view of Object.values(views)) {
-				copyInitialCssRules(styleSheet, view.window)
-			}
 		}
 	}
 }
 
 /**
- * 
- * @param styleSheet the source stylesheet
- * @param view the native navigation window to find a matching stylesheet in to copy to
+ * Make the copy of a node from our document head to put in one of our windows.
+ * <p>
+ * Emotion adds its rules with insertRule in production, so a `<style>` element it created
+ * has no text of its own, and cloning it copies nothing. We put the rules that the element
+ * holds into the copy as text instead.
+ * <p>
+ * We cannot copy them into the stylesheet of the new window here. The copy does not appear
+ * in that window's `document.styleSheets` until after we return, so there is nothing to
+ * copy them into yet.
+ * @param node a node from our document head
+ * @returns the node to put in the window
  */
-function copyInitialCssRules(styleSheet: CSSStyleSheet, view: Window) {
-	const targetStyleSheet = findMatchingStyleSheet(styleSheet, view)
-	if (targetStyleSheet) {
+function copyOfHeadNode(node: Node): Node {
+	const clone = node.cloneNode(true)
+	if (node.nodeName.toUpperCase() !== 'STYLE' || (clone as HTMLElement).textContent) {
+		return clone
+	}
+
+	const styleSheet = findStyleSheetForNode(node)
+	if (!styleSheet) {
+		return clone
+	}
+
+	try {
+		const rules: string[] = []
 		for (let k = 0; k < styleSheet.cssRules.length; k++) {
-			const cssText = styleSheet.cssRules[k].cssText
-			targetStyleSheet.insertRule(cssText, k)
+			rules.push(styleSheet.cssRules[k].cssText)
 		}
+		(clone as HTMLElement).textContent = rules.join('\n')
+	} catch (error) {
+		console.warn(`Failed to read the rules of a <style> element to copy it: ${error instanceof Error ? error.message : error}`)
 	}
+	return clone
 }
 
 /**
- * Find a style sheet in a native navigation window to match the given one in the main window.
- * @param source the source stylesheet in the main window
- * @param view the window to search in
- * @returns a style sheet or undefined if not found
+ * Rules waiting to be added to a `<style>` element we copied into one of our windows.
  */
-function findMatchingStyleSheet(source: CSSStyleSheet, view: Window): CSSStyleSheet | undefined {
-	const nodeId = (source.ownerNode as HTMLElement).dataset['capacitorNativeNavigationId']
-	if (!nodeId) {
-		return undefined
-	}
+const pendingRuleCopies: { window: Window; nodeId: string; rule: string }[] = []
+let flushingRuleCopies = false
 
-	 
-	for (let j = 0; j < view.document.styleSheets.length; j++) {
-		const targetStyleSheet = view.document.styleSheets[j]
-		if ((targetStyleSheet.ownerNode as HTMLElement).dataset['capacitorNativeNavigationId'] === nodeId) {
-			return targetStyleSheet
+/**
+ * Add a rule to the copy of a stylesheet in one of our windows.
+ * <p>
+ * We add it to the text of the `<style>` element rather than to the stylesheet in that
+ * window, because that stylesheet may not exist yet. A window's `document.styleSheets`
+ * doesn't include an element we copied in until some time after we add it, and a rule we
+ * failed to add would be lost for good. The element itself we can always find.
+ * <p>
+ * Adding text to a `<style>` element makes the window parse it again, so we batch the
+ * rules and add each window's in one go.
+ * @param viewWindow the window to add the rule to
+ * @param nodeId the id of the `<style>` element that holds the rule in our document
+ * @param rule the text of the rule
+ */
+function queueRuleCopy(viewWindow: Window, nodeId: string, rule: string) {
+	pendingRuleCopies.push({ window: viewWindow, nodeId, rule })
+
+	if (!flushingRuleCopies) {
+		flushingRuleCopies = true
+		queueMicrotask(flushRuleCopies)
+	}
+}
+
+function flushRuleCopies() {
+	flushingRuleCopies = false
+
+	const batch = pendingRuleCopies.splice(0, pendingRuleCopies.length)
+	const grouped = new Map<Window, Map<string, string[]>>()
+
+	for (const item of batch) {
+		let byNode = grouped.get(item.window)
+		if (!byNode) {
+			byNode = new Map()
+			grouped.set(item.window, byNode)
+		}
+
+		const rules = byNode.get(item.nodeId)
+		if (rules) {
+			rules.push(item.rule)
+		} else {
+			byNode.set(item.nodeId, [item.rule])
 		}
 	}
 
-	return undefined
+	grouped.forEach(function(byNode, viewWindow) {
+		byNode.forEach(function(rules, nodeId) {
+			const element = viewWindow.document.head.querySelector(`[data-capacitor-native-navigation-id="${nodeId}"]`)
+			if (!element) {
+				console.warn(`Stylesheet "${nodeId}" not found in head to add ${rules.length} rule(s)`)
+				return
+			}
+
+			element.append(rules.join('\n'))
+		})
+	})
+}
+
+/**
+ * Find the id we gave the node that owns the given stylesheet, if it has one.
+ * @param styleSheet a stylesheet
+ * @returns 
+ */
+function styleSheetNodeId(styleSheet: CSSStyleSheet): string | undefined {
+	/* A stylesheet has no owner node if it was constructed, or imported by another sheet */
+	const ownerNode = styleSheet.ownerNode as HTMLElement | null
+	return ownerNode?.dataset?.['capacitorNativeNavigationId']
 }
 
 /**
@@ -219,13 +279,7 @@ export function prepareWindowForSync(viewWindow: Window): void {
 			if (!(node as HTMLElement).dataset['capacitorNativeNavigationId']) {
 				(node as HTMLElement).dataset['capacitorNativeNavigationId'] = nextNodeId()
 			}
-			viewWindow.document.head.append(node.cloneNode(true))
-
-			/* Sync CSS rules */
-			const styleSheet = findStyleSheetForNode(node)
-			if (styleSheet) {
-				copyInitialCssRules(styleSheet, viewWindow)
-			}
+			viewWindow.document.head.append(copyOfHeadNode(node))
 		}
 	})
 }

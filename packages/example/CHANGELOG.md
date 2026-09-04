@@ -1,5 +1,14 @@
 # capacitor-app
 
+## 2.6.3
+
+### Patch Changes
+
+- Updated dependencies [3807ca9]
+  - capacitor-native-navigation@0.12.1
+  - capacitor-native-navigation-react@6.4.2
+  - capacitor-native-navigation-react-router@8.2.1
+
 ## 2.6.2
 
 ### Patch Changes

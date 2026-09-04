@@ -1,5 +1,11 @@
 # capacitor-native-navigation
 
+## 0.12.1
+
+### Patch Changes
+
+- 3807ca9: Fix Android compile issue
+
 ## 0.12.0
 
 ### Minor Changes

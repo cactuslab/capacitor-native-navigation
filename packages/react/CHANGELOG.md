@@ -1,5 +1,12 @@
 # capacitor-native-navigation-react
 
+## 6.4.2
+
+### Patch Changes
+
+- Updated dependencies [3807ca9]
+  - capacitor-native-navigation@0.12.1
+
 ## 6.4.1
 
 ### Patch Changes

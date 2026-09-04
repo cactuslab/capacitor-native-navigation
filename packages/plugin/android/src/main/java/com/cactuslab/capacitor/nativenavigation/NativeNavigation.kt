@@ -652,7 +652,8 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                     }
 
                     // Set up the BottomNavigationView
-                    val bottomNav = navContext.getBinding()?.bottomNavigationView ?: return@let
+                    val bottomNav = navContext.getBinding()?.bottomNavigationView
+                        ?: throw Exception("The bottom navigation view is null")
                     bottomNav.visibility = View.VISIBLE
                     bottomNav.menu.clear()
 

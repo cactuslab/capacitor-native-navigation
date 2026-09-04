@@ -1,0 +1,3 @@
+[tools]
+# Gradle 8.9 and the Android Gradle plugin need a JDK of 21. Newer JDKs fail.
+java = "temurin-21"

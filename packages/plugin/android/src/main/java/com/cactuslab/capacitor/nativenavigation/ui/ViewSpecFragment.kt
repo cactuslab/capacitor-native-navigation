@@ -315,18 +315,38 @@ class ViewSpecFragment : NativeNavigationFragment(), MenuProvider {
         }
     }
 
-    override fun onPause() {
-        super.onPause()
-        viewModel.nativeNavigation?.plugin?.notifyViewWillDisappear(componentId!!)
-        viewModel.nativeNavigation?.plugin?.notifyViewDidDisappear(componentId!!)
+    /**
+     * The four view lifecycle events map on to the four fragment lifecycle callbacks, so the
+     * JavaScript sees the same ordering that it sees on iOS.
+     */
+    override fun onStart() {
+        super.onStart()
+        componentId?.let {
+            viewModel.nativeNavigation?.plugin?.notifyViewWillAppear(it)
+        }
     }
 
     override fun onResume() {
         super.onResume()
         updateToolbar()
         setupMenu()
-        viewModel.nativeNavigation?.plugin?.notifyViewWillAppear(componentId!!)
-        viewModel.nativeNavigation?.plugin?.notifyViewDidAppear(componentId!!)
+        componentId?.let {
+            viewModel.nativeNavigation?.plugin?.notifyViewDidAppear(it)
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        componentId?.let {
+            viewModel.nativeNavigation?.plugin?.notifyViewWillDisappear(it)
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        componentId?.let {
+            viewModel.nativeNavigation?.plugin?.notifyViewDidDisappear(it)
+        }
     }
 
     private fun setupMenu() {

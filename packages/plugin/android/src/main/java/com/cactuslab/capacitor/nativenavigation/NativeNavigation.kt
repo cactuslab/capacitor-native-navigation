@@ -1075,8 +1075,9 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 //                call.reject("Not implemented VIEW replace yet")
                 val stackId = navContext.contextId
 
-                val currentId = if (target == navContext.contextId) {
+                val currentId = if (target.isNullOrBlank() || target == navContext.contextId) {
                     navContext.navController()?.currentBackStackEntry?.arguments?.getString(nav_arguments.component_id)
+                        ?: navContext.virtualStack.lastOrNull()
                 } else {
                     target
                 }
@@ -1087,7 +1088,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                     return
                 }
                 component.id = currentId
-                insertComponent(component)
+                insertComponent(component, presentedComponentHost)
 
                 notifyUpdateView(currentId)
                 val result = PushResult(currentId, stackId)

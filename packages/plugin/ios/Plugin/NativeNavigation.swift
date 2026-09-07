@@ -91,7 +91,7 @@ class NativeNavigation: NSObject {
     private let plugin: CAPPlugin
     private var webViewDelegate: NativeNavigationWebViewDelegate?
     private var componentsById: [ComponentId: any ComponentModel] = [:]
-    private var componentsByAlias: [ComponentId: any ComponentModel] = [:]
+    private var componentsByAlias: [String: any ComponentModel] = [:]
     private var idCounter = 1
     private var html: String? = nil
     private let rootManager: NativeNavigationRootViewControllerManager
@@ -102,10 +102,19 @@ class NativeNavigation: NSObject {
     public init(bridge: CAPBridgeProtocol, plugin: CAPPlugin) {
         self.bridge = bridge
         self.plugin = plugin
-        self.rootManager = NativeNavigationRootViewControllerManager(baseViewController: bridge.viewController!)
+
+        /* If the bridge has no view controller we cannot present anything. We use a placeholder so the
+           app continues to run, and the plugin calls fail with an error rather than crashing the app.
+         */
+        if let baseViewController = bridge.viewController {
+            self.rootManager = NativeNavigationRootViewControllerManager(baseViewController: baseViewController)
+        } else {
+            CAPLog.print("🤖 NativeNavigation: the bridge has no view controller, so native navigation is not available")
+            self.rootManager = NativeNavigationRootViewControllerManager(baseViewController: UIViewController())
+        }
 
         super.init()
-        
+
         if let webView = self.bridge.webView {
             self.webViewDelegate = NativeNavigationWebViewDelegate(mainWebView: webView, implementation: self)
             webView.uiDelegate = self.webViewDelegate
@@ -114,14 +123,14 @@ class NativeNavigation: NSObject {
             /* Allow window.open to be used without a click event */
             webView.configuration.preferences.javaScriptCanOpenWindowsAutomatically = true
         } else {
-            fatalError("No webView")
+            CAPLog.print("🤖 NativeNavigation: the bridge has no webView, so native navigation is not available")
         }
 
         Task {
             do {
                 try await self.loadPageContent()
             } catch {
-                fatalError("Failed to load page content: \(error)")
+                CAPLog.print("🤖 NativeNavigation: failed to load page content: \(error.localizedDescription)")
             }
         }
     }
@@ -650,6 +659,9 @@ class NativeNavigation: NSObject {
 
         componentsById[model.componentId] = model
         if let alias = model.spec.alias {
+            if let existing = componentsByAlias[alias], existing.componentId != model.componentId {
+                CAPLog.print("🤖 NativeNavigation: the alias \"\(alias)\" is already used by the component \(existing.componentId) and now refers to the component \(model.componentId)")
+            }
             componentsByAlias[alias] = model
         }
     }
@@ -674,7 +686,8 @@ class NativeNavigation: NSObject {
             }
             
             componentsById.removeValue(forKey: id)
-            if let alias = component.spec.alias {
+            /* Only remove the alias if it still refers to this component, as another component may have taken it over */
+            if let alias = component.spec.alias, componentsByAlias[alias]?.componentId == component.componentId {
                 componentsByAlias.removeValue(forKey: alias)
             }
         }
@@ -1094,6 +1107,9 @@ class NativeNavigation: NSObject {
         guard let webView = self.bridge.webView else {
             throw NativeNavigatorError.illegalState(message: "Cannot find main webView")
         }
+        guard let baseURL = webView.url else {
+            throw NativeNavigatorError.illegalState(message: "Main webView doesn't have a url")
+        }
         guard let html = self.html else {
             throw NativeNavigatorError.illegalState(message: "html not loaded")
         }
@@ -1108,7 +1124,7 @@ class NativeNavigation: NSObject {
 
         configure(webView: newWebView, with: view.spec)
         
-        _ = newWebView.loadHTMLString(html, baseURL: webView.url!)
+        _ = newWebView.loadHTMLString(html, baseURL: baseURL)
         view.viewController.webView = newWebView
 
         return newWebView
@@ -1129,11 +1145,11 @@ class NativeNavigation: NSObject {
         
         var content: String?
         if let scheme = url.scheme {
-            if let schemeHandler = self.bridge.webView?.configuration.urlSchemeHandler(forURLScheme: scheme) {
+            if let schemeHandler = webView.configuration.urlSchemeHandler(forURLScheme: scheme) {
                 let myTask = CaptureDataURLSchemeTask(url: url)
                 content = try await withCheckedThrowingContinuation { continuation in
                     myTask.continuation = continuation
-                    schemeHandler.webView(self.bridge.webView!, start: myTask)
+                    schemeHandler.webView(webView, start: myTask)
                 }
             }
         }

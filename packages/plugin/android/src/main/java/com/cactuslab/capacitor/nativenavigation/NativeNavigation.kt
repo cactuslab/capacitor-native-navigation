@@ -535,6 +535,14 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
     fun present(options: PresentOptions, call: PluginCall) {
         val component = options.component
+
+        /* Check the component before we change any state, so we don't leave a broken nav context behind */
+        if (component is StackSpec && component.components.isNullOrEmpty()) {
+            Log.d(TAG, "present: A stack must have at least one component")
+            call.reject("A stack must have at least one component")
+            return
+        }
+
         insertComponent(component)
 
         Log.d(TAG, "⬆️ PRESENT: ${component.id} ${component.alias} for createOptions: $component")
@@ -580,8 +588,8 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
                     call.resolve(result.toJSObject())
                 }
 
+                /* insertComponent above has already inserted each of the components in this stack */
                 stack.forEachIndexed { _, viewSpec ->
-                    insertComponent(viewSpec, component)
                     val webView = makeWebView(viewSpec.id)
                     viewModel.postWebView(webView, viewSpec.id)
                     navContext.virtualStack.add(viewSpec.id)

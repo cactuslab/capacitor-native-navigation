@@ -9,6 +9,30 @@ import { findModalConfig, ignoreUntilDone, toNativeNavigationNavigationState } f
 const NAVIGATOR_NAVIGATE_MESSAGE_TYPE = 'capacitor-native-navigation-react-router:navigate'
 
 /**
+ * Turn a react-router `To` into an href.
+ *
+ * A pure function at module scope, so it keeps a stable identity, and it does not invalidate
+ * the navigator on every render.
+ */
+function createHref(to: To): string {
+	if (typeof to === 'string') {
+		return to
+	} else {
+		let result = ''
+		if (to.pathname) {
+			result += to.pathname
+		}
+		if (to.search) {
+			result += `${to.search}`
+		}
+		if (to.hash) {
+			result += `${to.hash}`
+		}
+		return result
+	}
+}
+
+/**
  * A Navigator implementation to provide to react-router that handles navigation requests
  * using Capacitor Native Navigation.
  */
@@ -16,8 +40,12 @@ export function useNativeNavigationNavigator(options: NativeNavigationNavigatorO
 	const { plugin } = useNativeNavigation()
 
 	const { componentId, stack, path: currentPath, addMessageListener, removeMessageListener } = useNativeNavigationViewContext()
-	
-	const currentModal = currentPath !== undefined ? findModalConfig(currentPath, options) : undefined
+
+	/* Depend on the option fields we use, rather than on the identity of the options object,
+	   which the caller can reallocate on every render. */
+	const { errorHandler, modals } = options
+
+	const currentModal = currentPath !== undefined ? findModalConfig(currentPath, modals) : undefined
 
 	const reportError = useCallback(function(source: string, error: unknown) {
 		if (error instanceof Error) {
@@ -26,26 +54,8 @@ export function useNativeNavigationNavigator(options: NativeNavigationNavigatorO
 			console.warn(`NativeNavigation Navigator (${source}): ${error}`)
 		}
 
-		options.errorHandler?.(source, error)
-	}, [options])
-
-	function createHref(to: To): string {
-		if (typeof to === 'string') {
-			return to
-		} else {
-			let result = ''
-			if (to.pathname) {
-				result += to.pathname
-			}
-			if (to.search) {
-				result += `${to.search}`
-			}
-			if (to.hash) {
-				result += `${to.hash}`
-			}
-			return result
-		}
-	}
+		errorHandler?.(source, error)
+	}, [errorHandler])
 
 	const go = useCallback(async function(delta: number): Promise<void> {
 		if (delta < 0) {
@@ -107,11 +117,11 @@ export function useNativeNavigationNavigator(options: NativeNavigationNavigatorO
 
 		const path = createHref(to)
 
-		const targetModal = findModalConfig(path, options)
+		const targetModal = findModalConfig(path, modals)
 		if (targetModal) {
-			if (!currentModal || targetModal !== currentModal) {
+			if (targetModal !== currentModal) {
 				/* New modal */
-				const presentOptions = targetModal.presentOptions(path, state)
+				const presentOptions = targetModal.presentOptions(path, actualState)
 				try {
 					await plugin.present(presentOptions)
 				} catch (error) {
@@ -156,13 +166,13 @@ export function useNativeNavigationNavigator(options: NativeNavigationNavigatorO
 			reportError(replace ? 'replace' : 'push', error)
 			throw error
 		}
-	}, [componentId, currentModal, options, plugin, reportError, stack, tagState])
+	}, [componentId, currentModal, modals, plugin, reportError, stack, tagState])
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const replace = useCallback(async function(to: To, state?: any, opts?: NavigateOptions | undefined): Promise<void> {
 		return push(to, state, opts ? { ...opts, replace: true } : { replace: true })
 	}, [push])
-	
+
 	const navigator: Navigator = useMemo(() => ({
 		createHref,
 		go: ignoreUntilDone(go),

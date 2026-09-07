@@ -1,25 +1,32 @@
-import { ModalConfig, NativeNavigationNavigationState, NativeNavigationNavigatorOptions, Path } from './types'
+import { ModalConfig, NativeNavigationNavigationState, Path } from './types'
 import { pathToRegexp } from 'path-to-regexp'
 
-export function findModalConfig(path: string, options: NativeNavigationNavigatorOptions): ModalConfig | undefined {
-	const modals = options.modals
+/**
+ * Find the modal config, if any, that matches the given path.
+ *
+ * The path can be a full href, including a search string and a hash. Modal configs match the
+ * pathname only, so a query string or a hash must not prevent a match.
+ */
+export function findModalConfig(path: string, modals: ModalConfig[] | undefined): ModalConfig | undefined {
 	if (!modals) {
 		return undefined
 	}
 
+	const { pathname } = parsePath(path)
+
 	for (const aModal of modals) {
 		if (typeof aModal.path === 'string') {
-			if (pathToRegexp(aModal.path).regexp.test(path)) {
+			if (pathToRegexp(aModal.path).regexp.test(pathname)) {
 				return aModal
 			}
 		} else if (Array.isArray(aModal.path)) {
 			for (const aModalPath of aModal.path) {
-				if (pathToRegexp(aModalPath).regexp.test(path)) {
+				if (pathToRegexp(aModalPath).regexp.test(pathname)) {
 					return aModal
 				}
 			}
 		} else if (aModal.path instanceof RegExp) {
-			if (aModal.path.test(path)) {
+			if (aModal.path.test(pathname)) {
 				return aModal
 			}
 		}
@@ -33,33 +40,30 @@ export function parsePath(path: string): Path {
 		search: '',
 		hash: '',
 	}
-	const s = path.indexOf('?')
-	if (s !== -1) {
-		result.pathname = path.substring(0, s)
-		let search = path.substring(s)
-		
-		const h = search.indexOf('#')
-		if (h !== -1) {
-			result.hash = search.substring(h)
-			search = search.substring(0, h)
-		}
-		result.search = search
-	} else {
-		const h = path.indexOf('#')
-		if (h !== -1) {
-			result.hash = path.substring(h)
-			result.pathname = path.substring(0, h)
-		}
+
+	/* Look for the hash first, as React Router's own parsePath does, so a `?` that occurs
+	   inside the hash is not mistaken for the start of the search string. */
+	const h = result.pathname.indexOf('#')
+	if (h !== -1) {
+		result.hash = result.pathname.substring(h)
+		result.pathname = result.pathname.substring(0, h)
 	}
+
+	const s = result.pathname.indexOf('?')
+	if (s !== -1) {
+		result.search = result.pathname.substring(s)
+		result.pathname = result.pathname.substring(0, s)
+	}
+
 	return result
 }
 
 type StateWithNativeNavigationState = { nativeNavigation?: NativeNavigationNavigationState }
 
 /**
- * Create a navigation state object containing 
- * @param state 
- * @returns 
+ * Create a navigation state object containing
+ * @param state
+ * @returns
  */
 export function createNativeNavigationNavigationState(state: NativeNavigationNavigationState): StateWithNativeNavigationState {
 	return {

@@ -14,6 +14,14 @@ type RemixRouter = RouterProviderProps['router']
 /** Internal state key used to tag views with their owning router */
 export const NN_ROUTER_ID_KEY = '__nnRouter'
 
+/**
+ * A stable empty options object.
+ *
+ * An inline `{}` allocates a new object on every render, which changes the navigator's identity,
+ * and rebuilds the duplicate-navigation guard around `push`.
+ */
+const EMPTY_NAVIGATOR_OPTIONS: NativeNavigationNavigatorOptions = {}
+
 interface NativeNavigationRouterProps {
 	navigation?: NativeNavigationNavigatorOptions
 
@@ -235,7 +243,7 @@ function NativeNavigationRootWrapper(props: React.PropsWithChildren<NativeNaviga
 function NativeNavigationRoot(props: React.PropsWithChildren<NativeNavigationReactRouterRootProps>) {
 	const { viewProps: componentProps, routerProps, routerId, children } = props
 
-	const navigator = useNativeNavigationNavigator(routerProps.navigation || {}, routerId)
+	const navigator = useNativeNavigationNavigator(routerProps.navigation || EMPTY_NAVIGATOR_OPTIONS, routerId)
 
 	const sourceRouter = routerProps.router
 	if (sourceRouter) {

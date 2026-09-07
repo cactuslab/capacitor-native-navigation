@@ -20,12 +20,66 @@ interface Props {
 
 /** Pending handoff: loader data from a navigation that hasn't been claimed yet */
 interface PendingHandoff {
-	pathname: string
 	loaderData: RouterState['loaderData']
+	/** The time the handoff was created, so an abandoned handoff can expire */
+	time: number
 }
 
-/** Shared across all views — only one navigation can be in flight at a time */
-let pendingHandoff: PendingHandoff | null = null
+/**
+ * The handoffs that are waiting to be claimed, keyed by pathname.
+ *
+ * A map, and not a single value, because navigations in different stacks or tabs can be
+ * in flight at the same time, and they must not overwrite each other.
+ */
+const pendingHandoffs = new Map<string, PendingHandoff>()
+
+/**
+ * How long a handoff stays valid, in milliseconds.
+ *
+ * If the native push fails, or the new view is never created, the handoff is abandoned. An
+ * abandoned handoff must not hydrate an unrelated later view with stale loader data.
+ */
+const PENDING_HANDOFF_TIMEOUT = 5000
+
+function evictExpiredHandoffs(): void {
+	const expiredBefore = Date.now() - PENDING_HANDOFF_TIMEOUT
+	for (const [pathname, handoff] of pendingHandoffs) {
+		if (handoff.time < expiredBefore) {
+			pendingHandoffs.delete(pathname)
+		}
+	}
+}
+
+function storePendingHandoff(pathname: string, loaderData: RouterState['loaderData']): PendingHandoff {
+	evictExpiredHandoffs()
+
+	const handoff: PendingHandoff = {
+		loaderData,
+		time: Date.now(),
+	}
+	pendingHandoffs.set(pathname, handoff)
+	return handoff
+}
+
+/** Remove a handoff that we stored, unless a later navigation has already replaced it */
+function discardPendingHandoff(pathname: string, handoff: PendingHandoff): void {
+	if (pendingHandoffs.get(pathname) === handoff) {
+		pendingHandoffs.delete(pathname)
+	}
+}
+
+/** Take the handoff for a pathname, if there is one that has not expired */
+function claimPendingHandoff(pathname: string): PendingHandoff | undefined {
+	evictExpiredHandoffs()
+
+	const handoff = pendingHandoffs.get(pathname)
+	if (!handoff) {
+		return undefined
+	}
+
+	pendingHandoffs.delete(pathname)
+	return handoff
+}
 
 /**
  * A data router wrapper for native navigation.
@@ -37,21 +91,27 @@ let pendingHandoff: PendingHandoff | null = null
  * stored as a pending handoff and the native push happens. The new view picks up
  * the handoff data via hydrationData and renders immediately without re-running
  * the loader.
+ *
+ * The inner router is keyed on the view's path. A replacing navigation reuses the native
+ * view and updates its props in place, so the path can change without this component
+ * unmounting. The key remounts the view, which disposes the router for the old path
+ * exactly once, and creates a router for the new path.
  */
 export default function NativeNavigationDataRouter(props: Props) {
+	return (
+		<NativeNavigationDataRouterView key={props.componentProps.path} {...props} />
+	)
+}
+
+function NativeNavigationDataRouterView(props: Props) {
 	const { sourceRouter, navigator, componentProps, dontAwaitLoaders } = props
 
 	const viewRouter = useMemo(() => {
 		const initialPath = parsePath(componentProps.path)
 
 		/* Check for handoff data from a previous view's navigation */
-		let hydrationData: { loaderData: RouterState['loaderData'] } | undefined
-		if (pendingHandoff && pendingHandoff.pathname === initialPath.pathname) {
-			hydrationData = {
-				loaderData: pendingHandoff.loaderData,
-			}
-			pendingHandoff = null
-		}
+		const handoff = claimPendingHandoff(initialPath.pathname)
+		const hydrationData = handoff ? { loaderData: handoff.loaderData } : undefined
 
 		const router = createMemoryRouter(sourceRouter.routes, {
 			initialEntries: [initialPath],
@@ -60,7 +120,7 @@ export default function NativeNavigationDataRouter(props: Props) {
 
 		return createNativeNavigationRouterProxy(router, initialPath, navigator, sourceRouter, dontAwaitLoaders)
 	// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []) /* Intentionally empty deps — router is created once per view portal */
+	}, []) /* Intentionally empty deps — the router is created once per mount, and the path key remounts us */
 
 	useEffect(() => {
 		return () => {
@@ -138,6 +198,8 @@ function createNativeNavigationRouterProxy(
 			const resolved = resolvePath(to, initialPath.pathname)
 
 			if (!dontAwaitLoaders) {
+				let handoff: PendingHandoff | undefined
+
 				/* Wait for the inner router to settle.
 				   Subscribe before we navigate. A route with no loaders settles synchronously
 				   inside originalNavigate, so a subscriber added after that call never hears
@@ -154,10 +216,7 @@ function createNativeNavigationRouterProxy(
 						unsubscribe()
 
 						/* Capture the loader data as a handoff for the new view */
-						pendingHandoff = {
-							pathname: resolved.pathname,
-							loaderData: state.loaderData,
-						}
+						handoff = storePendingHandoff(resolved.pathname, state.loaderData)
 
 						if (state.location.pathname !== initialPath.pathname) {
 							/* Reset the inner router back to our location */
@@ -173,11 +232,19 @@ function createNativeNavigationRouterProxy(
 					originalNavigate(to, opts)
 				})
 
-				/* Push the native view — the new view will pick up the handoff */
-				if (!opts?.replace) {
-					navigator.push(resolved, opts?.state, opts)
-				} else {
-					navigator.replace(resolved, opts?.state, opts)
+				/* Push the native view — the new view will pick up the handoff.
+				   The Navigator type declares that these return void, but our implementation
+				   returns a promise, which rejects if the native navigation fails. */
+				const navigation: unknown = !opts?.replace
+					? navigator.push(resolved, opts?.state, opts)
+					: navigator.replace(resolved, opts?.state, opts)
+
+				if (handoff) {
+					const storedHandoff = handoff
+					Promise.resolve(navigation).catch(function() {
+						/* The navigation failed, so no view will claim the handoff */
+						discardPendingHandoff(resolved.pathname, storedHandoff)
+					})
 				}
 			} else {
 				/* Push immediately — the new view handles its own loading */

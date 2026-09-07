@@ -1221,11 +1221,33 @@ class NativeNavigation: NSObject {
         /* Disable any JavaScript on the page, as we don't want to run any JavaScript on these
            pages... we just want to inject DOM nodes.
          */
-        let sanitizedContent = content.replacingOccurrences(of: "<script", with: "<!-- ")
-            .replacingOccurrences(of: "</script>", with: " -->")
-        self.html = sanitizedContent
+        self.html = NativeNavigation.removingScriptElements(from: content)
     }
-    
+
+    /* The self-closing form must come first, as the pattern for the pair also matches the start of a self-closing element */
+    private static let scriptElementPatterns = [
+        "<script\\b[^>]*/>",
+        "<script\\b[^>]*>.*?</script\\s*>"
+    ]
+
+    /**
+     Remove all of the script elements, and their contents, from the given HTML.
+     */
+    private static func removingScriptElements(from html: String) -> String {
+        var result = html
+
+        for pattern in scriptElementPatterns {
+            guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive, .dotMatchesLineSeparators]) else {
+                CAPLog.print("🤖 NativeNavigation: cannot compile the regular expression: \(pattern)")
+                continue
+            }
+
+            result = regex.stringByReplacingMatches(in: result, options: [], range: NSRange(result.startIndex..., in: result), withTemplate: "")
+        }
+
+        return result
+    }
+
 }
 
 extension NativeNavigation: UINavigationControllerDelegate {

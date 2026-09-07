@@ -85,7 +85,7 @@ class NativeNavigationViewModel: ViewModel() {
                 if (response != null && response.statusCode == 200) {
                     viewModelScope.launch(Dispatchers.Default) {
                         val string = response.data.bufferedReader().use(BufferedReader::readText)
-                        val sanitised = string.replace("<script", "<!-- ").replace("</script>", " -->")
+                        val sanitised = sanitiseHtml(string)
                         htmlStateFlow.value = sanitised
                         withContext(Dispatchers.Main) {
                             webView.loadDataWithBaseURL(url, sanitised,"text/html", "utf-8", null)
@@ -101,7 +101,7 @@ class NativeNavigationViewModel: ViewModel() {
                 viewModelScope.launch {
                     withContext(Dispatchers.Default) {
                         val string = Jsoup.connect(url).header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8").get().toString()
-                        val sanitised = string.replace("<script", "<!-- ").replace("</script>", " -->")
+                        val sanitised = sanitiseHtml(string)
                         htmlStateFlow.value = sanitised
                         withContext(Dispatchers.Main) {
                             webView.loadDataWithBaseURL(url, sanitised,"text/html", "utf-8", null)
@@ -110,6 +110,17 @@ class NativeNavigationViewModel: ViewModel() {
                 }
             }
         }
+    }
+
+    /**
+     * Remove the script elements from the html, as no JavaScript must run in the webviews that we
+     * create for the views. We remove the elements rather than comment them out, as a comment can
+     * be terminated early by the content of a script.
+     */
+    private fun sanitiseHtml(html: String): String {
+        return html
+            .replace(SELF_CLOSING_SCRIPT_REGEX, "")
+            .replace(SCRIPT_REGEX, "")
     }
 
     fun postWebView(view: WebView, id: String) {
@@ -125,5 +136,14 @@ class NativeNavigationViewModel: ViewModel() {
 
     companion object {
         private const val TAG = "ViewModel"
+
+        /** Matches a script element, and its content, however the element is capitalised */
+        private val SCRIPT_REGEX = Regex(
+            "<script\\b[^>]*>.*?</script\\s*>",
+            setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL)
+        )
+
+        /** Matches a self closing script element, however the element is capitalised */
+        private val SELF_CLOSING_SCRIPT_REGEX = Regex("<script\\b[^>]*/>", RegexOption.IGNORE_CASE)
     }
 }

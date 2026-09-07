@@ -19,6 +19,9 @@ class NativeNavigationPlugin : Plugin() {
 
     private var isLoaded = false
 
+    /** The webview listener must be added exactly once, as handleOnStart can be called many times */
+    private var isWebViewListenerAdded = false
+
     private val webViewListener = object: WebViewListener() {
         override fun onPageStarted(webView: WebView?) {
             Log.d(TAG, "onPageStarted: A page start was detected on ${webView}")
@@ -40,12 +43,18 @@ class NativeNavigationPlugin : Plugin() {
 
     override fun handleOnStart() {
         super.handleOnStart()
-        bridge.addWebViewListener(webViewListener)
+        if (!isWebViewListenerAdded) {
+            bridge.addWebViewListener(webViewListener)
+            isWebViewListenerAdded = true
+        }
     }
 
     override fun handleOnDestroy() {
         super.handleOnDestroy()
-        bridge.removeWebViewListener(webViewListener)
+        if (isWebViewListenerAdded) {
+            bridge.removeWebViewListener(webViewListener)
+            isWebViewListenerAdded = false
+        }
     }
 
     override fun shouldOverrideLoad(url: Uri?): Boolean? {
@@ -80,6 +89,8 @@ class NativeNavigationPlugin : Plugin() {
                 implementation.present(options = options, call = call)
             } catch (e: MissingParameterException) {
                 call.reject(e.localizedMessage)
+            } catch (e: Exception) {
+                rejectFailure(call, "present", e)
             }
         }
     }
@@ -89,7 +100,11 @@ class NativeNavigationPlugin : Plugin() {
         try {
             val options = DismissOptions.fromJSObject(call.data)
             activity.runOnUiThread {
-                implementation.dismiss(options, call)
+                try {
+                    implementation.dismiss(options, call)
+                } catch (e: Exception) {
+                    rejectFailure(call, "dismiss", e)
+                }
             }
         } catch (e: MissingParameterException) {
             call.reject(e.localizedMessage)
@@ -101,7 +116,11 @@ class NativeNavigationPlugin : Plugin() {
         try {
             val options = PushOptions.fromJSObject(call.data)
             activity.runOnUiThread {
-                implementation.push(options = options, call = call)
+                try {
+                    implementation.push(options = options, call = call)
+                } catch (e: Exception) {
+                    rejectFailure(call, "push", e)
+                }
             }
         } catch (e: MissingParameterException) {
             call.reject(e.localizedMessage)
@@ -123,7 +142,11 @@ class NativeNavigationPlugin : Plugin() {
         try {
             val options = GetOptions.fromJSObject(call.data)
             activity.runOnUiThread {
-                implementation.getOptions(options, call)
+                try {
+                    implementation.getOptions(options, call)
+                } catch (e: Exception) {
+                    rejectFailure(call, "get", e)
+                }
             }
         } catch (e: MissingParameterException) {
             call.reject(e.localizedMessage)
@@ -137,8 +160,12 @@ class NativeNavigationPlugin : Plugin() {
         try {
             val options = UpdateOptions.fromJSObject(call.data)
             activity.runOnUiThread {
-                implementation.update(options)
-                call.resolve()
+                try {
+                    implementation.update(options)
+                    call.resolve()
+                } catch (e: Exception) {
+                    rejectFailure(call, "update", e)
+                }
             }
         } catch (e: MissingParameterException) {
             call.reject(e.localizedMessage)
@@ -150,11 +177,21 @@ class NativeNavigationPlugin : Plugin() {
         try {
             val options = MessageOptions.fromJSObject(call.data)
             activity.runOnUiThread {
-                implementation.message(options, call)
+                try {
+                    implementation.message(options, call)
+                } catch (e: Exception) {
+                    rejectFailure(call, "message", e)
+                }
             }
         } catch (e: MissingParameterException) {
             call.reject(e.localizedMessage)
         }
+    }
+
+    /** Reject a call that failed on the UI thread, so the call always settles and the app does not crash */
+    private fun rejectFailure(call: PluginCall, method: String, e: Exception) {
+        Log.e(TAG, "$method: failed", e)
+        call.reject(e.localizedMessage ?: "The $method failed: $e", e)
     }
 
     internal fun capacitorChromeClient(): WebChromeClient = if (WebViewFeature.isFeatureSupported(WebViewFeature.GET_WEB_CHROME_CLIENT)) {
@@ -183,8 +220,12 @@ class NativeNavigationPlugin : Plugin() {
     fun reset(call: PluginCall) {
         // This is a tear down method. Reset the UI to the capacitor state.
         activity.runOnUiThread {
-            cleanUp()
-            call.resolve()
+            try {
+                cleanUp()
+                call.resolve()
+            } catch (e: Exception) {
+                rejectFailure(call, "reset", e)
+            }
         }
     }
 

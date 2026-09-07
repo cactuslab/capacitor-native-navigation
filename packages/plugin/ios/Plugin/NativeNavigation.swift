@@ -252,8 +252,8 @@ class NativeNavigation: NSObject {
                 let targetComponentId = views[views.count - count - 1]
                 let targetComponent = try component(targetComponentId)
                 
-                if let popped = stack.viewController.popToViewController(targetComponent.viewController, animated: options.animated), popped.count > 0 {
-                    if let poppedComponentId = (popped[0] as? NativeNavigationWebViewController)?.componentId {
+                if let popped = stack.viewController.popToViewController(targetComponent.viewController, animated: options.animated), let firstPopped = popped.safeElement(at: 0) {
+                    if let poppedComponentId = (firstPopped as? NativeNavigationWebViewController)?.componentId {
                         guard let from = views.firstIndex(of: poppedComponentId) else {
                             throw NativeNavigatorError.illegalState(message: "Popped a component that is not expected: \(poppedComponentId)")
                         }
@@ -262,19 +262,23 @@ class NativeNavigation: NSObject {
                         stack.views = views
                         return PopResult(stack: stack.componentId, count: popped.count, id: poppedComponentId)
                     } else {
-                        throw NativeNavigatorError.illegalState(message: "Popped an unknown component: \(popped[0])")
+                        throw NativeNavigatorError.illegalState(message: "Popped an unknown component: \(firstPopped)")
                     }
                 } else {
                     return PopResult(stack: stack.componentId, count: 0, id: nil)
                 }
             } else {
-                let popped = stack.viewController.popToRootViewController(animated: options.animated)
-                let poppedComponentId = try views.first { try component($0).viewController == popped?[0] }
-                
+                let popped = stack.viewController.popToRootViewController(animated: options.animated) ?? []
+                guard let firstPopped = popped.safeElement(at: 0), !views.isEmpty else {
+                    return PopResult(stack: stack.componentId, count: 0, id: nil)
+                }
+
+                let poppedComponentId = try views.first { try component($0).viewController == firstPopped }
+
                 self.removeComponents(Array(views[1...]))
                 views.removeSubrange(1...)
                 stack.views = views
-                return PopResult(stack: stack.componentId, count: popped?.count ?? 0, id: poppedComponentId)
+                return PopResult(stack: stack.componentId, count: popped.count, id: poppedComponentId)
             }
         } else if count == 1 {
             if let viewController = stack.viewController.popViewController(animated: options.animated) {
@@ -283,7 +287,9 @@ class NativeNavigation: NSObject {
                 }
                 
                 self.removeComponent(poppedComponentId)
-                stack.views.removeLast()
+                if !stack.views.isEmpty {
+                    stack.views.removeLast()
+                }
                 return PopResult(stack: stack.componentId, count: 1, id: poppedComponentId)
             } else {
                 return PopResult(stack: stack.componentId, count: 0)
@@ -413,17 +419,23 @@ class NativeNavigation: NSObject {
         result.component = try self.options(component)
         
         var containerId = component.container
-        while containerId != nil {
-            let container = try self.component(containerId!)
-            if let stack = container as? StackModel, result.stack == nil {
-                result.stack = try self.options(stack) as? StackSpec
-                containerId = stack.container
-            }
-            if let tabs = container as? TabsModel, result.tabs == nil {
-                result.tabs = try self.options(tabs) as? TabsSpec
+        while let currentId = containerId {
+            let container = try self.component(currentId)
+
+            if let tabs = container as? TabsModel {
+                if result.tabs == nil {
+                    result.tabs = try self.options(tabs) as? TabsSpec
+                }
                 /* We don't look above tabs, as we assume the order is tabs -> stack -> view */
                 break
             }
+
+            if let stack = container as? StackModel, result.stack == nil {
+                result.stack = try self.options(stack) as? StackSpec
+            }
+
+            /* Always move up the hierarchy so we cannot loop forever */
+            containerId = container.container
         }
         return result
     }

@@ -62,11 +62,13 @@ function getRouterIdFromState(state: unknown): string | undefined {
 }
 
 /**
- * Defer `fireViewReady` so React can finish rendering before the native layer drops loading chrome.
+ * Defer a callback so React can finish rendering first. Used to let `fireViewReady` run after the
+ * render, so the native layer does not drop its loading chrome too early, and to notify registry
+ * listeners outside the render phase.
  * Prefer `queueMicrotask` over `setTimeout(..., 1)` to avoid a visible flash after native tab transitions;
  * fall back to `setTimeout` when `queueMicrotask` is unavailable (older runtimes).
  */
-function scheduleViewReadyCallback(callback: () => void): void {
+function scheduleCallback(callback: () => void): void {
 	if (typeof queueMicrotask === 'function') {
 		queueMicrotask(callback)
 	} else {
@@ -77,6 +79,65 @@ function scheduleViewReadyCallback(callback: () => void): void {
 /** Registry of data router route trees, so children-based routers can
  *  defer to them for untagged views. */
 const dataRouterRoutes = new Map<string, RouteObject[]>()
+
+/** Listeners that must re-evaluate view ownership when the registry changes */
+const dataRouterRoutesListeners = new Set<() => void>()
+
+let notifyDataRouterRoutesScheduled = false
+
+/**
+ * Tell the mounted routers that the registry changed, so they re-evaluate which views they own.
+ *
+ * Deferred, because the registry is written during render, and React must not receive a state
+ * update for one component while another component renders.
+ */
+function notifyDataRouterRoutesChanged(): void {
+	if (notifyDataRouterRoutesScheduled) {
+		return
+	}
+	notifyDataRouterRoutesScheduled = true
+
+	scheduleCallback(function() {
+		notifyDataRouterRoutesScheduled = false
+
+		for (const listener of [...dataRouterRoutesListeners]) {
+			listener()
+		}
+	})
+}
+
+/**
+ * Register a data router's routes. Idempotent, and safe to call during render, so a
+ * children-based router that renders later in the same commit already sees the registration
+ * and does not claim views that belong to this data router.
+ */
+function registerDataRouterRoutes(routerId: string, routes: RouteObject[]): void {
+	if (dataRouterRoutes.get(routerId) === routes) {
+		return
+	}
+
+	dataRouterRoutes.set(routerId, routes)
+	notifyDataRouterRoutesChanged()
+}
+
+function unregisterDataRouterRoutes(routerId: string): void {
+	if (dataRouterRoutes.delete(routerId)) {
+		notifyDataRouterRoutesChanged()
+	}
+}
+
+function addDataRouterRoutesListener(listener: () => void): () => void {
+	dataRouterRoutesListeners.add(listener)
+
+	return function() {
+		dataRouterRoutesListeners.delete(listener)
+	}
+}
+
+/** Determine whether a cached React element was created by the given router */
+function isElementForRouter(element: React.ReactNode, routerId: string): boolean {
+	return React.isValidElement<{ routerId?: string }>(element) && element.props.routerId === routerId
+}
 
 /**
  * Render the native views with paths using either the router provided as a prop, or `<Route>`s provided as children to this component.
@@ -95,15 +156,34 @@ export default function NativeNavigationRouter(props: React.PropsWithChildren<Na
 		return null
 	}, [router])
 
-	/* Register/unregister data router routes so children-based routers can defer */
+	/* Register the data router routes during render, and not in an effect. Effects run after the
+	   commit, so a children-based router rendering in this same commit would otherwise see an
+	   empty registry, and claim views that belong to this data router. */
+	if (routes) {
+		registerDataRouterRoutes(routerId, routes)
+	}
+
+	/* Keep the registration alive across effect re-runs, and unregister on unmount */
 	useEffect(() => {
 		if (routes) {
-			dataRouterRoutes.set(routerId, routes)
+			registerDataRouterRoutes(routerId, routes)
 			return () => {
-				dataRouterRoutes.delete(routerId)
+				unregisterDataRouterRoutes(routerId)
 			}
 		}
 	}, [routerId, routes])
+
+	/* A children-based router defers to the data routers, so it must re-evaluate ownership
+	   whenever the registry changes, for example when a data router mounts later than we did. */
+	useEffect(() => {
+		if (routes) {
+			return
+		}
+
+		return addDataRouterRoutesListener(function() {
+			setCounter(counter => counter + 1)
+		})
+	}, [routes])
 
 	/**
 	 * Check if a view belongs to this router.
@@ -161,7 +241,7 @@ export default function NativeNavigationRouter(props: React.PropsWithChildren<Na
 			setCounter(counter => counter + 1)
 
 			if (event === 'create' || event === 'update') {
-				scheduleViewReadyCallback(function() {
+				scheduleCallback(function() {
 					nativeNavigationReact.fireViewReady(view.id)
 				})
 			}
@@ -198,21 +278,26 @@ export default function NativeNavigationRouter(props: React.PropsWithChildren<Na
 					return null
 				}
 
-				const reactElement = view.reactElement || (view.reactElement =
-					<NativeNavigationRootWrapper
-						viewProps={{
-							...viewProps,
-							path,
-						}}
-						routerProps={{
-							navigation,
-							router,
-							dontAwaitLoaders,
-						}}
-						routerId={routerId}
-						children={children}
-					/>
-				)
+				/* Only reuse the cached element if this router created it. Ownership of an untagged
+				   view can move to a data router that registered its routes after we first rendered. */
+				let reactElement = view.reactElement
+				if (!isElementForRouter(reactElement, routerId)) {
+					reactElement = view.reactElement = (
+						<NativeNavigationRootWrapper
+							viewProps={{
+								...viewProps,
+								path,
+							}}
+							routerProps={{
+								navigation,
+								router,
+								dontAwaitLoaders,
+							}}
+							routerId={routerId}
+							children={children}
+						/>
+					)
+				}
 
 				return createPortal(reactElement, view.element, view.id)
 			})}

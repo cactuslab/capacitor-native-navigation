@@ -7,9 +7,9 @@ import android.os.Message
 import android.util.Log
 import android.view.Menu
 import android.view.View
+import android.view.ViewGroup
 import android.webkit.WebView
 import androidx.activity.OnBackPressedCallback
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.core.view.WindowCompat
 import androidx.fragment.app.FragmentManager
@@ -720,12 +720,86 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         }
     }
 
-    fun pop(call: PluginCall, activity: AppCompatActivity) {
-        Log.d(TAG, "pop: Processing pop")
+    fun pop(options: PopOptions, call: PluginCall) {
+        Log.d(TAG, "pop: Processing pop for stack: ${options.stack} with a count of ${options.count}")
+
+        val navContext = try {
+            navContextForTarget(options.stack)
+        } catch (e: kotlin.NoSuchElementException) {
+            Log.d(TAG, "pop: No such stack to pop from. $e")
+            call.reject("No such stack to pop from", e)
+            return
+        }
+
+        val navController = navContext.navController()
+
+        /**
+         * The back stack contains an entry for the graph as well as the entries for the views, so
+         * we only examine the entries that represent views.
+         */
+        val viewEntries = navController?.currentBackStack?.value?.filter { it.destination !is NavGraph } ?: listOf()
+
+        /* We can never pop the root of the stack */
+        val poppableCount = if (viewEntries.isEmpty()) 0 else viewEntries.size - 1
+        val count = options.count.coerceAtLeast(0).coerceAtMost(poppableCount)
+
+        if (count == 0 || navController == null) {
+            /**
+             * There is nothing to pop. We report that rather than dismissing this nav context, so
+             * the caller can decide what to do, as iOS does.
+             */
+            Log.d(TAG, "pop: There is nothing to pop on the stack \"${navContext.contextId}\"")
+            val result = PopResult(navContext.contextId, 0, null)
+            call.resolve(result.toJSObject())
+            return
+        }
+
+        val poppedEntries = viewEntries.subList(viewEntries.size - count, viewEntries.size)
+        val poppedIds = poppedEntries.mapNotNull { it.arguments?.getString(nav_arguments.component_id) }
+
+        /**
+         * A pop works from the top of the stack down, so the deepest component we remove is the
+         * last component popped. This matches the result that iOS reports.
+         */
+        val lastPoppedId = poppedIds.firstOrNull()
+
+        /**
+         * The pop is driven by the application, so it must not be blocked by a back button that
+         * the application disabled.
+         */
         applicationDrivenPop = true
-        activity.onBackPressedDispatcher.onBackPressed()
-        applicationDrivenPop = false
-        call.resolve()
+        val didPop = try {
+            if (lastPoppedId != null) {
+                /* Popping the deepest entry inclusively removes it, and everything above it, in one operation */
+                navController.popBackStack("${navContext.contextId}/$lastPoppedId", inclusive = true)
+            } else {
+                var popped = false
+                repeat(count) {
+                    popped = navController.popBackStack() || popped
+                }
+                popped
+            }
+        } finally {
+            applicationDrivenPop = false
+        }
+
+        /**
+         * Note: Android replays the animations that were configured when each view was pushed, so
+         * we cannot honour options.animated here.
+         */
+
+        if (!didPop) {
+            Log.w(TAG, "pop: The stack \"${navContext.contextId}\" did not pop")
+            val result = PopResult(navContext.contextId, 0, null)
+            call.resolve(result.toJSObject())
+            return
+        }
+
+        poppedIds.forEach { navContext.virtualStack.remove(it) }
+
+        Log.d(TAG, "pop: Popped $count component(s) from the stack \"${navContext.contextId}\"")
+        val result = PopResult(navContext.contextId, count, lastPoppedId)
+        call.resolve(result.toJSObject())
     }
 
     fun dismiss(options: DismissOptions, call: PluginCall) {

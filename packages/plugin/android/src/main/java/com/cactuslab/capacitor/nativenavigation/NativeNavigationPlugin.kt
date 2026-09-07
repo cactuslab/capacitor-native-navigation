@@ -129,12 +129,18 @@ class NativeNavigationPlugin : Plugin() {
 
     @PluginMethod
     fun pop(call: PluginCall) {
-
-        activity.runOnUiThread {
-            implementation.pop(call, activity)
+        try {
+            val options = PopOptions.fromJSObject(call.data)
+            activity.runOnUiThread {
+                try {
+                    implementation.pop(options = options, call = call)
+                } catch (e: Exception) {
+                    rejectFailure(call, "pop", e)
+                }
+            }
+        } catch (e: MissingParameterException) {
+            call.reject(e.localizedMessage)
         }
-//        call.reject("Pop not ready")
-//        call.resolve()
     }
 
     @PluginMethod

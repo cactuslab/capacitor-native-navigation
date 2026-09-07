@@ -393,7 +393,9 @@ class NativeNavigation: NSObject {
                     tab.title = title
                 }
                 if let imageObj = try ImageObject.fromJSObject(update, key: "image") {
-                    tab.image = try toImage(imageObj)
+                    loadImage(imageObj) { [weak tab] loadedImage in
+                        tab?.image = loadedImage
+                    }
                 }
             }
         } else {
@@ -406,7 +408,9 @@ class NativeNavigation: NSObject {
                     tabVC.tabBarItem.title = title
                 }
                 if let imageObj = try ImageObject.fromJSObject(update, key: "image") {
-                    tabVC.tabBarItem.image = try toImage(imageObj)
+                    loadImage(imageObj) { [weak tabVC] loadedImage in
+                        tabVC?.tabBarItem.image = loadedImage
+                    }
                 }
             }
         }
@@ -764,8 +768,13 @@ class NativeNavigation: NSObject {
                 guard index < viewControllers.count else { break }
                 let tabVC = viewControllers[index]
                 let identifier = model.tabs[index]
-                let tab = UITab(title: tabSpec.title ?? "", image: try tabSpec.image.flatMap { try toImage($0) }, identifier: identifier) { _ in
+                let tab = UITab(title: tabSpec.title ?? "", image: nil, identifier: identifier) { _ in
                     return tabVC
+                }
+                if let image = tabSpec.image {
+                    loadImage(image) { [weak tab] loadedImage in
+                        tab?.image = loadedImage
+                    }
                 }
                 if let badgeValue = tabSpec.badgeValue {
                     tab.badgeValue = badgeValue
@@ -779,9 +788,14 @@ class NativeNavigation: NSObject {
                 let tabVC = viewControllers[index]
                 let item = UITabBarItem(
                     title: tabSpec.title,
-                    image: try tabSpec.image.flatMap { try toImage($0) },
+                    image: nil,
                     tag: index
                 )
+                if let image = tabSpec.image {
+                    loadImage(image) { [weak item] loadedImage in
+                        item?.image = loadedImage
+                    }
+                }
                 if let badgeValue = tabSpec.badgeValue {
                     item.badgeValue = badgeValue
                 }
@@ -919,7 +933,9 @@ class NativeNavigation: NSObject {
                 tabVC.tabBarItem.title = tabSpec.title
                 tabVC.tabBarItem.badgeValue = tabSpec.badgeValue
                 if let image = tabSpec.image {
-                    tabVC.tabBarItem.image = try toImage(image)
+                    loadImage(image) { [weak tabVC] loadedImage in
+                        tabVC?.tabBarItem.image = loadedImage
+                    }
                 }
             }
         }
@@ -951,14 +967,14 @@ class NativeNavigation: NSObject {
             
             if let items = stackItem.leftItems {
                 let existingItems = viewController.navigationItem.leftBarButtonItems ?? []
-                viewController.navigationItem.leftBarButtonItems = try items.enumerated().map({ (index, item) in try setOrCreateBarButtonItem(item, buttonItem: existingItems.safeElement(at: index)) })
+                viewController.navigationItem.leftBarButtonItems = items.enumerated().map({ (index, item) in setOrCreateBarButtonItem(item, buttonItem: existingItems.safeElement(at: index)) })
             } else {
                 viewController.navigationItem.leftBarButtonItems = []
             }
             
             if let items = stackItem.rightItems {
                 let existingItems = viewController.navigationItem.rightBarButtonItems ?? []
-                viewController.navigationItem.rightBarButtonItems = try items.enumerated().map({ (index, item) in try setOrCreateBarButtonItem(item, buttonItem: existingItems.safeElement(at: index)) })
+                viewController.navigationItem.rightBarButtonItems = items.enumerated().map({ (index, item) in setOrCreateBarButtonItem(item, buttonItem: existingItems.safeElement(at: index)) })
             } else {
                 viewController.navigationItem.rightBarButtonItems = []
             }
@@ -992,7 +1008,7 @@ class NativeNavigation: NSObject {
             }
         }
 
-        func setOrCreateBarButtonItem(_ stackItem: StackBarButtonItem, buttonItem: UIBarButtonItem?) throws -> UIBarButtonItem {
+        func setOrCreateBarButtonItem(_ stackItem: StackBarButtonItem, buttonItem: UIBarButtonItem?) -> UIBarButtonItem {
             let action = UIAction(title: stackItem.title) { [weak component, weak self] _ in
                 guard let component = component, let self = self else {
                     return
@@ -1003,38 +1019,78 @@ class NativeNavigation: NSObject {
             }
             
             let result = buttonItem ?? UIBarButtonItem()
-            
+
             if let image = stackItem.image {
-                action.image = try toImage(image)
+                /* The image may arrive after we set the primary action, so we set the action again */
+                loadImage(image) { [weak result] loadedImage in
+                    action.image = loadedImage
+                    result?.primaryAction = action
+                }
             }
-            
+
             result.primaryAction = action
-        
+
             return result
         }
 
     }
     
-    func toImage(_ image: ImageObject) throws -> UIImage {
-        guard let url = URL(string: image.uri, relativeTo: self.bridge.webView?.url) else {
-            throw NativeNavigatorError.illegalState(message: "Cannot construct URL for path: \(image.uri)")
+    /** The images we have already loaded, keyed by the image URL, the scale and the tint setting. */
+    private var imageCache: [String: UIImage] = [:]
+
+    /**
+     Load the image that the given `ImageObject` describes, and then give it to the `apply` closure.
+     The image usually comes from the web server that serves the webview, so we load it in the background.
+     We call `apply` on the main thread. If we have already loaded the image, we call `apply` immediately.
+     */
+    @MainActor
+    private func loadImage(_ image: ImageObject, apply: @escaping (UIImage) -> Void) {
+        let uri = image.uri
+        guard let url = URL(string: uri, relativeTo: self.bridge.webView?.url) else {
+            CAPLog.print("🤖 NativeNavigation: cannot construct URL for path: \(uri)")
+            return
         }
 
-        let data: Data
-        do {
-            data = try Data(contentsOf: url)
-        } catch {
-            throw NativeNavigatorError.illegalState(message: "Failed to load image \"\(image.uri)\": \(error)")
+        let scale = image.scale ?? determineImageScale(uri)
+        let disableTint = image.disableTint == true
+        let cacheKey = "\(url.absoluteString)|\(scale)|\(disableTint)"
+
+        if let cachedImage = self.imageCache[cacheKey] {
+            apply(cachedImage)
+            return
         }
 
-        let scale = image.scale ?? determineImageScale(image.uri)
-        if let uiImage = UIImage(data: data, scale: scale) {
-            if image.disableTint == true {
-                return uiImage.withRenderingMode(.alwaysOriginal)
+        Task { [weak self] in
+            guard let uiImage = await NativeNavigation.image(at: url, uri: uri, scale: scale, disableTint: disableTint) else {
+                return
             }
-            return uiImage
-        } else {
-            throw NativeNavigatorError.illegalState(message: "Not an image at \"\(image.uri)\"")
+
+            self?.imageCache[cacheKey] = uiImage
+            apply(uiImage)
+        }
+    }
+
+    /** Load the image at the given URL. We do the work in the background, as the image comes from a server. */
+    private static func image(at url: URL, uri: String, scale: CGFloat, disableTint: Bool) async -> UIImage? {
+        return await withCheckedContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async {
+                let data: Data
+                do {
+                    data = try Data(contentsOf: url)
+                } catch {
+                    CAPLog.print("🤖 NativeNavigation: failed to load image \"\(uri)\": \(error.localizedDescription)")
+                    continuation.resume(returning: nil)
+                    return
+                }
+
+                guard let loadedImage = UIImage(data: data, scale: scale) else {
+                    CAPLog.print("🤖 NativeNavigation: not an image at \"\(uri)\"")
+                    continuation.resume(returning: nil)
+                    return
+                }
+
+                continuation.resume(returning: disableTint ? loadedImage.withRenderingMode(.alwaysOriginal) : loadedImage)
+            }
         }
     }
 

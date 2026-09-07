@@ -209,12 +209,18 @@ class NativeNavigation: NSObject {
             }
             
             var animated = options.animated
-            
+
             if stack.views.isEmpty {
-                views = [viewModel.componentId]
+                /* Nothing was showing, so there is nothing to animate away from */
                 animated = false
-            } else if options.mode == PushMode.replace {
-                popped.append(views.last!)
+            }
+
+            if views.isEmpty {
+                /* The stack holds no views, either because it was empty, or because popCount
+                   removed all of them. The view we push becomes the whole stack. */
+                views = [viewModel.componentId]
+            } else if options.mode == PushMode.replace, let topComponentId = views.last {
+                popped.append(topComponentId)
                 views[views.count - 1] = viewModel.componentId
             } else if options.mode == PushMode.root {
                 popped.append(contentsOf: views)

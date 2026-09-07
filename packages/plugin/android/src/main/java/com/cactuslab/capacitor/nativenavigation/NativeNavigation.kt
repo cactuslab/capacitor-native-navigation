@@ -927,9 +927,11 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
                         Log.d(TAG, "push: PUSH -> Inserted component ${component.id}")
                         var lastRemovedId: String? = null
-                        if (options.popCount > 0) {
-                            Log.d(TAG, "Popping ${options.popCount} views first")
-                            for (i in 1..options.popCount) {
+                        /* popCount can ask for more than the stack holds, so we pop at most the whole stack */
+                        val popCount = options.popCount.coerceAtMost(navContext.virtualStack.size)
+                        if (popCount > 0) {
+                            Log.d(TAG, "Popping $popCount views first")
+                            for (i in 1..popCount) {
                                 lastRemovedId = navContext.virtualStack.removeAt(navContext.virtualStack.lastIndex)
                             }
                         }
@@ -987,13 +989,19 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
                         Log.d(TAG, "push: REPLACE with a popCount of ${options.popCount}")
                         var backStackEntry: NavBackStackEntry? = null
-                        if (options.popCount > 0) {
-                            for (i in 1..options.popCount) {
+                        /**
+                         * A replace needs a view to replace, so we always leave one behind. Popping
+                         * every view and then replacing nothing gives the same single view as
+                         * popping all but one and replacing that one, which is what iOS does.
+                         */
+                        val popCount = options.popCount.coerceAtMost(navContext.virtualStack.size - 1).coerceAtLeast(0)
+                        if (popCount > 0) {
+                            for (i in 1..popCount) {
                                 lastRemovedId = navContext.virtualStack.removeAt(navContext.virtualStack.lastIndex)
                             }
                             val navController = navContext.fragment.binding?.navigationHost?.findNavController()
-                            val backQueue = navController!!.currentBackStack.value
-                            backStackEntry = backQueue[backQueue.size - options.popCount]
+                            val backQueue = navController?.currentBackStack?.value
+                            backStackEntry = backQueue?.getOrNull(backQueue.size - popCount)
                         }
 
                         val currentId = if (target.isNullOrBlank() || target == navContext.contextId) { //

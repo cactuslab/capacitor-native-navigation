@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 /** JavaScript diffentiates undefined, null and value. This enables Swift to represent nil as undefined, .null as null, and .value as value. */
 enum Nullable<T> {

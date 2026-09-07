@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 
 class NativeNavigationTabBarController: UITabBarController, NativeNavigationViewController {
 

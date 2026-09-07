@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 
 protocol NativeNavigationViewController: UIViewController {
     

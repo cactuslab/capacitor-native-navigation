@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 /**
  Manages the presentation of root view controllers.

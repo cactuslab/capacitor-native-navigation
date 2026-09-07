@@ -63,9 +63,9 @@ class NativeNavigationWebViewController: UIViewController, NativeNavigationViewC
     }
 
     /**
-     Create the webview required for this view. Waits for the view to be ready before returning.
+     Create, or update, the webview required for this view. Waits for the view to be ready before returning.
      */
-    func createOpdateWebView() async {
+    func createOrUpdateWebView() async {
         guard webView == nil || webViewNeedsUpdate else {
             return
         }
@@ -86,6 +86,11 @@ class NativeNavigationWebViewController: UIViewController, NativeNavigationViewC
             if let stackId = self.stackId {
                 notificationData["stack"] = stackId
             }
+
+            /* We have captured the current state in the notification, so we are no longer dirty.
+               If the path or the state changes while we wait, we become dirty again.
+             */
+            self.webViewNeedsUpdate = false
 
             if webView == nil {
                 /* Callback to JavaScript to trigger a call to window.open to create the WKWebView and then init it */

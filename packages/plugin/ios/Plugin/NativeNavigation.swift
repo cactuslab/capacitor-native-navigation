@@ -831,7 +831,7 @@ class NativeNavigation: NSObject {
     @MainActor
     private func waitForViewsReady(_ vc: UIViewController) async {
         if let vc = vc as? NativeNavigationWebViewController {
-            await vc.createOpdateWebView()
+            await vc.createOrUpdateWebView()
         } else if let nc = vc as? NativeNavigationNavigationController {
             for vc in nc.viewControllers {
                 await waitForViewsReady(vc)

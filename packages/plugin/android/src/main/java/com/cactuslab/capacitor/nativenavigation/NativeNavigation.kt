@@ -127,7 +127,11 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
     private var onBackPressedCallback: OnBackPressedCallback? = null
 
+    /** The webviews that are waiting for the window.open handshake that connects them to their component */
     private val webviewsCache: MutableMap<String, WebView> = mutableMapOf()
+
+    /** Every webview we have created, by component id, so we can destroy them when they are no longer needed */
+    private val webviews: MutableMap<String, WebView> = mutableMapOf()
 
     /** used to ensure that when native navigation is popping nothing can prevent it */
     private var applicationDrivenPop: Boolean = false;
@@ -328,8 +332,9 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
 
         componentsById.clear()
         componentsByAlias.clear()
-        webviewsCache.values.forEach { it.destroy() }
         webviewsCache.clear()
+        webviews.values.forEach { destroyWebView(it) }
+        webviews.clear()
 
         Log.d(TAG, "--- RESET COMPLETE ---")
     }
@@ -444,9 +449,30 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         id?.let {
             Log.d(TAG, "makeWebView: Putting webview in cache for id:${id}")
             webviewsCache.put(id, webView)
+            /* Destroy a webview we replace, so we do not leak it */
+            webviews.put(id, webView)?.let { previousWebView ->
+                if (previousWebView != webView) {
+                    destroyWebView(previousWebView)
+                }
+            }
         }
 
         return webView
+    }
+
+    private fun destroyWebViewForId(id: String) {
+        webviewsCache.remove(id)
+        val webView = webviews.remove(id) ?: return
+        Log.d(TAG, "destroyWebViewForId: Destroying the webview for id:${id}")
+        destroyWebView(webView)
+    }
+
+    private fun destroyWebView(webView: WebView) {
+        /* A webview must be detached from its parent, on the main thread, before it is destroyed */
+        plugin.activity.runOnUiThread {
+            (webView.parent as? ViewGroup)?.removeView(webView)
+            webView.destroy()
+        }
     }
 
     private fun pushNavController(id: String, animated: Boolean): NavContext {
@@ -495,6 +521,7 @@ class NativeNavigation(val plugin: NativeNavigationPlugin, val viewModel: Native
         plugin.notifyDestroyView(componentId, component?.alias)
         viewModel.cleanUpComponentWithId(componentId)
         viewActions.remove(componentId)
+        destroyWebViewForId(componentId)
         Log.d(TAG, "notifyDestroyView: Completed for $componentId")
     }
 

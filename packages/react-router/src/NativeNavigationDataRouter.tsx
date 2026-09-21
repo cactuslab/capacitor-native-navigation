@@ -138,30 +138,42 @@ function createNativeNavigationRouterProxy(
 			const resolved = resolvePath(to, initialPath.pathname)
 
 			if (!dontAwaitLoaders) {
+				/* Subscribe BEFORE navigating the inner router. When the target routes have no
+				   loaders React Router completes the navigation synchronously inside navigate(),
+				   so a listener attached afterwards would never fire, the promise would never
+				   settle, and the native push would only happen when a later navigation
+				   triggered the stale listener (off-by-one navigation to the wrong screen). */
+				const startKey = innerRouter.state.location.key
+				const settled = new Promise<RouterState>(resolve => {
+					const unsubscribe = innerRouter.subscribe(state => {
+						if (state.navigation.state === 'idle' && state.location.key !== startKey) {
+							unsubscribe()
+							resolve(state)
+						}
+					})
+				})
+
 				/* Navigate the inner router to trigger loaders.
 				   Our subscribe interceptor will expose navigation.state = 'loading'
 				   while keeping the current route rendered. */
 				originalNavigate(to, opts)
 
 				/* Wait for the inner router to settle */
-				await new Promise<void>(resolve => {
-					const unsubscribe = innerRouter.subscribe(state => {
-						if (state.navigation.state === 'idle' && state.location.pathname !== initialPath.pathname) {
-							unsubscribe()
+				const state = await settled
 
-							/* Capture the loader data as a handoff for the new view */
-							pendingHandoff = {
-								pathname: resolved.pathname,
-								loaderData: state.loaderData,
-							}
+				if (state.location.pathname !== resolved.pathname) {
+					/* Another navigation superseded this one before it settled; it will do its own push */
+					return
+				}
 
-							/* Reset the inner router back to our location */
-							originalNavigate(initialPath, { replace: true })
+				/* Capture the loader data as a handoff for the new view */
+				pendingHandoff = {
+					pathname: resolved.pathname,
+					loaderData: state.loaderData,
+				}
 
-							resolve()
-						}
-					})
-				})
+				/* Reset the inner router back to our location */
+				originalNavigate(initialPath, { replace: true })
 
 				/* Push the native view — the new view will pick up the handoff */
 				if (!opts?.replace) {

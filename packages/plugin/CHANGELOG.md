@@ -1,5 +1,235 @@
 # capacitor-native-navigation
 
+## 0.13.0
+
+### Minor Changes
+
+- 30487c0: iOS: add the bottom root to the base view controller instead of presenting it
+
+  Capacitor plugins present their own view controllers on `bridge.viewController`,
+  which is the base view controller. We presented the bottom root on that same view
+  controller. UIKit refuses a presentation on a view controller that already presents
+  another one, and it only logs a warning. The plugin's view controller never
+  appeared, and the plugin call never resolved and never rejected.
+
+  `@capacitor/camera` shows this problem. The photo picker does not appear, and
+  `getPhoto` never returns. `@capacitor/share` has the same problem.
+
+  The bottom root is now a child of the base view controller. Each root above the
+  bottom root is presented on the nearest root below it. The base view controller
+  presents nothing, so these plugins work again.
+
+  Two behaviours change, because iOS now asks the base view controller rather than
+  the root navigation controller:
+  - The status bar follows the base view controller. Use `@capacitor/status-bar`, or
+    `UIStatusBarStyle` in `Info.plist`, instead of the navigation bar style.
+  - The supported orientations follow `UISupportedInterfaceOrientations` in
+    `Info.plist`.
+
+  The bottom root also appears and disappears without animation, because a child
+  view controller is not presented. The `animated` option still applies to every
+  root above it.
+
+### Patch Changes
+
+- 7554a3a: Cancel pending view loads, and report `window.open` failures
+
+  `attemptLoad` polls a new window for up to 4.5 seconds, and it had no
+  cancellation. A `destroyView` event that arrived during the poll removed
+  nothing, because the id was not registered yet. The poll then registered a view
+  that the native side had already destroyed, and nothing removed that view again.
+
+  We now track the views that we wait on, and we abandon a poll when its view is
+  destroyed.
+
+  A null result from `window.open` was also dropped without a message. We can
+  never report such a view as ready, and the native side waits for that report, so
+  we now log the failure.
+
+- 4fe086c: Android: report the four view lifecycle events at four distinct points
+
+  `onPause` sent `viewWillDisappear` and `viewDidDisappear` one after the other,
+  and `onResume` sent `viewWillAppear` and `viewDidAppear` one after the other.
+  Each pair arrived at the same moment, so the two events carried the same
+  meaning. iOS reports four distinct points.
+
+  The events now follow the fragment lifecycle: will appear on start, did appear
+  on resume, will disappear on pause, and did disappear on stop.
+
+  Those callbacks also forced the component id, which a fragment does not always
+  have. A fragment for a view that is not yet configured has no id, so the forced
+  value threw. The callbacks are now null safe.
+
+- 2aac102: iOS: keep the alias map correct, and stop crashing the app at startup
+
+  The map from alias to component was declared with a component id as its key,
+  though it is keyed by alias. It also accepted the same alias twice without a
+  word, and removing one component then removed the entry that pointed at another,
+  still live, component. The key type is corrected, a repeated alias is logged,
+  and an alias entry is removed only when it still points at the component that is
+  going away.
+
+  Two failures during start up called `fatalError`, which brought down the whole
+  host app: a missing webview, and a page that could not be read. Both now log,
+  and the plugin degrades instead. The force unwraps that would have crashed on
+  that degraded path are guarded as well, so a call reports a real error rather
+  than trapping.
+
+- d284da4: Let `popCount` pop the whole stack, on both platforms
+
+  A `push` with a `popCount` larger than the stack depth trapped on both platforms.
+  iOS guarded the branch on the stack it started with, but it read the top of the
+  copy it had already popped, so `views.last!` crashed. Android removed the last
+  entry once per requested pop, so it ran off the end of the list, and it then read
+  a negative index in the back stack.
+
+  `popCount` now pops at most the whole stack. When it empties the stack, the view
+  that is pushed becomes the whole stack, so `push`, `replace` and `root` all reach
+  the same single view. A replace always leaves one view behind to replace, which
+  reaches that same state.
+
+- 960f2f7: iOS: require iOS 15, and build the whole plugin in the Xcode project
+
+  The podspec asked for iOS 14, and `Plugin.xcodeproj` asked for iOS 13, but
+  Capacitor 8 requires iOS 15. An app that uses this plugin therefore already
+  needed iOS 15, so the lower numbers only misreported the real minimum. The
+  podspec, the Podfile and the Xcode project now all state iOS 15.
+
+  The Xcode project also compiled only 2 of the 13 Swift files, so `verify:ios`
+  could never build. The remaining 11 files are now in the target.
+
+- 8d59dd6: iOS: load bar and tab images off the main thread
+
+  `toImage` read the image with `Data(contentsOf:)` while it ran on the main
+  actor. The image address is resolved against the address of the webview, and a
+  Capacitor app serves that address from a local server, so every bar button and
+  every tab item blocked the user interface on a synchronous request.
+
+  Images now load on a background queue, and they are applied on the main actor
+  when they arrive. A cache holds each loaded image by address, scale and tint, so
+  a repeated image is applied at once and does not flicker. A failure is logged.
+
+- 11ed9d3: iOS: guard the collection access in `pop`, and always advance in `get`
+
+  `pop` read element zero of the array that `popToRootViewController` returned,
+  which traps when that array is empty rather than nil. It also took a slice from
+  index one of the views of a stack, and removed the last view, both of which trap
+  when the stack holds no views. Each case is now guarded, and reports a result
+  with a count of zero.
+
+  `get` walked from a component up through its containers, but it advanced only
+  while it recorded the first enclosing stack. Any other container left the walk
+  on the same id, and the loop then ran forever on the main thread. The walk now
+  advances on every step.
+
+- d5370ee: Android: reject a stack that has no components, rather than crash
+
+  `present` read `components.last()` and `components.first()` on a stack. A stack
+  spec always parses to a list, so `components: []` produced an empty list, and
+  `last()` threw. The throw happened inside `runOnUiThread`, where nothing caught
+  it, so the app crashed and the call never settled. `present` now rejects such a
+  stack before it changes any state.
+
+  `present` also inserted the components of a stack a second time. `insertComponent`
+  already walks into a stack and merges the container state into each component,
+  so the extra pass did the same work twice.
+
+- 2900980: Android: reject a failed call instead of crashing the app
+
+  `dismiss`, `push`, `get`, `update`, `message` and `reset` parsed their options
+  inside a `try`, but they called the implementation inside `activity.runOnUiThread`,
+  which sits outside that `try`. Any exception from the implementation crashed the
+  app, and the plugin call never settled. Each call now rejects with the failure.
+
+  `handleOnStart` also added a webview listener on each start, while
+  `handleOnDestroy` removed one only at the end of the activity. The listener
+  accumulated across a stop and start cycle, and the plugin then reset itself once
+  for each registration on a page load. The listener is now added once.
+
+- 4bae739: Remove script elements from the view page reliably
+
+  Both platforms built the page for a view webview by replacing `<script` with the
+  start of a comment, and `</script>` with the end of one. That replacement is
+  case sensitive, so `<SCRIPT` survived and its code still ran. A `-->` inside the
+  text of a script also closed the injected comment early, which put the rest of
+  that script back into the page, and corrupted the markup after it.
+
+  Script elements are now removed outright, with a case insensitive expression
+  that spans lines and handles a self-closing tag. The intent of this code is that
+  no script runs in a view webview, and removing the elements states that
+  directly.
+
+- 3b0ad26: Android: report console output from the webviews we create
+
+  Each view uses its own `WebView`, and those webviews had no `WebChromeClient`, so
+  their console messages were dropped. They now log under the `Capacitor/Console`
+  tag, prefixed with the id of the view that produced them.
+
+- 93e80b8: iOS: clear the flag that marks a view webview as out of date
+
+  `path` and `state` set `webViewNeedsUpdate`, and nothing cleared it. After the
+  first update of a view, every later call sent another `updateView` event, and
+  waited for the view to report itself ready again, even when nothing had changed.
+  The flag is now cleared once the event carries the current path and state, so a
+  change that arrives while the view is still preparing marks the view again.
+
+  `createOpdateWebView` is renamed to `createOrUpdateWebView`.
+
+- 49c6c51: Android: destroy the webview of a view that is destroyed
+
+  `shouldOverrideLoad` removed a webview from the cache as soon as that view
+  loaded, and `reset` destroyed only the webviews that were still in the cache.
+  Every webview that actually loaded was therefore leaked, together with its
+  render process. `cleanUpComponentWithId` dropped the live data for a component
+  but never destroyed its webview either.
+
+  A second registry now holds every webview by component id.
+  `notifyDestroyView` destroys the webview of that component, and `reset` destroys
+  the rest. A webview is detached from its parent, on the main thread, before it
+  is destroyed.
+
+- c5bb825: Android: repair the standalone plugin build
+
+  `verify:android` failed before it compiled anything. The Gradle wrapper pinned
+  7.4.2, and the Android Gradle plugin needs 8.9. The wrapper is now 8.9, matching
+  the example app.
+
+  `build.gradle` also now supplies defaults for `androidxActivityVersion`,
+  `androidxFragmentVersion` and `androidxWebkitVersion`. An app project sets these
+  in `variables.gradle`, so only a standalone build sees the defaults.
+
+- 9b649ef: Android: push to a presented view that has no target
+
+  When the presented root is a single view, rather than a stack, `push` compared
+  the target with the context id. A `push` with no target took the other branch,
+  which set the current id to `null`, and the call rejected with "There is no
+  current view to replace". The branch for a stack already handled a target that
+  is null or blank. The branch for a view now does the same.
+
+  That branch also inserted the component without its container, so the state of
+  the container was not merged into it. It now passes the container, as the branch
+  for a stack does.
+
+- 59036a1: Android: return a real `PopResult` from `pop`
+
+  `pop` resolved with no result at all, and it ignored both `count` and `stack`.
+  It always popped one entry from the top navigation context, through the back
+  pressed dispatcher.
+
+  The declared result is `PopResult { stack, count, id }`, and callers rely on it.
+  `useNativeNavigationNavigator` in `capacitor-native-navigation-react-router`
+  tests `result.count === 0` to decide whether to dismiss a modal when a stack has
+  nothing left to pop. On Android that test compared `undefined` with `0`, so the
+  modal never dismissed.
+
+  `pop` now takes `PopOptions`, it pops `count` entries from the stack that
+  `stack` names, and it resolves the stack id, the number of entries popped, and
+  the id of the last entry popped. When there is nothing to pop it reports
+  `count: 0`, as iOS does, and it leaves the decision to the caller.
+
+  Android replays the animation that each view declared when it was pushed, so
+  `animated` cannot change a pop animation. `pop` states this in a comment.
+
 ## 0.12.1
 
 ### Patch Changes

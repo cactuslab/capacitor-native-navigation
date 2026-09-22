@@ -1,5 +1,28 @@
 # capacitor-native-navigation-history
 
+## 6.4.3
+
+### Patch Changes
+
+- Updated dependencies [7554a3a]
+- Updated dependencies [4fe086c]
+- Updated dependencies [2aac102]
+- Updated dependencies [d284da4]
+- Updated dependencies [960f2f7]
+- Updated dependencies [8d59dd6]
+- Updated dependencies [11ed9d3]
+- Updated dependencies [d5370ee]
+- Updated dependencies [2900980]
+- Updated dependencies [4bae739]
+- Updated dependencies [3b0ad26]
+- Updated dependencies [93e80b8]
+- Updated dependencies [30487c0]
+- Updated dependencies [49c6c51]
+- Updated dependencies [c5bb825]
+- Updated dependencies [9b649ef]
+- Updated dependencies [59036a1]
+  - capacitor-native-navigation@0.13.0
+
 ## 6.4.2
 
 ### Patch Changes

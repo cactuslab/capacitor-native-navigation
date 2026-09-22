@@ -1,5 +1,35 @@
 # capacitor-app
 
+## 2.6.4
+
+### Patch Changes
+
+- Updated dependencies [7554a3a]
+- Updated dependencies [4fe086c]
+- Updated dependencies [2aac102]
+- Updated dependencies [d284da4]
+- Updated dependencies [960f2f7]
+- Updated dependencies [8d59dd6]
+- Updated dependencies [11ed9d3]
+- Updated dependencies [d5370ee]
+- Updated dependencies [2900980]
+- Updated dependencies [f975ea9]
+- Updated dependencies [9b27286]
+- Updated dependencies [4bae739]
+- Updated dependencies [e1c943e]
+- Updated dependencies [3b0ad26]
+- Updated dependencies [958110e]
+- Updated dependencies [93e80b8]
+- Updated dependencies [30487c0]
+- Updated dependencies [49c6c51]
+- Updated dependencies [c5bb825]
+- Updated dependencies [9b649ef]
+- Updated dependencies [ba74470]
+- Updated dependencies [59036a1]
+  - capacitor-native-navigation@0.13.0
+  - capacitor-native-navigation-react-router@8.2.2
+  - capacitor-native-navigation-react@6.4.3
+
 ## 2.6.3
 
 ### Patch Changes

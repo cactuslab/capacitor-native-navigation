@@ -1,5 +1,94 @@
 # capacitor-native-navigation-react-router
 
+## 8.2.2
+
+### Patch Changes
+
+- f975ea9: React Router: register data router routes during render
+
+  The registry of data router routes was filled in an effect, and effects run
+  after the commit. On the first commit, a router with `<Route>` children saw an
+  empty registry. It claimed every untagged view, including the views of a data
+  router, and both routers rendered into the same element. Nothing re-rendered to
+  correct this. A data router that mounted later had the same result.
+
+  Routes are now registered during render. A router with `<Route>` children
+  subscribes to the registry, and it re-evaluates which views it owns when the
+  registry changes.
+
+  A cached view element also held no record of the router that built it, so a
+  router that took over a view reused the element of the previous owner, with the
+  children and the router id of that owner. A router now reuses only the elements
+  that it built.
+
+- 9b27286: React Router: push the first navigation from each data router view
+
+  `NativeNavigationDataRouter` navigated the inner memory router and then
+  subscribed to it, to wait for the loaders. A route with no loaders settles
+  inside the `navigate` call, so the subscriber missed it and the promise never
+  settled. The native push never happened.
+
+  Each later navigation resolved the promise of the one before it, so a view
+  pushed the previous target and the first tap appeared to do nothing.
+
+  The subscriber is now added before the navigation starts.
+
+- e1c943e: React Router: resolve modals by pathname, and stabilise the navigator
+
+  `findModalConfig` received a full href, with the search string and the hash.
+  `pathToRegexp('/modal')` does not match `/modal?x=1`, so an exact-path modal
+  config stopped matching as soon as a query string or a hash was present.
+  `findModalConfig` now matches the pathname.
+
+  `parsePath` looked for `?` before `#`. For `/a#b?c` it put `?c` into the search,
+  and it left `/a#b` as the pathname. It now finds the hash first, as React
+  Router's own `parsePath` does.
+
+  `routerProps.navigation || {}` allocated a new object on each render. That
+  changed the identity of the navigator, and it rebuilt the duplicate-navigation
+  guard around `push` with the guard flag reset, so the guard could fail to hold.
+  The navigator now depends on the option fields that it uses.
+
+  The `presentOptions` callback of a modal received the raw state, so a presented
+  modal reached the native side without its router tag, and it ignored
+  `opts.state`. That callback now receives the same state as the normal push path.
+
+- 958110e: React Router: rebuild the data router when the view path changes
+
+  The inner memory router was built once per view, and it captured the view path.
+  A replacing navigation reuses the native view, and it updates the props of that
+  view in place, so the component did not unmount. The view kept rendering its
+  original route. The router is now keyed on the view path, so a change of path
+  disposes the old router, and it builds a new one.
+
+  The loader handoff was a single module value. Navigations in two stacks, or in
+  two tabs, overwrote each other. A handoff was also cleared only when a matching
+  view claimed it, so a push that failed left an entry behind, and a later
+  navigation to the same pathname picked that entry up as stale loader data.
+  Handoffs are now keyed by pathname, they expire, and a handoff is discarded when
+  its native navigation fails.
+
+- Updated dependencies [7554a3a]
+- Updated dependencies [4fe086c]
+- Updated dependencies [2aac102]
+- Updated dependencies [d284da4]
+- Updated dependencies [960f2f7]
+- Updated dependencies [8d59dd6]
+- Updated dependencies [11ed9d3]
+- Updated dependencies [d5370ee]
+- Updated dependencies [2900980]
+- Updated dependencies [4bae739]
+- Updated dependencies [3b0ad26]
+- Updated dependencies [93e80b8]
+- Updated dependencies [30487c0]
+- Updated dependencies [49c6c51]
+- Updated dependencies [c5bb825]
+- Updated dependencies [9b649ef]
+- Updated dependencies [ba74470]
+- Updated dependencies [59036a1]
+  - capacitor-native-navigation@0.13.0
+  - capacitor-native-navigation-react@6.4.3
+
 ## 8.2.1
 
 ### Patch Changes

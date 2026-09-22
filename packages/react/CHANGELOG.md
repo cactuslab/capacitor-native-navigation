@@ -1,5 +1,49 @@
 # capacitor-native-navigation-react
 
+## 6.4.3
+
+### Patch Changes
+
+- ba74470: React: copy stylesheet rules into new windows through the DOM
+
+  Emotion, which styles MUI and react-select, adds its rules with `insertRule` in
+  production, so the `<style>` element it puts in the head stays empty. We copied
+  those rules into each view window through the CSSOM of that window.
+
+  That does not work. A window's `document.styleSheets` does not hold a `<style>`
+  element we copied in until some time after we add it, so
+  `findMatchingStyleSheet` returned nothing and the rules went nowhere. Rules
+  added later hit the same problem and were lost for good, and the failed copies
+  also produced `IndexSizeError` warnings, because we passed the rule index from
+  the main window straight through to a copy that held fewer rules.
+
+  The first view kept its styles. Every view after it lost all of them.
+
+  We now copy the rules as text. `copyOfHeadNode` fills an empty `<style>` element
+  from the rules it holds, and each new rule is added to the text of the copy
+  instead of to its stylesheet. Rules are batched into a microtask, so a window
+  parses its stylesheet once per task rather than once per rule. A stylesheet with
+  no owner element no longer throws either.
+
+- Updated dependencies [7554a3a]
+- Updated dependencies [4fe086c]
+- Updated dependencies [2aac102]
+- Updated dependencies [d284da4]
+- Updated dependencies [960f2f7]
+- Updated dependencies [8d59dd6]
+- Updated dependencies [11ed9d3]
+- Updated dependencies [d5370ee]
+- Updated dependencies [2900980]
+- Updated dependencies [4bae739]
+- Updated dependencies [3b0ad26]
+- Updated dependencies [93e80b8]
+- Updated dependencies [30487c0]
+- Updated dependencies [49c6c51]
+- Updated dependencies [c5bb825]
+- Updated dependencies [9b649ef]
+- Updated dependencies [59036a1]
+  - capacitor-native-navigation@0.13.0
+
 ## 6.4.2
 
 ### Patch Changes

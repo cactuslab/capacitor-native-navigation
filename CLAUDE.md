@@ -67,7 +67,7 @@ pnpm cap:local           # Sync Capacitor for local dev
 
 The plugin API (`packages/plugin/src/definitions.ts`) defines the bridge: `present()`, `dismiss()`, `push()`, `pop()`, `update()`, `reset()`, `get()`, `message()`. These map to Capacitor plugin calls handled by:
 
-- **iOS**: `packages/plugin/ios/Plugin/` — Swift, UIKit-based. `NativeNavigationPlugin.swift` is the entry point, `NativeNavigation.swift` manages view controllers.
+- **iOS**: `packages/plugin/ios/Sources/NativeNavigationPlugin/` — Swift, UIKit-based. `NativeNavigationPlugin.swift` is the entry point, `NativeNavigation.swift` manages view controllers.
 - **Android**: `packages/plugin/android/src/main/java/com/cactuslab/capacitor/nativenavigation/` — Kotlin, Fragment-based. `NativeNavigationPlugin.kt` is the entry point.
 - **Web**: `packages/plugin/src/web.ts` — Fallback for browser development.
 

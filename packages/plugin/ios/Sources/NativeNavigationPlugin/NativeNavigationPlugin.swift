@@ -6,7 +6,21 @@ import Capacitor
  * here: https://capacitorjs.com/docs/plugins/ios
  */
 @objc(NativeNavigationPlugin)
-public class NativeNavigationPlugin: CAPPlugin {
+public class NativeNavigationPlugin: CAPPlugin, CAPBridgedPlugin {
+    public let identifier = "NativeNavigationPlugin"
+    public let jsName = "NativeNavigation"
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "present", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "dismiss", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "push", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "pop", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "update", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "reset", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "get", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "message", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "viewReady", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "removeAllListeners", returnType: CAPPluginReturnPromise),
+    ]
     private var implementation: NativeNavigation! = nil
 
     @objc override public func load() {

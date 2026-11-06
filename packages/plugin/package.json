@@ -12,8 +12,7 @@
     "dist/",
     "ios/Sources",
     "ios/Tests",
-    "Package.swift",
-    "CapacitorNativeNavigation.podspec"
+    "Package.swift"
   ],
   "exports": {
     ".": "./dist/esm/index.js",

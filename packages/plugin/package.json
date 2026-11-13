@@ -10,8 +10,9 @@
     "android/src/main/",
     "android/build.gradle",
     "dist/",
-    "ios/Plugin/",
-    "CapacitorNativeNavigation.podspec"
+    "ios/Sources",
+    "ios/Tests",
+    "Package.swift"
   ],
   "exports": {
     ".": "./dist/esm/index.js",
@@ -33,7 +34,7 @@
   ],
   "scripts": {
     "verify": "pnpm run verify:ios && pnpm run verify:android && pnpm run verify:web",
-    "verify:ios": "cd ios && bundle exec pod install && xcodebuild -workspace Plugin.xcworkspace -scheme Plugin -destination generic/platform=iOS && cd ..",
+    "verify:ios": "xcodebuild -scheme CapacitorNativeNavigation -destination generic/platform=iOS",
     "verify:android": "cd android && ./gradlew clean build test && cd ..",
     "verify:web": "pnpm run build",
     "fmt": "pnpm run eslint -- --fix && pnpm run prettier -- --write && pnpm run swiftlint -- --fix --format",
@@ -57,7 +58,7 @@
     "swiftlint": "^2.0.0"
   },
   "peerDependencies": {
-    "@capacitor/core": ">=5"
+    "@capacitor/core": ">=6"
   },
   "prettier": "@ionic/prettier-config",
   "swiftlint": "@ionic/swiftlint-config",

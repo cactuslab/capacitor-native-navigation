@@ -12,29 +12,6 @@ pnpm start
 
 Then navigate to the URL displayed.
 
-## iOS
-
-Prerequisites:
-
-* `rbenv` for managing Ruby versions
-
-Setup the iOS toolchain using Ruby and bundler to install Cocoapods:
-
-```shell
-cd ios
-gem install bundler
-bundle install
-cd ..
-```
-
-From time to time we can update the iOS toolchain to the latest versions:
-
-```shell
-cd ios
-bundle update
-cd ..
-```
-
 ## Development
 
 Update the iOS (and Android) project with the latest plugin code, expecting to connect to a dev server running on your local machine:
@@ -55,7 +32,7 @@ pnpm start:host
 Open the iOS project; build and run the app:
 
 ```shell
-open ios/App/App.xcworkspace
+open ios/App/App.xcodeproj
 ```
 
 Open the Android folder in Android Studio; build and run the app. Or compile on the command-line:

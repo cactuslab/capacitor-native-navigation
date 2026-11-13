@@ -45,7 +45,7 @@
     "react-router-dom": "^7.13.2"
   },
   "peerDependencies": {
-    "@capacitor/core": ">=5",
+    "@capacitor/core": ">=6",
     "react": "^18 || ^19",
     "react-dom": "^18 || ^19",
     "react-router": "^6 || ^7",
